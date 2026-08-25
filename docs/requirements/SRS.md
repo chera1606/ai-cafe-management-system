@@ -1,72 +1,26 @@
-# Software Requirements Specification (SRS)
+# AI-Powered Cafe Management System
 
-## AI-Powered Cafe Management System
+**Software Requirements Specification (SRS)**
 
-| Field              | Value                               |
-| ------------------ | ----------------------------------- |
-| Document           | Software Requirements Specification |
-| Product            | AI-Powered Cafe Management System   |
-| Version            | 0.2.0                               |
-| Status             | Refined Draft                       |
-| Date               | 2026-08-25                          |
-| Primary Branch     | `dev`                               |
-| SRS Working Branch | `docs/refine-srs`                   |
-
----
-
-## Document Status
-
-This document represents the **Refined SRS Draft v0.2.0**.
-
-It is not yet the approved requirements baseline. The requirements will be reviewed for completeness, ambiguity, feasibility, consistency, priority, and acceptance criteria before being finalized as **SRS v1.0 — Approved Requirements Baseline**.
+| Field                  | Value                                                            |
+| ---------------------- | ---------------------------------------------------------------- |
+| **Product**            | AI-Powered Cafe Management System                                |
+| **Document**           | Software Requirements Specification                              |
+| **Version**            | 1.0.0                                                            |
+| **Status**             | Proposed for Approval                                            |
+| **Date**               | 2026-08-25                                                       |
+| **Integration Branch** | `dev`                                                            |
+| **Purpose**            | Final refined requirements candidate and implementation baseline |
 
 ---
 
-## Revision History
+## Document Control
 
-| Version | Date       | Status        | Description                                                                                     |
-| ------- | ---------- | ------------- | ----------------------------------------------------------------------------------------------- |
-| 0.1.0   | 2026-08-25 | Draft         | Initial SRS requirements draft                                                                  |
-| 0.2.0   | 2026-08-25 | Refined Draft | Formalized structure, requirement IDs, priorities, business rules, AI, notifications, and scope |
-| 1.0.0   | TBD        | Approved      | Final approved requirements baseline                                                            |
+This document defines the product and engineering requirements for the **AI-Powered Cafe Management System**.
 
----
+Version **1.0.0** represents the final refined requirements candidate following requirements discovery, refinement, and review. It is intended to become the baseline for architecture and implementation once formally approved by the project owner or designated stakeholders.
 
-# Table of Contents
-
-1. [Introduction](#1-introduction)
-2. [Product Overview](#2-product-overview)
-3. [Goals and Objectives](#3-goals-and-objectives)
-4. [Stakeholders and Actors](#4-stakeholders-and-actors)
-5. [System Scope](#5-system-scope)
-6. [Functional Requirements](#6-functional-requirements)
-7. [Business Rules](#7-business-rules)
-8. [AI Requirements](#8-ai-requirements)
-9. [Notification and Communication Requirements](#9-notification-and-communication-requirements)
-10. [Integration Requirements](#10-integration-requirements)
-11. [Data Requirements](#11-data-requirements)
-12. [Security and Authorization Requirements](#12-security-and-authorization-requirements)
-13. [Non-Functional Requirements](#13-non-functional-requirements)
-14. [Reliability, Backup, and Recovery](#14-reliability-backup-and-recovery)
-15. [Auditability](#15-auditability)
-16. [MVP Scope](#16-mvp-scope)
-17. [Future Scope](#17-future-scope)
-18. [Constraints and Assumptions](#18-constraints-and-assumptions)
-19. [Architecture Direction](#19-architecture-direction)
-20. [Requirements Traceability](#20-requirements-traceability)
-21. [SRS Acceptance Criteria](#21-srs-acceptance-criteria)
-
----
-
-# 1. Introduction
-
-## 1.1 Purpose
-
-The purpose of this Software Requirements Specification is to define the functional, non-functional, business, security, data, integration, and AI-related requirements for the AI-Powered Cafe Management System.
-
-The system is intended to provide a centralized digital platform for customer ordering, cafe operations, kitchen workflows, inventory, payments, customer accounts, staff management, delivery, notifications, support, analytics, and AI-assisted management.
-
-This document establishes the baseline requirements that will guide:
+This document guides:
 
 - Domain modeling
 - Architecture
@@ -76,18 +30,98 @@ This document establishes the baseline requirements that will guide:
 - Implementation
 - Testing
 - Deployment
-- Future system evolution
+- Operations
+- Future product evolution
+
+### Revision History
+
+| Version | Date       | Status                | Description                                                                                 |
+| ------- | ---------- | --------------------- | ------------------------------------------------------------------------------------------- |
+| 0.1.0   | 2026-08-25 | Draft                 | Initial requirements draft                                                                  |
+| 0.2.0   | 2026-08-25 | Refined Draft         | Formalized requirements, priorities, business rules, AI, notifications, security, and scope |
+| 1.0.0   | 2026-08-25 | Proposed for Approval | Final refined requirements candidate                                                        |
+
+> **Approval note:** Version 1.0.0 should be changed to **Approved** only after formal project-owner/stakeholder approval.
 
 ---
 
+## Table of Contents
+
+1. [Introduction](#1-introduction)
+2. [Product Vision and Goals](#2-product-vision-and-goals)
+3. [Stakeholders and Actors](#3-stakeholders-and-actors)
+4. [System Scope](#4-system-scope)
+5. [Functional Requirements](#5-functional-requirements)
+   - [5.1 Authentication and Access Control](#51-authentication-and-access-control)
+   - [5.2 Customer Management](#52-customer-management)
+   - [5.3 Menu Management](#53-menu-management)
+   - [5.4 Ordering](#54-ordering)
+   - [5.5 Kitchen and Department Operations](#55-kitchen-and-department-operations)
+   - [5.6 Payments](#56-payments)
+   - [5.7 Customer Credit and Monthly Accounts](#57-customer-credit-and-monthly-accounts)
+   - [5.8 Inventory](#58-inventory)
+   - [5.9 Recipes and Consumption](#59-recipes-and-consumption)
+   - [5.10 Waste](#510-waste)
+   - [5.11 Procurement and Suppliers](#511-procurement-and-suppliers)
+   - [5.12 Staff Management](#512-staff-management)
+   - [5.13 Delivery](#513-delivery)
+   - [5.14 Notifications](#514-notifications)
+   - [5.15 Customer Support and Complaints](#515-customer-support-and-complaints)
+   - [5.16 Analytics and Reporting](#516-analytics-and-reporting)
+   - [5.17 Asset Management](#517-asset-management)
+   - [5.18 AI Capabilities](#518-ai-capabilities)
+   - [5.19 Manager Dashboard](#519-manager-dashboard)
+
+6. [Business Rules](#6-business-rules)
+7. [AI Requirements and Guardrails](#7-ai-requirements-and-guardrails)
+8. [Notification and Communication Requirements](#8-notification-and-communication-requirements)
+9. [External Integration Requirements](#9-external-integration-requirements)
+10. [Data Requirements](#10-data-requirements)
+11. [Security and Authorization Requirements](#11-security-and-authorization-requirements)
+12. [Non-Functional Requirements](#12-non-functional-requirements)
+13. [Reliability, Backup, and Recovery](#13-reliability-backup-and-recovery)
+14. [Auditability](#14-auditability)
+15. [MVP and Release Scope](#15-mvp-and-release-scope)
+16. [Future Scope](#16-future-scope)
+17. [Constraints and Assumptions](#17-constraints-and-assumptions)
+18. [Architectural Direction](#18-architectural-direction)
+19. [Requirements Traceability](#19-requirements-traceability)
+20. [SRS Approval Criteria](#20-srs-approval-criteria)
+21. [Appendix A — Initial Domain Map](#appendix-a--initial-domain-map)
+22. [Appendix B — Requirement Priority Convention](#appendix-b--requirement-priority-convention)
+23. [Appendix C — Change Control](#appendix-c--change-control)
+
+---
+
+# 1. Introduction
+
+## 1.1 Purpose
+
+The AI-Powered Cafe Management System is a centralized digital platform for managing customer ordering, cafe operations, kitchen workflows, inventory, payments, customer credit, staff, delivery, notifications, customer support, analytics, and AI-assisted business activities.
+
+The purpose of this SRS is to establish a clear, testable, and traceable requirements baseline before detailed architecture and implementation begin.
+
+The SRS will guide:
+
+- Domain modeling
+- Architecture
+- Database design
+- API design
+- UI/UX design
+- Implementation
+- Testing
+- Deployment
+- Operations
+- Future product evolution
+
 ## 1.2 Intended Audience
 
-This SRS is intended for:
+This document is intended for:
 
 - Product stakeholders
 - Software engineers
-- Backend developers
-- Frontend developers
+- Backend engineers
+- Frontend engineers
 - AI engineers
 - Database engineers
 - QA engineers
@@ -95,283 +129,239 @@ This SRS is intended for:
 - System architects
 - Project maintainers
 
----
+## 1.3 Definitions
 
-## 1.3 Product Vision
-
-The system shall provide a reliable, modern, secure, and extensible cafe management platform that connects customers, employees, kitchen operations, inventory, payments, communication, and management within one centralized system.
-
-The platform shall use AI selectively where it provides meaningful value, such as natural-language ordering, customer support, business insights, inventory assistance, communication automation, and recommendations.
-
-The platform shall remain extensible so that additional departments, integrations, communication channels, AI capabilities, and business features can be added without requiring unnecessary redesign of the entire system.
-
----
-
-## 1.4 Definitions
-
-| Term           | Definition                                                                                          |
-| -------------- | --------------------------------------------------------------------------------------------------- |
-| KDS            | Kitchen Display System                                                                              |
-| AI Agent       | Software capability that uses an AI model to reason about a task and interact with authorized tools |
-| RAG            | Retrieval-Augmented Generation                                                                      |
-| RBAC           | Role-Based Access Control                                                                           |
-| MVP            | Minimum Viable Product                                                                              |
-| SRS            | Software Requirements Specification                                                                 |
-| Order          | A request for one or more cafe products                                                             |
-| Menu Item      | A customer-facing product that can be ordered                                                       |
-| Ingredient     | A material used to prepare a menu item                                                              |
-| Stock Movement | A recorded change in inventory quantity                                                             |
-| Credit Account | A customer account allowing approved deferred payment                                               |
-| Fulfilment     | The method by which an order is received by the customer, such as dine-in, pickup, or delivery      |
+| Term               | Definition                                                                                                 |
+| ------------------ | ---------------------------------------------------------------------------------------------------------- |
+| **KDS**            | Kitchen Display System                                                                                     |
+| **AI Agent**       | An AI-powered software capability that reasons over an allowed task and interacts through authorized tools |
+| **RAG**            | Retrieval-Augmented Generation                                                                             |
+| **RBAC**           | Role-Based Access Control                                                                                  |
+| **MVP**            | Minimum Viable Product                                                                                     |
+| **Menu Item**      | A product that can be ordered by a customer                                                                |
+| **Ingredient**     | A material used to prepare a menu item                                                                     |
+| **Stock Movement** | A recorded change in inventory                                                                             |
+| **Credit Account** | An approved customer account used for deferred payment                                                     |
+| **Fulfilment**     | The method used to provide an order, such as dine-in, pickup, or delivery                                  |
 
 ---
 
-# 2. Product Overview
+# 2. Product Vision and Goals
 
-## 2.1 Product Description
+## 2.1 Product Vision
 
-The AI-Powered Cafe Management System is a digital cafe operations platform designed primarily for a single cafe while maintaining an architecture that can evolve as the business grows.
+> **Provide a reliable, secure, modern, and extensible cafe management platform that connects customers, employees, kitchen operations, inventory, payments, communication, and management in one system while using AI only where it provides meaningful operational or customer value.**
 
-The platform will connect:
+The platform should replace fragile paper-based and disconnected workflows with reliable digital processes while remaining flexible enough to support future business and technology changes.
 
-```text
-Customers
-    |
-    +-- Menu
-    +-- Ordering
-    +-- Payments
-    +-- Delivery
-    +-- Support
-    +-- Notifications
-
-Cafe Operations
-    |
-    +-- Cashier
-    +-- Waiter
-    +-- Kitchen
-    +-- Coffee / Hot Drinks
-    +-- Food
-
-Management
-    |
-    +-- Inventory
-    +-- Procurement
-    +-- Staff
-    +-- Customer Credit
-    +-- Financial Operations
-    +-- Analytics
-    +-- Assets
-
-AI Platform
-    |
-    +-- Ordering Assistant
-    +-- Customer Support
-    +-- Manager Assistant
-    +-- Inventory Assistant
-    +-- Insights
-    +-- Email Assistant
-    +-- Orchestration
-```
-
----
-
-## 2.2 Problem Statement
-
-The current manual or fragmented cafe workflow may require customers to physically visit the cafe to place orders, employees to communicate orders verbally or through paper, managers to maintain inventory and customer credit records manually, and staff to perform financial calculations manually.
-
-These processes introduce risks including:
-
-- Customer inconvenience
-- Order mistakes
-- Lost kitchen instructions
-- Slow communication
-- Manual calculation errors
-- Lost or damaged customer records
-- Poor inventory visibility
-- Poor waste tracking
-- Limited management analytics
-- Difficulty tracking customer credit
-- Limited customer communication
-- Limited operational visibility
-
-The proposed system addresses these problems through centralized digital workflows, automation, real-time operational information, and AI-assisted capabilities.
-
----
-
-# 3. Goals and Objectives
-
-## 3.1 Primary Goals
+## 2.2 Primary Goals
 
 The system shall aim to:
 
 1. Digitize core cafe operations.
-2. Improve customer ordering convenience.
-3. Reduce manual order and communication errors.
-4. Improve kitchen coordination.
-5. Provide accurate inventory visibility.
-6. Digitize customer credit and monthly account management.
+2. Allow customers to order remotely.
+3. Reduce order-entry and communication errors.
+4. Improve kitchen visibility and coordination.
+5. Provide accurate inventory tracking.
+6. Digitize customer monthly-credit management.
 7. Centralize payment and transaction records.
-8. Improve customer communication and notifications.
-9. Provide management analytics and operational insights.
-10. Use AI only where it provides meaningful business value.
-11. Protect critical business data against loss and unauthorized access.
-12. Provide an extensible architecture for future capabilities.
+8. Provide reliable customer and staff notifications.
+9. Give managers actionable operational information.
+10. Use AI for natural-language interaction, assistance, recommendations, and insights.
+11. Protect critical business data from loss and unauthorized access.
+12. Provide an extensible foundation for future capabilities.
 
 ---
 
-## 3.2 Success Indicators
+# 3. Stakeholders and Actors
 
-The system should enable the cafe to achieve measurable improvements such as:
+## 3.1 Customer
 
-- Reduced order-entry errors.
-- Reduced time required to process orders.
-- Improved visibility of kitchen workload.
-- Reduced manual inventory calculation.
-- Reduced difficulty in calculating customer monthly balances.
-- Improved payment tracking.
-- Improved visibility into inventory waste.
-- Faster customer communication.
-- Better management access to operational information.
+A customer may:
 
-Specific measurable targets will be defined where sufficient operational data becomes available.
+- Browse the menu
+- Search or filter menu items
+- Place orders
+- Place orders through an AI-assisted experience
+- Receive recommendations
+- Choose available fulfilment options
+- Make payments using supported methods
+- Track order status
+- View order history
+- View applicable account and payment history
+- Use an approved credit account
+- Submit complaints and feedback
+- Receive notifications
+
+## 3.2 Cashier
+
+A cashier may:
+
+- Create orders
+- Modify orders while modification is allowed
+- Process or record authorized payments
+- Issue receipts
+- Handle customer-credit transactions when permitted
+- View relevant order status
+- Perform authorized cancellation or refund workflows
+- Manage cashier shift information
+
+## 3.3 Waiter
+
+A waiter may:
+
+- Create dine-in or customer orders
+- Associate orders with tables where table management is enabled
+- Send orders to preparation departments
+- View order status
+- Support customer-facing service
+- Record relevant customer requests
+
+## 3.4 Kitchen Staff / Cook
+
+Kitchen staff may:
+
+- Receive assigned preparation tasks
+- View order items and quantities
+- View preparation notes
+- Accept or start preparation
+- Mark items or orders as ready
+- Report preparation problems or unavailable items
+
+## 3.5 Manager
+
+The manager may:
+
+- Manage menu items
+- Manage inventory
+- Manage suppliers and procurement records
+- Manage customers and customer credit
+- Manage staff
+- Access operational financial information
+- Review reports and analytics
+- Manage complaints and escalations
+- Manage operational configuration
+- Use AI-assisted management capabilities
+
+## 3.6 Owner
+
+The owner may:
+
+- Review business performance
+- Review financial summaries
+- Review operational analytics
+- Oversee managers and staff
+- Access strategic insights
+
+## 3.7 Delivery Rider / Delivery Provider
+
+A delivery rider or integrated delivery provider may:
+
+- Receive delivery assignments
+- View relevant delivery information
+- Update delivery status
+
+## 3.8 System Administrator
+
+An authorized system administrator may manage:
+
+- System configuration
+- User access
+- Roles and permissions
+- External integrations
+- Technical settings
+
+## 3.9 AI Agents
+
+AI capabilities are controlled system components rather than unrestricted users. AI agents shall operate only through authorized capabilities and data-access paths.
 
 ---
 
-# 4. Stakeholders and Actors
+# 4. System Scope
 
-## 4.1 Customer
+## 4.1 In Scope
 
-The customer interacts with the system to discover products, place orders, make payments, receive notifications, track fulfilment, use approved credit functionality, and communicate with the cafe.
-
-## 4.2 Cashier
-
-The cashier manages front-of-house orders, payments, receipts, customer account interactions, and authorized transaction workflows.
-
-## 4.3 Waiter
-
-The waiter supports dine-in and customer-facing service, including order entry, order communication, and service coordination.
-
-## 4.4 Kitchen Staff / Cook
-
-Kitchen personnel receive preparation tasks through the KDS, prepare items, update preparation status, and report operational exceptions.
-
-## 4.5 Manager
-
-The manager oversees cafe operations, staff, menu, inventory, procurement, customer accounts, operational financial information, complaints, reports, and AI-assisted insights.
-
-## 4.6 Owner
-
-The owner provides higher-level oversight of business performance, management, financial summaries, operational analytics, and strategic insights.
-
-## 4.7 Delivery Rider / Delivery Provider
-
-Delivery personnel or integrated delivery services receive delivery assignments and update delivery status where applicable.
-
-## 4.8 System Administrator
-
-An authorized administrator may manage system-level configuration, roles, permissions, integrations, and technical settings.
-
-## 4.9 AI Agents
-
-AI capabilities act as controlled software components that use authorized tools and data sources.
-
-AI agents are not inherently trusted system administrators and shall operate within defined permissions and guardrails.
-
-## 4.10 External Actors
-
-Potential external systems include:
-
-- Payment providers
-- Email providers
-- SMS providers
-- WhatsApp/Telegram or other messaging providers
-- LLM providers
-- Vector database/RAG infrastructure
-- Delivery providers
-
----
-
-# 5. System Scope
-
-## 5.1 In Scope
-
-The system will initially cover:
+The product scope includes:
 
 - Authentication and authorization
-- User and customer management
+- Customer management
 - Menu management
-- Customer ordering
-- Cashier and waiter order workflows
+- Customer and staff ordering
 - Kitchen operations
 - Department/station routing
 - Payment management
-- Customer credit/monthly accounts
+- Customer credit
 - Inventory management
-- Inventory consumption and waste
-- Procurement information
+- Waste management
+- Procurement records
 - Staff management
-- Delivery/fulfilment
+- Delivery and fulfilment
 - Notifications
 - Customer support
-- Reporting and analytics
+- Analytics and reporting
 - AI-assisted capabilities
 - Auditability
-- Security
-- Backup and recovery mechanisms
+- Data backup and recovery
+- Security controls
 
-## 5.2 Out of Scope for the Initial Release
+## 4.2 Initial Non-Goals
 
-Unless explicitly approved later, the following are not initial MVP requirements:
+The initial release is not intended to be:
 
-- Full accounting software
-- Full enterprise payroll system
-- Full ERP
-- Multi-country tax management
-- Complex multi-branch operations
-- Advanced loyalty ecosystem
-- Fully autonomous financial decision-making by AI
+- A full accounting system
+- A complete enterprise payroll system
+- A full ERP
+- A multi-country tax platform
+- A full multi-branch enterprise platform
+- A fully autonomous financial decision-maker
 
-These may be evaluated as future capabilities.
-
----
-
-# 6. Functional Requirements
-
-## 6.1 Authentication and User Access
-
-### FR-AUTH-001 — User Authentication
-
-**Priority:** MUST
-
-The system shall allow authorized users to authenticate securely.
-
-### FR-AUTH-002 — Role-Based Access Control
-
-**Priority:** MUST
-
-The system shall enforce role-based access control for protected operations.
-
-### FR-AUTH-003 — Least-Privilege Access
-
-**Priority:** MUST
-
-Users shall have only the permissions necessary for their assigned responsibilities.
-
-### FR-AUTH-004 — Session and Credential Security
-
-**Priority:** MUST
-
-The system shall protect authentication credentials and authenticated sessions according to accepted security practices.
+These may be considered later through separate requirements work.
 
 ---
 
-# 6.2 Customer Management
+# 5. Functional Requirements
 
-### FR-CUS-001 — Customer Registration
+## 5.1 Authentication and Access Control
+
+### FR-AUTH-001 — Secure Authentication
 
 **Priority:** MUST
 
-The system shall allow customers to create and maintain customer accounts where required by the selected ordering workflow.
+The system shall authenticate users before allowing access to protected operations.
+
+**Acceptance Criteria:**
+
+- Protected endpoints require authentication.
+- Invalid credentials are rejected.
+- Authentication failures do not expose sensitive credential information.
+
+### FR-AUTH-002 — Role-Based Authorization
+
+**Priority:** MUST
+
+The system shall enforce permissions based on user roles and/or explicit permissions.
+
+**Acceptance Criteria:**
+
+- Users cannot perform operations outside their permissions.
+- Administrative operations require elevated authorization.
+- Authorization is enforced server-side.
+
+### FR-AUTH-003 — Least Privilege
+
+**Priority:** MUST
+
+Users shall receive only the permissions necessary for their responsibilities.
+
+---
+
+## 5.2 Customer Management
+
+### FR-CUS-001 — Customer Account
+
+**Priority:** MUST
+
+The system shall support customer accounts where required by the chosen ordering workflow.
 
 ### FR-CUS-002 — Customer Profile
 
@@ -383,13 +373,13 @@ The system shall maintain relevant customer profile information.
 
 **Priority:** MUST
 
-The system shall allow authorized customers to view their order history.
+An authenticated customer shall be able to view their completed and active order history.
 
 ### FR-CUS-004 — Customer Payment History
 
 **Priority:** SHOULD
 
-The system should provide customers with access to their relevant payment history.
+The system should allow customers to view their payment history where applicable.
 
 ### FR-CUS-005 — Customer Credit Account
 
@@ -399,13 +389,13 @@ The system shall support approved customer credit accounts.
 
 ---
 
-# 6.3 Menu Management
+## 5.3 Menu Management
 
 ### FR-MENU-001 — Menu Item Management
 
 **Priority:** MUST
 
-Authorized staff shall be able to create, view, update, activate, deactivate, and manage menu items.
+Authorized staff shall be able to create, update, activate, deactivate, and manage menu items.
 
 ### FR-MENU-002 — Menu Categories
 
@@ -413,105 +403,114 @@ Authorized staff shall be able to create, view, update, activate, deactivate, an
 
 The system shall support menu categories.
 
-### FR-MENU-003 — Availability
+### FR-MENU-003 — Menu Availability
 
 **Priority:** MUST
 
-Authorized users shall be able to mark menu items as available or unavailable.
+Authorized staff shall be able to mark menu items as available or unavailable.
 
-### FR-MENU-004 — Preparation Department
+### FR-MENU-004 — Preparation Department Assignment
 
 **Priority:** MUST
 
-A menu item shall be associated with an appropriate preparation department or station.
+Each preparation-relevant menu item shall be associated with a configured department or station.
 
 ### FR-MENU-005 — Customer Menu
 
 **Priority:** MUST
 
-Customers shall be able to view currently available menu items.
+Customers shall be able to view currently available menu items and their current prices.
 
 ---
 
-# 6.4 Customer Ordering
+## 5.4 Ordering
 
 ### FR-ORD-001 — Create Order
 
 **Priority:** MUST
 
-The system shall allow an authorized customer or staff member to create an order containing one or more available menu items.
+The system shall allow an authorized customer, cashier, or waiter to create an order containing one or more available menu items.
 
-### FR-ORD-002 — Order Quantity
-
-**Priority:** MUST
-
-The system shall validate that ordered quantities are greater than zero and valid for the selected menu item.
-
-### FR-ORD-003 — Order Total
+### FR-ORD-002 — Order Validation
 
 **Priority:** MUST
 
-The server shall calculate the authoritative order total.
+The system shall validate:
+
+- Item availability
+- Quantity
+- Required options/modifiers where applicable
+- Customer and fulfilment information where required
+
+### FR-ORD-003 — Server-Side Order Total
+
+**Priority:** MUST
+
+The server shall calculate and store the authoritative order total.
 
 ### FR-ORD-004 — Order Modification
 
 **Priority:** MUST
 
-Authorized users shall be able to modify an order while the order remains in a modifiable state.
+Authorized users shall be able to modify an order only while its current state permits modification.
 
 ### FR-ORD-005 — Order Cancellation
 
 **Priority:** MUST
 
-The system shall support controlled order cancellation according to business rules.
+The system shall support controlled order cancellation based on order state and authorization.
 
 ### FR-ORD-006 — Special Instructions
 
 **Priority:** MUST
 
-Customers or authorized staff shall be able to provide preparation instructions where supported.
+The system shall allow authorized users to attach preparation instructions to an order or order item where applicable.
 
-### FR-ORD-007 — Order Types
+### FR-ORD-007 — Fulfilment Type
 
 **Priority:** MUST
 
-The system shall support applicable fulfilment types such as dine-in, pickup, and delivery.
+The system shall support applicable fulfilment types, including:
+
+- Dine-in
+- Pickup
+- Delivery
 
 ### FR-ORD-008 — Order History
 
 **Priority:** MUST
 
-The system shall maintain order history.
+The system shall maintain a durable history of orders and their status changes.
 
-### FR-ORD-009 — Duplicate Submission Protection
+### FR-ORD-009 — Duplicate-Request Protection
 
 **Priority:** MUST
 
-The system shall prevent accidental duplicate order creation caused by repeated requests or retries.
+The system shall protect critical order-creation operations against accidental duplicate requests caused by retries or repeated submissions.
 
 ---
 
-# 6.5 Kitchen and Department Operations
+## 5.5 Kitchen and Department Operations
 
-### FR-KDS-001 — Kitchen Order Queue
+### FR-KDS-001 — Department Queue
 
 **Priority:** MUST
 
-The system shall provide a digital queue of active kitchen preparation tasks.
+The system shall provide a digital preparation queue for each configured preparation department.
 
 ### FR-KDS-002 — Department Routing
 
 **Priority:** MUST
 
-Order items shall be routed to their configured preparation department or station.
+Order items shall be routed to the department or station associated with the menu item.
 
-### FR-KDS-003 — Order Preparation Status
+### FR-KDS-003 — Preparation Status
 
 **Priority:** MUST
 
 Authorized kitchen users shall be able to update preparation status.
 
-Supported states should include, where applicable:
+Supported states shall include, where applicable:
 
 ```text
 NEW
@@ -521,39 +520,49 @@ READY
 COMPLETED
 ```
 
-### FR-KDS-004 — Preparation Instructions
+### FR-KDS-004 — Preparation Information
 
 **Priority:** MUST
 
-The KDS shall display relevant preparation instructions.
+The KDS shall display the information required to prepare an order, including:
 
-### FR-KDS-005 — Real-Time Order Availability
+- Order number
+- Items
+- Quantities
+- Preparation instructions
+- Order type
+- Received time
+- Current preparation state
 
-**Priority:** SHOULD
-
-New kitchen orders should become visible to the appropriate preparation department without requiring manual page refresh.
-
-### FR-KDS-006 — Item Unavailability
-
-**Priority:** SHOULD
-
-Kitchen personnel shall be able to report an item or ingredient that cannot be prepared.
-
-### FR-KDS-007 — Kitchen Workload Visibility
+### FR-KDS-005 — Real-Time New Order Visibility
 
 **Priority:** SHOULD
 
-The system should provide appropriate visibility into active and waiting kitchen workload.
+New orders should appear to the correct preparation department without requiring a manual page refresh.
+
+### FR-KDS-006 — Unavailable Item Reporting
+
+**Priority:** SHOULD
+
+Kitchen staff should be able to report when an order item cannot be prepared.
+
+### FR-KDS-007 — Kitchen Workload
+
+**Priority:** SHOULD
+
+The system should show the number of active, waiting, and preparing orders for authorized kitchen and management users.
 
 ---
 
-# 6.6 Payment Management
+## 5.6 Payments
 
 ### FR-PAY-001 — Payment Methods
 
 **Priority:** MUST
 
-The system shall support configurable payment methods including, where available:
+The payment subsystem shall support configurable payment methods.
+
+The initial target methods are:
 
 - Cash
 - Telebirr
@@ -561,11 +570,15 @@ The system shall support configurable payment methods including, where available
 - Chapa
 - Customer Credit
 
-### FR-PAY-002 — Payment Status
+Additional methods may be added later.
+
+> **MVP clarification:** Cash and Customer Credit are core MVP payment methods. A single supported digital payment provider should be integrated for the initial MVP; additional providers may be added incrementally after the core payment workflow is stable.
+
+### FR-PAY-002 — Payment Lifecycle
 
 **Priority:** MUST
 
-The system shall maintain payment states such as:
+The system shall support payment states including:
 
 ```text
 PENDING
@@ -577,105 +590,107 @@ PARTIALLY_PAID
 REFUNDED
 ```
 
-### FR-PAY-003 — Payment Transaction Reference
+### FR-PAY-003 — Provider Transaction Reference
 
 **Priority:** MUST
 
-Where supported by the payment provider, the system shall store the provider transaction reference.
+Where a payment provider supplies a transaction reference, the system shall store it.
 
 ### FR-PAY-004 — Payment Verification
 
 **Priority:** MUST
 
-The system shall verify payment success using trusted provider mechanisms where such mechanisms are available.
+Where supported by the provider, payment completion shall be verified using provider-side verification or webhook mechanisms.
 
-### FR-PAY-005 — Payment Evidence
+### FR-PAY-005 — Manual Payment Evidence
 
 **Priority:** SHOULD
 
-The system may support manual payment evidence for exceptional workflows, but uploaded screenshots shall not automatically be treated as authoritative proof of successful payment.
+The system may support manual payment evidence for exceptional cases.
 
-### FR-PAY-006 — Receipts
+Uploaded screenshots shall not by themselves cause a transaction to be considered verified.
+
+### FR-PAY-006 — Receipt
 
 **Priority:** MUST
 
-The system shall generate or provide access to transaction receipts.
+The system shall provide a receipt or equivalent transaction record for completed payments.
 
 ### FR-PAY-007 — Refund Workflow
 
 **Priority:** SHOULD
 
-The system should provide a controlled refund workflow with authorization according to business rules.
+The system should support an authorized refund workflow.
 
 ---
 
-# 6.7 Customer Credit and Monthly Accounts
+## 5.7 Customer Credit and Monthly Accounts
 
 ### FR-CREDIT-001 — Credit Eligibility
 
 **Priority:** MUST
 
-Only authorized customers shall be allowed to use customer-credit functionality.
+Only approved customers shall be allowed to use credit-based purchasing.
 
 ### FR-CREDIT-002 — Credit Limit
 
 **Priority:** MUST
 
-The system shall support a configurable credit limit for eligible customers.
+The system shall support a configurable credit limit per eligible customer.
 
-### FR-CREDIT-003 — Daily Consumption Recording
+### FR-CREDIT-003 — Credit Transaction
 
 **Priority:** MUST
 
-The system shall record customer transactions made under an approved credit arrangement.
+The system shall record every transaction that increases a customer's outstanding credit balance.
 
 ### FR-CREDIT-004 — Running Balance
 
 **Priority:** MUST
 
-The system shall maintain the customer's outstanding balance.
+The system shall maintain the customer's current outstanding balance.
 
 ### FR-CREDIT-005 — Monthly Statement
 
 **Priority:** MUST
 
-The system shall generate a monthly statement of applicable customer transactions.
+The system shall generate a monthly statement containing the customer's applicable credit transactions, payments, and outstanding balance.
 
 ### FR-CREDIT-006 — Partial Payment
 
 **Priority:** SHOULD
 
-The system should support partial payment against an outstanding balance.
+The system should support partial payments against an outstanding balance.
 
-### FR-CREDIT-007 — Credit Auditability
+### FR-CREDIT-007 — Credit Adjustment
 
-**Priority:** MUST
+**Priority:** SHOULD
 
-Changes to customer balances and credit-related records shall be auditable.
+Authorized staff shall be able to make controlled credit adjustments with an audit record and reason.
 
 ---
 
-# 6.8 Inventory Management
+## 5.8 Inventory
 
-### FR-INV-001 — Inventory Item Management
-
-**Priority:** MUST
-
-Authorized staff shall be able to manage inventory items.
-
-### FR-INV-002 — Stock Quantity
+### FR-INV-001 — Inventory Item
 
 **Priority:** MUST
 
-The system shall maintain current inventory quantities using appropriate units of measurement.
+Authorized staff shall be able to create and manage inventory items.
+
+### FR-INV-002 — Quantity and Unit
+
+**Priority:** MUST
+
+Each inventory item shall have a quantity and unit of measurement appropriate to the item.
 
 ### FR-INV-003 — Stock Movement
 
 **Priority:** MUST
 
-The system shall record inventory movements.
+The system shall record inventory changes as stock movements.
 
-Movement types shall include where applicable:
+Supported movement types shall include:
 
 ```text
 PURCHASE
@@ -686,73 +701,93 @@ ADJUSTMENT_OUT
 TRANSFER
 ```
 
-### FR-INV-004 — Purchase Information
+### FR-INV-004 — Purchase Record
 
 **Priority:** MUST
 
-The system shall store relevant purchase information, including quantity, cost, supplier, and receipt date.
+A purchase record shall support, where applicable:
+
+- Item
+- Quantity
+- Unit
+- Unit cost
+- Total cost
+- Supplier
+- Purchase date
+- Received date
+- Batch/lot reference
+- Expiration date
+- Receiving user
 
 ### FR-INV-005 — Department Allocation
 
-**Priority:** MUST
+**Priority:** SHOULD
 
-Inventory items shall be assignable to relevant operational departments or locations where necessary.
+Inventory shall be assignable to a relevant department, location, or storage area where required.
 
-### FR-INV-006 — Low Stock Threshold
+### FR-INV-006 — Low-Stock Threshold
 
 **Priority:** SHOULD
 
-The system should support configurable reorder or low-stock thresholds.
+The system should support a configurable reorder or low-stock threshold.
 
 ### FR-INV-007 — Expiration Tracking
 
 **Priority:** SHOULD
 
-The system should support expiration tracking for applicable perishable inventory.
+The system should support expiration tracking for applicable perishable items.
 
-### FR-INV-008 — Inventory Valuation
+### FR-INV-008 — Inventory Reconciliation
+
+**Priority:** MUST
+
+The system shall support reconciliation between opening stock, purchases, consumption, waste, adjustments, transfers, and closing stock.
+
+### FR-INV-009 — Inventory Cost Visibility
 
 **Priority:** SHOULD
 
-The system should provide inventory cost/value information using a documented valuation approach.
+The system should provide inventory cost/value information using a documented valuation method.
 
 ---
 
-# 6.9 Recipes and Ingredient Consumption
+## 5.9 Recipes and Consumption
 
 ### FR-RECIPE-001 — Recipe Definition
 
 **Priority:** SHOULD
 
-The system should allow authorized users to define the ingredients or materials associated with a menu item.
+Authorized users should be able to define the ingredients/materials associated with a menu item.
 
-### FR-RECIPE-002 — Consumption Calculation
+### FR-RECIPE-002 — Recipe-Based Consumption
 
 **Priority:** SHOULD
 
-Where recipe-based inventory tracking is enabled, completed production or sales workflows should generate appropriate inventory consumption records according to configured business rules.
+Where recipe tracking is enabled, the system should derive expected ingredient consumption from completed sales or configured production workflows.
 
 ---
 
-# 6.10 Waste Management
+## 5.10 Waste
 
-### FR-WASTE-001 — Waste Recording
+### FR-WASTE-001 — Record Waste
 
 **Priority:** MUST
 
-The system shall allow authorized staff to record inventory waste.
+Authorized users shall be able to record inventory waste.
 
 ### FR-WASTE-002 — Waste Reason
 
 **Priority:** MUST
 
-A waste record shall support a reason such as:
+A waste record shall capture a reason.
+
+Supported categories shall include:
 
 - Expired
 - Spoiled
 - Damaged
 - Spillage
-- Preparation Error
+- Preparation error
 - Overproduction
 - Other
 
@@ -760,45 +795,39 @@ A waste record shall support a reason such as:
 
 **Priority:** SHOULD
 
-The system should calculate or record the estimated financial cost of waste.
+The system should calculate or store the estimated cost of recorded waste.
 
-### FR-WASTE-004 — Department Waste Analysis
+### FR-WASTE-004 — Department Waste
 
 **Priority:** SHOULD
 
-The system should provide waste analysis by department.
+The system should provide waste analysis by operational department.
 
 ---
 
-# 6.11 Procurement and Suppliers
+## 5.11 Procurement and Suppliers
 
-### FR-PROC-001 — Supplier Management
+### FR-PROC-001 — Supplier Records
 
 **Priority:** SHOULD
 
-The system should maintain supplier information.
+Authorized staff should be able to maintain supplier information.
 
-### FR-PROC-002 — Purchase Records
+### FR-PROC-002 — Purchase History
 
 **Priority:** MUST
 
-The system shall maintain records of inventory purchases.
+The system shall maintain historical inventory purchase records.
 
-### FR-PROC-003 — Purchase History
-
-**Priority:** SHOULD
-
-The system should allow authorized users to review purchase history.
-
-### FR-PROC-004 — Procurement Insights
+### FR-PROC-003 — Supplier Performance Information
 
 **Priority:** COULD
 
-The system may provide AI-assisted procurement recommendations based on authorized inventory and consumption data.
+The system may provide supplier performance information based on recorded purchase data.
 
 ---
 
-# 6.12 Staff Management
+## 5.12 Staff Management
 
 ### FR-STAFF-001 — Employee Registration
 
@@ -810,53 +839,53 @@ Authorized managers shall be able to register cafe employees.
 
 **Priority:** MUST
 
-Each employee shall have an assigned role or set of permissions.
+Each employee account shall have an assigned role and/or permission set.
 
-### FR-STAFF-003 — Employment Start Date
+### FR-STAFF-003 — Start Date
 
 **Priority:** SHOULD
 
-The system should record an employee's employment start date.
+The system should record the employee's start date.
 
 ### FR-STAFF-004 — Employment Status
 
 **Priority:** MUST
 
-The system shall support employee employment status.
+The system shall record the employee's employment status.
 
 ### FR-STAFF-005 — Compensation Information
 
 **Priority:** SHOULD
 
-The system should support appropriate employee compensation information.
+The system should support required employee compensation information.
 
-### FR-STAFF-006 — Staff Access Management
+### FR-STAFF-006 — Staff Account Access
 
 **Priority:** MUST
 
-Authorized managers or administrators shall be able to manage employee system access.
+Authorized managers or administrators shall be able to create, suspend, and manage staff system access.
 
 ---
 
-# 6.13 Delivery and Fulfilment
+## 5.13 Delivery
 
 ### FR-DEL-001 — Fulfilment Selection
 
 **Priority:** MUST
 
-The system shall support applicable fulfilment methods.
+Customers or authorized staff shall be able to select a supported fulfilment type.
 
-### FR-DEL-002 — Delivery Address
+### FR-DEL-002 — Delivery Information
 
 **Priority:** MUST
 
-Delivery orders shall contain sufficient delivery information.
+Delivery orders shall contain sufficient delivery information before assignment.
 
 ### FR-DEL-003 — Delivery Status
 
 **Priority:** MUST
 
-The system shall support delivery status tracking where delivery is used.
+Delivery orders shall support status tracking.
 
 Example states:
 
@@ -869,7 +898,7 @@ DELIVERED
 FAILED
 ```
 
-### FR-DEL-004 — Delivery Provider Integration
+### FR-DEL-004 — Delivery Provider
 
 **Priority:** COULD
 
@@ -877,19 +906,19 @@ The system may integrate with external delivery providers.
 
 ---
 
-# 6.14 Notifications and Communication
+## 5.14 Notifications
 
 ### FR-NOTIF-001 — Central Notification Service
 
 **Priority:** MUST
 
-The system shall provide a centralized notification capability.
+The system shall provide a reusable notification service rather than implementing independent notification logic inside every business module.
 
-### FR-NOTIF-002 — Notification Channels
+### FR-NOTIF-002 — Supported Channels
 
 **Priority:** MUST
 
-The architecture shall support configurable communication channels such as:
+The notification architecture shall support configurable channels including:
 
 - In-app
 - Email
@@ -897,13 +926,13 @@ The architecture shall support configurable communication channels such as:
 - WhatsApp
 - Telegram
 
-Actual availability depends on supported provider integrations.
+Actual channel availability depends on provider integration.
 
-### FR-NOTIF-003 — Event-Based Notifications
+### FR-NOTIF-003 — Event-Based Notification
 
 **Priority:** MUST
 
-The system shall support notification triggers based on relevant business events.
+The system shall support notifications triggered by important business events.
 
 Examples:
 
@@ -913,59 +942,52 @@ PaymentConfirmed
 PaymentFailed
 OrderPreparing
 OrderReady
+OrderOutForDelivery
 OrderDelivered
-LowStock
+LowStockDetected
 ComplaintCreated
 MonthlyStatementGenerated
 ```
 
-### FR-NOTIF-004 — Customer Order Notifications
+### FR-NOTIF-004 — Customer Order Progress
 
 **Priority:** MUST
 
-Customers shall receive relevant notifications regarding the progress of their orders.
+Customers shall be notified when meaningful order-state transitions occur.
 
-### FR-NOTIF-005 — Staff Notifications
+### FR-NOTIF-005 — Staff Operational Notification
 
 **Priority:** MUST
 
-Authorized staff shall receive relevant operational notifications.
+Relevant staff shall be notified about events required for their work.
 
-Examples:
-
-- New order
-- Payment issue
-- Low inventory
-- Customer complaint
-- Delivery assignment
-
-### FR-NOTIF-006 — Notification Preferences
+### FR-NOTIF-006 — Notification Preference
 
 **Priority:** SHOULD
 
-The system should support configurable notification preferences where appropriate.
+Where practical, users should be able to configure supported notification preferences.
 
 ---
 
-# 6.15 Customer Support and Complaints
+## 5.15 Customer Support and Complaints
 
-### FR-SUP-001 — Complaint Creation
+### FR-SUP-001 — Complaint Submission
 
 **Priority:** MUST
 
-Customers shall be able to submit complaints or feedback.
+Customers shall be able to submit complaints, questions, or feedback.
 
-### FR-SUP-002 — Complaint Association
+### FR-SUP-002 — Order Association
 
 **Priority:** SHOULD
 
-A complaint should be associated with a relevant order when applicable.
+A complaint should be associated with a relevant order where applicable.
 
 ### FR-SUP-003 — Complaint Status
 
 **Priority:** MUST
 
-Complaints shall have trackable states such as:
+Complaints shall support controlled status transitions:
 
 ```text
 OPEN
@@ -978,69 +1000,76 @@ CLOSED
 
 **Priority:** SHOULD
 
-Authorized staff shall be able to assign complaints to responsible personnel.
+Authorized staff should be able to assign a complaint to a responsible person or team.
 
-### FR-SUP-005 — Customer Communication
+### FR-SUP-005 — Customer Response
 
 **Priority:** MUST
 
-Authorized staff shall be able to communicate relevant complaint resolution information to customers.
+Authorized staff shall be able to communicate a response or resolution to the customer.
 
 ---
 
-# 6.16 Analytics and Reporting
+## 5.16 Analytics and Reporting
 
-### FR-ANL-001 — Sales Reporting
-
-**Priority:** MUST
-
-The system shall provide sales information for authorized users.
-
-### FR-ANL-002 — Order Reporting
+### FR-ANL-001 — Sales Metrics
 
 **Priority:** MUST
 
-The system shall provide order metrics and summaries.
+The system shall calculate and report sales metrics from authoritative transaction data.
 
-### FR-ANL-003 — Inventory Reporting
+At minimum, authorized users should be able to inspect:
+
+- Sales total
+- Order count
+- Payment totals
+- Date-range summaries
+
+### FR-ANL-002 — Order Metrics
 
 **Priority:** MUST
 
-The system shall provide inventory-related reporting.
+The system shall provide order metrics, including counts and relevant status summaries.
 
-### FR-ANL-004 — Waste Reporting
+### FR-ANL-003 — Inventory Metrics
+
+**Priority:** MUST
+
+The system shall provide current inventory and stock-movement information.
+
+### FR-ANL-004 — Waste Metrics
 
 **Priority:** SHOULD
 
-The system should provide waste summaries and trends.
+The system should provide waste cost and quantity summaries.
 
-### FR-ANL-005 — Payment Reporting
-
-**Priority:** MUST
-
-The system shall provide payment summaries for authorized users.
-
-### FR-ANL-006 — Customer Credit Reporting
+### FR-ANL-005 — Payment Metrics
 
 **Priority:** MUST
 
-The system shall provide customer-credit summaries and outstanding balances to authorized users.
+The system shall provide payment summaries by supported payment method.
 
-### FR-ANL-007 — Department Reporting
+### FR-ANL-006 — Credit Metrics
+
+**Priority:** MUST
+
+Authorized managers shall be able to review outstanding customer-credit balances.
+
+### FR-ANL-007 — Department Metrics
 
 **Priority:** SHOULD
 
-The system should support operational reporting by department where appropriate.
+The system should provide department-level operational metrics where applicable.
 
 ---
 
-# 6.17 Asset Management
+## 5.17 Asset Management
 
 ### FR-ASSET-001 — Asset Registration
 
 **Priority:** SHOULD
 
-The system should allow authorized users to register non-consumable cafe assets.
+Authorized users should be able to register non-consumable assets such as equipment and furniture.
 
 ### FR-ASSET-002 — Asset Information
 
@@ -1052,7 +1081,7 @@ Asset records should support:
 - Category
 - Quantity
 - Purchase date
-- Cost
+- Purchase cost
 - Location
 - Condition
 - Serial number where applicable
@@ -1060,297 +1089,327 @@ Asset records should support:
 - Maintenance information
 - Status
 
-### FR-ASSET-003 — Asset and Inventory Separation
+### FR-ASSET-003 — Asset/Inventory Separation
 
 **Priority:** MUST
 
-Consumable inventory and reusable assets shall be represented as distinct business concepts.
+Reusable assets shall be modeled separately from consumable inventory.
 
 ---
 
-# 6.18 AI Capabilities
+## 5.18 AI Capabilities
 
-### FR-AI-001 — AI Ordering Assistance
-
-**Priority:** SHOULD
-
-The system should provide a natural-language ordering assistant.
-
-### FR-AI-002 — AI Recommendations
+### FR-AI-001 — AI Ordering Assistant
 
 **Priority:** SHOULD
 
-The system should provide personalized or contextual menu recommendations using available customer preferences, history, menu information, and applicable business rules.
+The system should allow customers to describe ordering intent in natural language and receive assistance using current menu data.
+
+### FR-AI-002 — AI Recommendation
+
+**Priority:** SHOULD
+
+The system should provide menu recommendations using authorized customer preferences, history, current menu data, and availability.
 
 ### FR-AI-003 — AI Customer Support
 
 **Priority:** SHOULD
 
-The system should use AI to assist with customer questions, complaint classification, order-status questions, and common support interactions.
+The system should assist with common customer questions, complaint classification, order-status requests, and escalation.
 
 ### FR-AI-004 — AI Manager Assistant
 
 **Priority:** SHOULD
 
-The system should provide a natural-language manager assistant capable of answering authorized operational questions.
+The system should allow authorized managers to ask natural-language questions about operational information.
 
 ### FR-AI-005 — AI Inventory Assistant
 
 **Priority:** COULD
 
-The system may provide inventory trend analysis, stock-risk explanations, and reorder recommendations.
+The system may analyze inventory trends and provide recommendations regarding stock risk, waste, and replenishment.
 
 ### FR-AI-006 — AI Insights
 
 **Priority:** SHOULD
 
-The system should provide AI-assisted explanations and insights over trusted operational analytics.
+The system should provide AI-assisted interpretation of trusted operational analytics.
 
-### FR-AI-007 — AI Email Assistance
+### FR-AI-007 — AI Email Assistant
 
 **Priority:** COULD
 
-The system may use AI to classify, draft, summarize, or respond to selected customer/business emails according to configured business rules.
+The system may classify, summarize, draft, or automatically respond to selected emails under configured policies.
 
 ### FR-AI-008 — AI Orchestration
 
 **Priority:** SHOULD
 
-The AI platform should support controlled routing of requests to appropriate AI capabilities and tools.
+The AI subsystem should route requests to the appropriate agent or tool while enforcing authorization and data-access boundaries.
 
 ---
 
-# 7. Business Rules
+## 5.19 Manager Dashboard
 
-## BR-001 — Authoritative Order Total
+### FR-MGR-001 — Operational Overview
 
-The server shall be the authoritative source for order totals.
+**Priority:** MUST
 
-## BR-002 — Order Item Availability
+The manager shall be able to view a summary of core operational information.
 
-An unavailable menu item shall not be orderable through normal ordering workflows.
+The initial dashboard should provide access to:
 
-## BR-003 — Order Modification
+- Order activity
+- Sales summary
+- Inventory status
+- Low-stock alerts
+- Customer credit summary
+- Operational notifications
 
-An order shall only be modifiable while it is in an allowed business state.
+### FR-MGR-002 — AI Management Insights
 
-## BR-004 — Completed Orders
+**Priority:** SHOULD
 
-A completed order shall not be arbitrarily modified.
-
-## BR-005 — Payment Verification
-
-A payment shall not be considered successfully paid solely because a customer supplies an unverified screenshot.
-
-## BR-006 — Customer Credit Authorization
-
-Only authorized customers may use customer-credit functionality.
-
-## BR-007 — Credit Limit
-
-Customer credit usage shall respect the configured credit limit unless an authorized override is explicitly permitted.
-
-## BR-008 — Inventory Consistency
-
-Inventory changes shall be recorded as auditable stock movements.
-
-## BR-009 — Waste Separation
-
-Waste shall be recorded separately from normal inventory consumption.
-
-## BR-010 — AI Data Access
-
-AI capabilities shall use authorized application tools or interfaces when accessing live transactional data.
-
-## BR-011 — AI Authorization
-
-AI shall not bypass normal business authorization controls.
-
-## BR-012 — Sensitive AI Actions
-
-Sensitive financial, personnel, or business actions may require human approval.
-
-## BR-013 — Auditability
-
-Important changes to financial, customer-credit, inventory, security, and administrative information shall be traceable.
+The manager dashboard should provide access to AI-assisted insights when the underlying data and AI capability are available.
 
 ---
 
-# 8. AI Requirements
+# 6. Business Rules
 
-## 8.1 AI Design Principle
+### BR-001 — Server Authoritative Totals
 
-AI shall be used where it provides meaningful value beyond conventional deterministic software.
+The server is the authoritative source for order totals, payment calculations, and customer balances.
 
-The system shall not use AI where a deterministic calculation, validation, query, or business rule is more reliable and appropriate.
+### BR-002 — Item Availability
 
-Examples:
+Unavailable items cannot be created through normal ordering workflows.
 
-```text
-Deterministic:
+### BR-003 — Order Modification
+
+An order can only be modified while its current status allows modification.
+
+### BR-004 — Payment and Order State
+
+Payment status and order status shall be modeled as separate concepts.
+
+### BR-005 — Payment Verification
+
+An unverified customer-provided screenshot shall not automatically establish successful payment.
+
+### BR-006 — Credit Eligibility
+
+Only customers explicitly authorized for credit may use customer-credit functionality.
+
+### BR-007 — Credit Limit
+
+A credit transaction shall not exceed the customer's configured credit limit unless an explicitly authorized override process exists.
+
+### BR-008 — Credit Balance
+
+Customer balance calculations shall be based on recorded transactions and payments rather than AI-generated calculations.
+
+### BR-009 — Inventory Movement
+
+Every material inventory quantity change shall be represented by a stock movement.
+
+### BR-010 — Waste Separation
+
+Waste shall be recorded separately from ordinary consumption.
+
+### BR-011 — AI Transaction Access
+
+AI shall access live transactional data through authorized application tools/interfaces.
+
+### BR-012 — AI Authorization
+
+AI shall not bypass application authorization or business rules.
+
+### BR-013 — Sensitive AI Actions
+
+Actions with material financial, personnel, or security impact shall require explicit authorization and may require human approval.
+
+### BR-014 — Audit Trail
+
+Critical financial, credit, inventory, administrative, and authorization changes shall be traceable.
+
+---
+
+# 7. AI Requirements and Guardrails
+
+## 7.1 AI Usage Principle
+
+AI shall be used where it offers meaningful value beyond deterministic software.
+
+The following shall remain deterministic:
+
 - Order totals
+- Payment state
 - Customer balances
-- Payment status
 - Inventory quantities
-- Sales calculations
+- Financial calculations
+- Authorization decisions
+- Business-rule enforcement
 
-AI-assisted:
+AI may assist with:
+
+- Natural-language interaction
 - Recommendations
-- Natural-language ordering
-- Customer support
-- Trend explanations
-- Manager questions
-- Email drafting
-- Procurement suggestions
-```
+- Classification
+- Summarization
+- Explanation
+- Forecasting
+- Drafting
+- Decision support
 
-## 8.2 AI Source of Truth
+## 7.2 Source of Truth
 
-AI models shall not be treated as authoritative sources for:
+AI shall not be the authoritative source for:
 
-- Current menu price
-- Current menu availability
+- Menu price
+- Menu availability
 - Payment status
-- Customer balance
+- Customer credit balance
 - Inventory quantity
-- Official financial calculations
-- Employee authorization
+- Official financial metrics
+- User permissions
 
-Such information shall be obtained from authoritative application services.
+## 7.3 Tool-Based Access
 
-## 8.3 Tool-Based AI Access
-
-Where an AI agent needs to interact with system data or functionality, it should use explicitly authorized tools or application interfaces.
-
-Conceptually:
+When an AI agent needs live information or performs an allowed action, the preferred flow is:
 
 ```text
-AI
- ↓
-Authorized Tool
- ↓
-Application Business Rules
- ↓
-Database / External Service
+AI Agent
+   ↓
+Authorized Tool / Application API
+   ↓
+Business Rules
+   ↓
+Database / External Provider
 ```
 
-## 8.4 AI Guardrails
+## 7.4 Human Approval
 
-AI functionality shall include appropriate controls for:
+Human approval shall be considered for:
 
-- Authorization
-- Tool access
-- Sensitive actions
-- Hallucination risk
-- Data exposure
-- Human escalation
-- Auditability
-
-## 8.5 Human-in-the-Loop
-
-The system should support human approval for sensitive or high-impact AI-generated actions.
-
-Potential examples:
-
-- Refund approval
+- Refunds
 - Financial adjustments
 - Credit-limit changes
 - Employee record changes
-- Significant procurement actions
+- High-value procurement
+- Other high-impact actions
+
+## 7.5 RAG
+
+A shared RAG capability may be used for relatively stable knowledge such as:
+
+- Cafe policies
+- Operating procedures
+- Customer-service guidelines
+- Refund policies
+- Internal documentation
+- Approved product knowledge
+
+Live transactional information shall preferably be retrieved through application APIs/tools.
 
 ---
 
-# 9. Notification and Communication Requirements
+# 8. Notification and Communication Requirements
 
-## 9.1 Notification Architecture
+## 8.1 Central Notification Capability
 
-Notifications shall be treated as a reusable platform capability.
+Notification functionality shall be implemented as a reusable platform service.
 
-Business modules should publish relevant events or notification requests rather than implementing independent notification mechanisms.
+## 8.2 Order Notifications
 
-Conceptually:
-
-```text
-Business Event
-      ↓
-Notification Service
-      ↓
-Channel Adapter
-      ↓
-Email / SMS / WhatsApp / In-App
-```
-
-## 9.2 Order Notification Flow
-
-Example:
+A typical order notification lifecycle should support:
 
 ```text
-OrderCreated
-   ├── Customer → Order confirmation
-   ├── Kitchen → New order
-   └── Cashier/Waiter → Order update
-```
-
-## 9.3 Order Progress
-
-Customers should be able to receive relevant progress updates such as:
-
-```text
-Received
+Order Created
+    ↓
+Payment Confirmed
+    ↓
 Preparing
+    ↓
 Ready
+    ↓
 Out for Delivery
+    ↓
 Delivered
 ```
 
+Not every order will use every state.
+
+## 8.3 Audience
+
+Notification recipients may include:
+
+- Customer
+- Cashier
+- Waiter
+- Kitchen staff
+- Manager
+- Delivery personnel
+
+The recipient shall depend on event type and role.
+
+## 8.4 Notification Delivery
+
+Notifications should support retries and failure tracking for external channels.
+
 ---
 
-# 10. Integration Requirements
+# 9. External Integration Requirements
 
-The system should be designed to integrate with external services through controlled adapters/interfaces.
+## 9.1 Payment Providers
 
-Potential integrations include:
-
-## 10.1 Payment Providers
+The initial integration targets are:
 
 - Telebirr
 - CBE
 - Chapa
-- Future payment providers
 
-## 10.2 Communication Providers
+The exact provider APIs and verification mechanisms shall be confirmed during technical design.
 
-- Email
-- SMS
-- WhatsApp
-- Telegram
+For MVP implementation, one digital provider should be selected and integrated first. Additional providers may be introduced incrementally.
 
-## 10.3 AI / LLM Providers
+## 9.2 Messaging Providers
 
-The system should support an external LLM provider through an isolated integration layer.
+Potential integrations include:
 
-## 10.4 Vector Database / RAG Infrastructure
+- Email provider
+- SMS provider
+- WhatsApp provider
+- Telegram provider
 
-Where RAG is implemented, the system may integrate with a vector database or equivalent retrieval infrastructure.
+## 9.3 AI Provider
 
-## 10.5 Delivery Providers
+The application shall integrate with an external LLM provider through an isolated infrastructure adapter.
 
-External delivery providers may be integrated through an adapter-based integration layer.
+## 9.4 Vector/RAG Infrastructure
+
+Where RAG is implemented, retrieval infrastructure may be provided by a vector database or equivalent technology.
+
+The specific vector technology shall be selected during architecture/design rather than being hard-coded as an SRS requirement.
+
+## 9.5 Delivery Provider
+
+External delivery services may be supported through dedicated integration adapters.
 
 ---
 
-# 11. Data Requirements
+# 10. Data Requirements
 
-## 11.1 Core Data Categories
+## 10.1 Core Data
 
-The system is expected to manage data related to:
+The system is expected to manage:
 
 - Users
-- Roles
+- Roles and permissions
 - Customers
 - Employees
 - Menu items
-- Categories
+- Menu categories
+- Departments
 - Orders
 - Order items
 - Payments
@@ -1359,253 +1418,274 @@ The system is expected to manage data related to:
 - Inventory items
 - Stock movements
 - Recipes
-- Waste
+- Waste records
 - Suppliers
 - Purchases
 - Deliveries
 - Notifications
 - Complaints
 - Assets
-- Reports
 - Audit logs
-- AI interactions where appropriate
+- Analytics inputs
 
-## 11.2 Data Integrity
+## 10.2 Data Integrity
 
-Critical business data shall maintain referential and transactional integrity.
+Critical data shall maintain referential, transactional, and business-rule integrity.
 
-## 11.3 Data Ownership
+## 10.3 Data Retention
 
-Business domains should have clear ownership of the data and operations they are responsible for.
+Retention requirements for customer, employee, financial, operational, and audit data shall be explicitly defined before production deployment where required.
 
-## 11.4 Data Retention
+## 10.4 Personal Data
 
-Retention periods for financial, customer, employee, audit, and operational data shall be defined according to business and legal requirements.
+Personal and sensitive information shall be collected and stored only where necessary for supported business processes.
 
 ---
 
-# 12. Security and Authorization Requirements
+# 11. Security and Authorization Requirements
 
-## 12.1 Authentication
+## 11.1 Authentication
 
-The system shall require authentication for protected operations.
+Protected operations shall require authentication.
 
-## 12.2 Authorization
+## 11.2 Authorization
 
-Protected operations shall be controlled by role and permission rules.
+The server shall enforce authorization independently of frontend controls.
 
-## 12.3 Role Separation
+## 11.3 Role/Permission Model
 
-The system should distinguish responsibilities between roles such as:
+The initial role model shall support at least:
 
 ```text
-Owner
-Manager
-Cashier
-Waiter
-Kitchen Staff
-Delivery Rider
-Customer
-Administrator
+OWNER
+MANAGER
+CASHIER
+WAITER
+KITCHEN_STAFF
+DELIVERY_RIDER
+CUSTOMER
+ADMINISTRATOR
 ```
 
-Exact permissions shall be defined during authorization design.
+The final permission matrix shall be defined during architecture/design.
 
-## 12.4 Sensitive Data Protection
+## 11.4 Password Security
 
-Sensitive customer, employee, authentication, and financial information shall be protected against unauthorized access.
+Passwords shall never be stored as plaintext.
 
-## 12.5 Secrets
+## 11.5 Secret Management
 
-Application secrets, provider credentials, and cryptographic keys shall not be stored directly in source control.
+API keys, database credentials, signing secrets, and provider credentials shall not be committed to source control.
 
-## 12.6 Audit Security Events
+## 11.6 Audit and Security Events
 
-Important security-related actions should be auditable.
-
----
-
-# 13. Non-Functional Requirements
-
-## 13.1 NFR-PERF-001 — Performance
-
-The system should provide responsive interaction for normal cafe workflows.
-
-Specific quantitative targets will be defined after technical design and performance validation.
-
-## 13.2 NFR-REL-001 — Reliability
-
-Critical operations such as order creation, payment recording, inventory movement, and credit transactions shall maintain consistent state.
-
-## 13.3 NFR-AVAIL-001 — Availability
-
-The system should remain available during normal cafe operating hours subject to the availability of required infrastructure and external providers.
-
-## 13.4 NFR-MAIN-001 — Maintainability
-
-The codebase shall use clear modular boundaries, documented architectural decisions, automated tests, and consistent development conventions.
-
-## 13.5 NFR-EXT-001 — Extensibility
-
-The architecture shall support adding:
-
-- New departments
-- New payment providers
-- New communication channels
-- New AI capabilities
-- New delivery integrations
-- Future business modules
-
-without unnecessary redesign of unrelated functionality.
-
-## 13.6 NFR-OBS-001 — Observability
-
-Production environments should provide appropriate:
-
-- Structured logs
-- Health checks
-- Metrics
-- Error tracking
-- Tracing where justified
+Significant authorization, account, and administrative actions should be auditable.
 
 ---
 
-# 14. Reliability, Backup, and Recovery
+# 12. Non-Functional Requirements
 
-## 14.1 Data Persistence
+## 12.1 Reliability
 
-Critical business information shall be stored in persistent storage rather than relying on local client devices or paper records.
+### NFR-REL-001
 
-## 14.2 Backup
+Critical operations shall preserve consistent state when successful and shall fail safely without partial business transactions where transactionality is required.
 
-The production system shall implement an appropriate backup strategy.
+## 12.2 Performance
 
-## 14.3 Recovery
+### NFR-PERF-001
 
-The system shall have a documented recovery process for critical data loss or infrastructure failure.
+The system shall provide responsive user interactions for normal cafe workflows.
 
-## 14.4 Failure Handling
+Specific latency targets shall be established during architecture and performance testing.
 
-The system should safely handle failures involving:
+## 12.3 Availability
 
-- Payment providers
-- Notification providers
-- External AI services
-- Delivery services
-- Database connectivity
+### NFR-AVAIL-001
 
-## 14.5 Idempotency
+The system should remain available during normal operating periods, subject to infrastructure and required third-party provider availability.
 
-Critical operations that may be retried shall use appropriate idempotency mechanisms where necessary.
+## 12.4 Maintainability
+
+### NFR-MAIN-001
+
+The system shall use modular boundaries, documented architecture, automated tests, and consistent development standards.
+
+## 12.5 Extensibility
+
+### NFR-EXT-001
+
+The architecture shall allow additional departments, payment providers, notification channels, AI capabilities, and integrations to be introduced without unnecessary changes to unrelated modules.
+
+## 12.6 Observability
+
+### NFR-OBS-001
+
+The production system shall provide appropriate health checks, structured logging, error visibility, and metrics.
+
+Distributed tracing shall be introduced where justified by system complexity and operational needs.
 
 ---
 
-# 15. Auditability
+# 13. Reliability, Backup, and Recovery
 
-The system should maintain audit records for important business actions.
+## 13.1 Persistent Storage
 
-Auditable actions may include:
+Critical business records shall be stored in durable centralized storage.
 
-- Payment changes
+## 13.2 Backup
+
+Production data shall have a documented backup strategy.
+
+## 13.3 Recovery
+
+A documented recovery procedure shall exist for critical data or infrastructure failures.
+
+## 13.4 External Service Failure
+
+The application should fail gracefully when an external provider is unavailable.
+
+This includes:
+
+- Payment provider
+- Email/SMS provider
+- Messaging provider
+- AI provider
+- Delivery provider
+
+## 13.5 Idempotency
+
+Critical retryable operations shall use idempotency where duplicate execution could create financial or business errors.
+
+---
+
+# 14. Auditability
+
+The system shall maintain audit records for important business actions.
+
+At minimum, auditing should cover:
+
+- Payment adjustments
 - Refunds
 - Customer-credit adjustments
 - Inventory adjustments
 - Waste records
-- Staff access changes
-- Role changes
+- Role/permission changes
 - Important administrative actions
-- AI actions that cause meaningful system changes
+- Significant AI actions that modify business state
 
-Audit records should identify, where applicable:
+Where applicable, audit information should include:
 
 - Actor
 - Action
-- Target entity
+- Target
 - Previous state
 - New state
 - Timestamp
-- Relevant request/context identifier
+- Correlation/request identifier
 
 ---
 
-# 16. MVP Scope
+# 15. MVP and Release Scope
 
-The MVP should provide the smallest useful operational platform while establishing strong engineering foundations.
+## 15.1 MVP Definition
 
-## 16.1 MVP Functional Scope
+The MVP is the smallest version that can demonstrate the core value of the product and support the primary cafe workflow.
 
-### MUST
+### MVP — MUST Include
 
 ```text
 Authentication and Authorization
-Menu Management
 Customer Management
+Menu Management
 Customer Ordering
-Cashier / Waiter Order Workflow
-Kitchen Display / Department Routing
-Core Payment Management
+Cashier / Waiter Order Entry
+Kitchen Display and Department Routing
+Core Payment Recording and Verification
 Basic Customer Credit
 Basic Inventory
 Core Notifications
 Basic Manager Dashboard
-Audit of Critical Operations
+Critical Auditability
 ```
 
-## 16.2 MVP AI Scope
-
-The initial AI implementation should prioritize capabilities with clear customer or operational value.
-
-Recommended initial AI scope:
+### MVP — SHOULD Include
 
 ```text
-AI Ordering Assistance
-Basic Customer Support Assistance
-Basic Manager Insights
+Basic Customer Support
+Basic Delivery Workflow
+Basic Sales Reporting
+Basic Waste Reporting
 ```
 
-More advanced AI functionality should follow after the underlying business system is reliable.
+### MVP Payment Scope
 
-## 16.3 MVP Exclusions
+To keep the MVP focused:
 
-The MVP should not attempt to implement all future capabilities simultaneously.
+```text
+Cash                 → MUST
+Customer Credit      → MUST
+One digital provider → MUST
+Additional providers → Post-MVP / Incremental
+```
+
+The selected digital provider shall be determined during technical planning and integration design.
+
+## 15.2 Post-MVP
+
+The following should be considered after the deterministic core system is stable:
+
+```text
+AI Ordering
+AI Customer Support
+AI Manager Assistant
+AI Inventory Assistant
+RAG Knowledge Base
+Automated Email Assistance
+Advanced Procurement
+Advanced Inventory Forecasting
+Advanced Delivery Integrations
+Asset Management
+Additional Payment Providers
+```
+
+This ordering is intentional: the deterministic cafe management foundation should exist before advanced AI automation is introduced.
 
 ---
 
-# 17. Future Scope
+# 16. Future Scope
 
 Potential future capabilities include:
 
-- Advanced AI manager assistant
-- Advanced inventory forecasting
-- AI procurement planning
-- RAG-based knowledge assistant
-- Automated email responses
-- Advanced customer support automation
 - Loyalty and rewards
-- Table reservations
-- Expanded delivery integrations
+- Table reservation
+- Multi-branch support
 - Mobile applications
 - WhatsApp ordering
 - Telegram ordering
-- Multi-branch support
-- Advanced staff/payroll management
-- Advanced financial/accounting capabilities
-- More sophisticated AI orchestration
-- Advanced operational forecasting
+- More payment providers
+- More delivery providers
+- Advanced payroll
+- Full accounting integration
+- Advanced procurement
+- Advanced forecasting
+- Additional AI agents
+- More advanced AI orchestration
+- Advanced customer personalization
 
-Future features shall only be promoted into active development after appropriate requirements and feasibility review.
+Future scope shall be added through new requirements and change control rather than silently modifying the approved baseline.
 
 ---
 
-# 18. Constraints and Assumptions
+# 17. Constraints and Assumptions
 
-## 18.1 Initial Business Scope
+## 17.1 Initial Deployment
 
-The initial product is designed primarily for a single cafe.
+The initial product is intended primarily for a single cafe.
 
-## 18.2 Technology Direction
+## 17.2 Technology Direction
 
-The project will initially follow the selected technology direction:
+The initial technology direction is:
 
 ```text
 Monorepo: pnpm workspaces
@@ -1613,70 +1693,51 @@ Frontend: Next.js + TypeScript
 Backend: NestJS + TypeScript
 Database: PostgreSQL
 ORM: Drizzle
-Validation / Shared Schemas: Zod
+Shared Validation/Types: Zod
 Testing: Vitest
 Code Quality: Biome
 Local Infrastructure: Docker / Docker Compose
 CI/CD: GitHub Actions
 ```
 
-Specific technology choices remain subject to architectural review and ADRs.
+These technologies represent the current project direction and may be refined through documented architectural decisions.
 
-## 18.3 External Service Dependency
+## 17.3 Third-Party Services
 
-Some capabilities depend on external providers.
+Some capabilities depend on external providers and therefore may be affected by:
 
-Examples include:
+- Service availability
+- API limitations
+- Pricing
+- Rate limits
+- Provider changes
+- Network connectivity
 
-- Payment providers
-- Email providers
-- SMS providers
-- Messaging platforms
-- LLM providers
-- Delivery providers
+## 17.4 Regulatory and Legal Considerations
 
-The system shall isolate these dependencies through appropriate integration boundaries.
+Before production deployment, the project shall validate applicable obligations related to:
 
-## 18.4 Legal and Regulatory Requirements
-
-The final implementation shall consider applicable requirements related to:
-
-- Payments
-- Customer information
+- Payment processing
+- Personal data
 - Employee information
+- Financial records
 - Data protection
-- Financial recordkeeping
-
-Specific legal obligations shall be validated for the deployment environment before production release.
 
 ---
 
-# 19. Architecture Direction
+# 18. Architectural Direction
 
-## 19.1 Architectural Style
+## 18.1 Proposed Architecture
 
-The proposed initial architecture is:
+The initial architecture shall follow:
 
-> **Modular Monolith + Clean Architecture principles + Domain-oriented design + selective event-driven communication.**
+> **Modular Monolith + Clean Architecture principles + Domain-oriented design + selective event-driven communication**
 
-## 19.2 Architectural Principles
+This is a design direction and does **not** require deployment as multiple independent services.
 
-The system should follow these principles:
+## 18.2 Logical Modules
 
-1. Business rules should remain independent from infrastructure details where practical.
-2. Business domains should be clearly separated.
-3. Dependencies should point toward stable business abstractions.
-4. External services should be isolated behind integration boundaries.
-5. AI should interact with business capabilities through controlled tools/interfaces.
-6. Events should be used where they improve decoupling and extensibility.
-7. The system should avoid premature microservice decomposition.
-8. Security and authorization should be enforced at the application boundary and domain-sensitive operations.
-9. Critical operations should be transactional and auditable.
-10. New functionality should be added without unnecessary modification of unrelated modules.
-
-## 19.3 Provisional Module Boundaries
-
-The initial domain/module structure is expected to include:
+The initial domain boundaries are expected to include:
 
 ```text
 auth
@@ -1699,35 +1760,30 @@ ai
 audit
 ```
 
-This is a logical domain decomposition and does not imply separate deployable services.
+## 18.3 Clean Architecture
 
-## 19.4 Clean Architecture Direction
-
-Where appropriate, each major business module may be organized around:
+Major business modules should separate concerns across:
 
 ```text
 Presentation
-    ↓
 Application
-    ↓
 Domain
-
 Infrastructure
-    ↓
-implements application/domain abstractions
 ```
 
-The exact folder and dependency structure will be documented during architecture design.
+The exact dependency rules and module boundaries shall be formally documented during the architecture phase.
 
-## 19.5 Event-Driven Communication
+## 18.4 Event-Driven Communication
 
-Relevant business events may be used to decouple modules.
+Relevant modules may communicate through domain/application events.
 
-Examples:
+Potential events include:
 
 ```text
 OrderCreated
 PaymentConfirmed
+PaymentFailed
+OrderPreparing
 OrderReady
 OrderDelivered
 LowStockDetected
@@ -1735,44 +1791,33 @@ ComplaintCreated
 MonthlyStatementGenerated
 ```
 
-Possible consumers include:
+Event-driven communication should be used when it provides meaningful decoupling and extensibility rather than being introduced unnecessarily.
 
-```text
-Kitchen
-Notifications
-Analytics
-Inventory
-Customer Support
-AI
-```
+## 18.5 Future Extraction
 
-## 19.6 Future Evolution
+A module may later be extracted into an independent service if actual scale, reliability, organizational, or operational requirements justify doing so.
 
-The architecture should allow a well-bounded module to be extracted into an independent service in the future if justified by actual scale, reliability, organizational, or operational requirements.
-
-Microservices are not an initial requirement.
+**Microservices are not an initial requirement.**
 
 ---
 
-# 20. Requirements Traceability
+# 19. Requirements Traceability
 
-Requirements should eventually be traceable across the engineering lifecycle.
-
-The intended relationship is:
+Requirements should be traceable through the engineering lifecycle:
 
 ```text
-SRS Requirement
-      ↓
+Requirement
+    ↓
 GitHub Issue
-      ↓
-Technical Design / ADR
-      ↓
+    ↓
+Design / ADR
+    ↓
 Implementation
-      ↓
+    ↓
 Automated Test
-      ↓
+    ↓
 Pull Request
-      ↓
+    ↓
 Release
 ```
 
@@ -1781,47 +1826,47 @@ Example:
 ```text
 FR-ORD-001
     ↓
-Issue #XXX
+Issue #<order-issue>
     ↓
-Order Design
+Order Design / ADR
     ↓
 Implementation
     ↓
-Unit + Integration Tests
+Unit / Integration / E2E Tests
     ↓
-PR #XXX
+Pull Request
     ↓
 Release
 ```
 
-This traceability will become part of the project's professional development workflow.
+The exact issue and PR identifiers will be populated during implementation.
 
 ---
 
-# 21. SRS Acceptance Criteria
+# 20. SRS Approval Criteria
 
-The SRS shall be considered ready for approval as **v1.0** when:
+The SRS may be considered approved when all of the following are satisfied:
 
-- [ ] Product vision is clear.
-- [ ] Problem statement is validated.
-- [ ] Stakeholders and actors are identified.
+- [ ] Product vision is defined.
+- [ ] Major actors are identified.
 - [ ] Major business domains are identified.
-- [ ] Functional requirements are identified and uniquely numbered.
-- [ ] Requirements have appropriate priorities.
-- [ ] Core business rules are documented.
-- [ ] Non-functional requirements are documented.
-- [ ] Security requirements are documented.
-- [ ] AI requirements and guardrails are documented.
-- [ ] Notification requirements are documented.
-- [ ] Integration requirements are documented.
-- [ ] Data requirements are documented.
-- [ ] MVP scope is explicitly defined.
-- [ ] Future scope is separated from MVP.
-- [ ] Major assumptions and constraints are documented.
+- [ ] Functional requirements are uniquely identified.
+- [ ] Requirement priorities are defined.
+- [ ] Business rules are documented.
+- [ ] AI capabilities and guardrails are defined.
+- [ ] Notification requirements are defined.
+- [ ] Integration requirements are defined.
+- [ ] Security requirements are defined.
+- [ ] Non-functional requirements are defined.
+- [ ] Data requirements are defined.
+- [ ] Reliability and recovery requirements are defined.
+- [ ] Auditability requirements are defined.
+- [ ] MVP scope is explicitly separated from future scope.
 - [ ] Architectural direction is documented at a high level.
-- [ ] Requirements have been reviewed for ambiguity and contradiction.
-- [ ] Outstanding requirements questions have been resolved or explicitly recorded.
-- [ ] The document has been reviewed and approved.
+- [ ] Final stakeholder/project-owner review is completed.
+- [ ] SRS is formally approved as the implementation baseline.
+
+> **Status rule:** Until the final approval step is completed, the document remains **Proposed for Approval**. Once formally approved, update the document status and revision history to **Approved**.
 
 ---
 
@@ -1830,9 +1875,10 @@ The SRS shall be considered ready for approval as **v1.0** when:
 ```text
 AI-POWERED CAFE MANAGEMENT SYSTEM
 │
-├── Customer Management
+├── Customers
 │   ├── Profiles
-│   ├── Accounts
+│   ├── Orders
+│   ├── Payments
 │   ├── Credit
 │   └── Support
 │
@@ -1886,7 +1932,7 @@ AI-POWERED CAFE MANAGEMENT SYSTEM
 │   ├── Orders
 │   ├── Inventory
 │   ├── Waste
-│   └── Customer Credit
+│   └── Credit
 │
 ├── AI
 │   ├── Ordering Assistant
@@ -1915,22 +1961,47 @@ AI-POWERED CAFE MANAGEMENT SYSTEM
 
 # Appendix B — Requirement Priority Convention
 
-| Priority | Meaning                                                    |
-| -------- | ---------------------------------------------------------- |
-| MUST     | Required for the defined release/MVP                       |
-| SHOULD   | Important and planned, but can follow the MVP if necessary |
-| COULD    | Useful optional capability                                 |
-| WON'T    | Explicitly excluded from the current release               |
+| Priority   | Meaning                                                    |
+| ---------- | ---------------------------------------------------------- |
+| **MUST**   | Required for the defined release/MVP                       |
+| **SHOULD** | Important and planned, but can follow the MVP if necessary |
+| **COULD**  | Optional capability                                        |
+| **WON'T**  | Explicitly outside the current release                     |
 
 ---
 
-# Appendix C — Current SRS Status
+# Appendix C — Change Control
 
-**Current Version:** 0.2.0
-**Current Status:** Refined Draft
+After approval as SRS v1.0.0, changes to requirements shall be introduced through the project's GitHub issue and pull-request workflow.
 
-The next step is requirements review and validation.
+A material requirement change should include:
 
-After successful review and resolution of outstanding requirements questions, this document may be promoted to:
+1. Change request or GitHub Issue.
+2. Reason for the change.
+3. Impact analysis.
+4. Updated requirement(s).
+5. Updated priority or scope if necessary.
+6. Documentation update.
+7. Review and approval.
 
-> **SRS v1.0 — Approved Requirements Baseline**
+The approved SRS should not be silently modified directly on the integration branch.
+
+---
+
+## Document Status
+
+**Current status:** Proposed for Approval
+
+**Integration branch:** `dev`
+
+**Next status transition:**
+
+```text
+Proposed for Approval
+        ↓
+Formal Review
+        ↓
+Approved
+```
+
+Once formally approved, this SRS becomes the **requirements baseline for architecture, design, implementation, testing, and release planning**.
