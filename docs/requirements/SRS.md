@@ -2,15 +2,15 @@
 
 **Software Requirements Specification (SRS)**
 
-| Field                  | Value                                                            |
-| ---------------------- | ---------------------------------------------------------------- |
-| **Product**            | AI-Powered Cafe Management System                                |
-| **Document**           | Software Requirements Specification                              |
-| **Version**            | 1.0.0                                                            |
-| **Status**             | Proposed for Approval                                            |
-| **Date**               | 2026-08-25                                                       |
-| **Integration Branch** | `dev`                                                            |
-| **Purpose**            | Final refined requirements candidate and implementation baseline |
+| Field                  | Value                                             |
+| ---------------------- | ------------------------------------------------- |
+| **Product**            | AI-Powered Cafe Management System                 |
+| **Document**           | Software Requirements Specification               |
+| **Version**            | 1.0.0                                             |
+| **Status**             | Approved                                          |
+| **Date**               | 2026-08-25                                        |
+| **Integration Branch** | `dev`                                             |
+| **Purpose**            | Approved requirements baseline for implementation |
 
 ---
 
@@ -18,9 +18,9 @@
 
 This document defines the product and engineering requirements for the **AI-Powered Cafe Management System**.
 
-Version **1.0.0** represents the final refined requirements candidate following requirements discovery, refinement, and review. It is intended to become the baseline for architecture and implementation once formally approved by the project owner or designated stakeholders.
+Version **1.0.0** represents the final approved requirements baseline following requirements discovery, refinement, review, and project-owner approval.
 
-This document guides:
+The SRS provides the baseline for:
 
 - Domain modeling
 - Architecture
@@ -33,19 +33,23 @@ This document guides:
 - Operations
 - Future product evolution
 
+Changes to this approved baseline shall follow the change-control process defined in [Appendix C](#appendix-c--change-control).
+
+### Approval Authority
+
+The **Project Owner** is the final authority for approval of this SRS.
+
 ### Revision History
 
-| Version | Date       | Status                | Description                                                                                 |
-| ------- | ---------- | --------------------- | ------------------------------------------------------------------------------------------- |
-| 0.1.0   | 2026-08-25 | Draft                 | Initial requirements draft                                                                  |
-| 0.2.0   | 2026-08-25 | Refined Draft         | Formalized requirements, priorities, business rules, AI, notifications, security, and scope |
-| 1.0.0   | 2026-08-25 | Proposed for Approval | Final refined requirements candidate                                                        |
-
-> **Approval note:** Version 1.0.0 should be changed to **Approved** only after formal project-owner/stakeholder approval.
+| Version | Date       | Status        | Description                                                                                 |
+| ------- | ---------- | ------------- | ------------------------------------------------------------------------------------------- |
+| 0.1.0   | 2026-08-25 | Draft         | Initial requirements draft                                                                  |
+| 0.2.0   | 2026-08-25 | Refined Draft | Formalized requirements, priorities, business rules, AI, notifications, security, and scope |
+| 1.0.0   | 2026-08-25 | Approved      | Approved requirements baseline for implementation                                           |
 
 ---
 
-## Table of Contents
+# Table of Contents
 
 1. [Introduction](#1-introduction)
 2. [Product Vision and Goals](#2-product-vision-and-goals)
@@ -572,7 +576,12 @@ The initial target methods are:
 
 Additional methods may be added later.
 
-> **MVP clarification:** Cash and Customer Credit are core MVP payment methods. A single supported digital payment provider should be integrated for the initial MVP; additional providers may be added incrementally after the core payment workflow is stable.
+**MVP clarification:**
+
+- Cash is an MVP payment method.
+- Customer Credit is an MVP payment method.
+- One digital payment provider shall be selected for the initial MVP.
+- Additional digital providers may be integrated incrementally after the core payment workflow is stable.
 
 ### FR-PAY-002 — Payment Lifecycle
 
@@ -1370,7 +1379,7 @@ The initial integration targets are:
 
 The exact provider APIs and verification mechanisms shall be confirmed during technical design.
 
-For MVP implementation, one digital provider should be selected and integrated first. Additional providers may be introduced incrementally.
+For MVP implementation, one digital provider shall be selected and integrated first. Additional providers may be introduced incrementally.
 
 ## 9.2 Messaging Providers
 
@@ -1620,13 +1629,11 @@ Basic Waste Reporting
 
 ### MVP Payment Scope
 
-To keep the MVP focused:
-
 ```text
-Cash                 → MUST
-Customer Credit      → MUST
-One digital provider → MUST
-Additional providers → Post-MVP / Incremental
+Cash                  → MUST
+Customer Credit       → MUST
+One digital provider  → MUST
+Additional providers  → Post-MVP / Incremental
 ```
 
 The selected digital provider shall be determined during technical planning and integration design.
@@ -1733,7 +1740,7 @@ The initial architecture shall follow:
 
 > **Modular Monolith + Clean Architecture principles + Domain-oriented design + selective event-driven communication**
 
-This is a design direction and does **not** require deployment as multiple independent services.
+This is a design direction and does not require deployment as multiple independent services.
 
 ## 18.2 Logical Modules
 
@@ -1845,28 +1852,30 @@ The exact issue and PR identifiers will be populated during implementation.
 
 # 20. SRS Approval Criteria
 
-The SRS may be considered approved when all of the following are satisfied:
+The following approval criteria have been completed for SRS v1.0.0:
 
-- [ ] Product vision is defined.
-- [ ] Major actors are identified.
-- [ ] Major business domains are identified.
-- [ ] Functional requirements are uniquely identified.
-- [ ] Requirement priorities are defined.
-- [ ] Business rules are documented.
-- [ ] AI capabilities and guardrails are defined.
-- [ ] Notification requirements are defined.
-- [ ] Integration requirements are defined.
-- [ ] Security requirements are defined.
-- [ ] Non-functional requirements are defined.
-- [ ] Data requirements are defined.
-- [ ] Reliability and recovery requirements are defined.
-- [ ] Auditability requirements are defined.
-- [ ] MVP scope is explicitly separated from future scope.
-- [ ] Architectural direction is documented at a high level.
-- [ ] Final stakeholder/project-owner review is completed.
-- [ ] SRS is formally approved as the implementation baseline.
+- [x] Product vision is defined.
+- [x] Major actors are identified.
+- [x] Major business domains are identified.
+- [x] Functional requirements are uniquely identified.
+- [x] Requirement priorities are defined.
+- [x] Business rules are documented.
+- [x] AI capabilities and guardrails are defined.
+- [x] Notification requirements are defined.
+- [x] Integration requirements are defined.
+- [x] Security requirements are defined.
+- [x] Non-functional requirements are defined.
+- [x] Data requirements are defined.
+- [x] Reliability and recovery requirements are defined.
+- [x] Auditability requirements are defined.
+- [x] MVP scope is explicitly separated from future scope.
+- [x] Architectural direction is documented at a high level.
+- [x] Final project-owner review is completed.
+- [x] SRS is approved as the implementation baseline.
 
-> **Status rule:** Until the final approval step is completed, the document remains **Proposed for Approval**. Once formally approved, update the document status and revision history to **Approved**.
+### Approval Statement
+
+**The Project Owner has reviewed and approved SRS v1.0.0 as the requirements baseline for architecture and implementation of the AI-Powered Cafe Management System.**
 
 ---
 
@@ -1976,32 +1985,26 @@ After approval as SRS v1.0.0, changes to requirements shall be introduced throug
 
 A material requirement change should include:
 
-1. Change request or GitHub Issue.
-2. Reason for the change.
-3. Impact analysis.
-4. Updated requirement(s).
-5. Updated priority or scope if necessary.
-6. Documentation update.
-7. Review and approval.
+1. Change request or GitHub Issue
+2. Reason for the change
+3. Impact analysis
+4. Updated requirement(s)
+5. Updated priority or scope if necessary
+6. Documentation update
+7. Review and approval
 
 The approved SRS should not be silently modified directly on the integration branch.
+
+Any material change to the approved baseline should produce a new revision or version according to the project's change-management conventions.
 
 ---
 
 ## Document Status
 
-**Current status:** Proposed for Approval
+**Version:** 1.0.0
+**Status:** Approved
+**Approval Date:** 2026-08-25
+**Approval Authority:** Project Owner
+**Integration Branch:** `dev`
 
-**Integration branch:** `dev`
-
-**Next status transition:**
-
-```text
-Proposed for Approval
-        ↓
-Formal Review
-        ↓
-Approved
-```
-
-Once formally approved, this SRS becomes the **requirements baseline for architecture, design, implementation, testing, and release planning**.
+**This document is the approved requirements baseline for the next architecture and implementation phases.**
