@@ -1,0 +1,13 @@
+{
+  "name": "ai-cafe-management-system",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.20.0",
+  "scripts": {
+    "dev": "pnpm --parallel --filter ./apps/* dev",
+    "build": "pnpm --recursive build",
+    "test": "pnpm --recursive test",
+    "lint": "pnpm exec biome check .",
+    "typecheck": "pnpm --recursive typecheck"
+  }
+}
