@@ -8,6 +8,10 @@
     "build": "pnpm --recursive build",
     "test": "pnpm --recursive test",
     "lint": "pnpm exec biome check .",
+    "format": "pnpm exec biome format --write .",
     "typecheck": "pnpm --recursive typecheck"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.2"
   }
 }
