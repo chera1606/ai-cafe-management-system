@@ -48,6 +48,16 @@
           "react": "recommended"
         }
       }
+    },
+    {
+      "includes": ["apps/api/**/*.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useImportType": "off"
+          }
+        }
+      }
     }
   ]
 }

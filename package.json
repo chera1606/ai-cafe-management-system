@@ -7,11 +7,14 @@
     "dev": "pnpm --parallel --filter ./apps/* dev",
     "build": "pnpm --recursive build",
     "test": "pnpm --recursive test",
+    "test:coverage": "pnpm --recursive test:coverage",
     "lint": "pnpm exec biome check .",
     "format": "pnpm exec biome format --write .",
     "typecheck": "pnpm --recursive typecheck"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.2"
+    "@biomejs/biome": "2.4.2",
+    "@vitest/coverage-v8": "3.2.4",
+    "vitest": "3.2.4"
   }
 }
