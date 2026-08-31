@@ -1,0 +1,12 @@
+{
+  "name": "@cafe/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm exec tsc --noEmit",
+    "typecheck": "pnpm exec tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  }
+}
