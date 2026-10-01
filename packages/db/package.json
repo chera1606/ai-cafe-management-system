@@ -2,10 +2,17 @@
   "name": "@cafe/db",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
   "scripts": {
-    "build": "pnpm exec tsc --noEmit",
-    "typecheck": "pnpm exec tsc --noEmit",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"
   },
