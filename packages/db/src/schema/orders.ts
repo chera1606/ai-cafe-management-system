@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   index,
   numeric,
@@ -7,7 +8,6 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
 
 import { customers } from "./identity";
 import { menuItems } from "./menu";

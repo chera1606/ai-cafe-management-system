@@ -1,0 +1,11 @@
+# Normalize all text files to LF in the repository.
+# This prevents CRLF/LF inconsistencies between Windows and Linux/macOS.
+* text=auto eol=lf
+
+# Explicitly declare binary files to prevent diff/corruption.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text eol=lf
