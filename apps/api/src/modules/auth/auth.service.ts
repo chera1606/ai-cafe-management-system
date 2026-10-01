@@ -1,10 +1,4 @@
-import {
-  type Database,
-  customers,
-  roles,
-  userRoles,
-  users,
-} from "@cafe/db";
+import { customers, type Database, roles, userRoles, users } from "@cafe/db";
 import {
   ConflictException,
   Inject,
