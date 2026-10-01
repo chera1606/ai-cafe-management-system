@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   check,
   date,
@@ -9,7 +10,6 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
 
 import { users } from "./identity";
 import { departments, ingredients } from "./menu";

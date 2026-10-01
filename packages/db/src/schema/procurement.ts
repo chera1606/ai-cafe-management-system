@@ -1,5 +1,7 @@
+import { sql } from "drizzle-orm";
 import {
   check,
+  date,
   index,
   numeric,
   pgTable,
@@ -8,9 +10,7 @@ import {
   unique,
   uuid,
   varchar,
-  date,
 } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
 
 import { inventoryItems } from "./inventory";
 
