@@ -181,6 +181,7 @@ describe("AuthService", () => {
         password: "validPassword",
       });
 
+      if (!("accessToken" in result)) throw new Error("Expected full login result");
       expect(result.accessToken).toBe("mock-jwt-token");
       expect(result.refreshToken).toBeDefined();
       expect(result.sessionId).toBe("session-1");
@@ -210,6 +211,7 @@ describe("AuthService", () => {
         password: "validPassword",
       });
 
+      if (!("requires2fa" in result)) throw new Error("Expected 2FA result");
       expect(result.requires2fa).toBe(true);
       expect(result.tempToken).toBe("temp-2fa-token");
     });

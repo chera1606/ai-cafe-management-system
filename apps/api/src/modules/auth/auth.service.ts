@@ -1,6 +1,8 @@
 import {
   customers,
   type Database,
+  magicLinks,
+  oauthAccounts,
   roles,
   userRoles,
   userSessions,
@@ -11,6 +13,7 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from "@nestjs/common";
@@ -20,6 +23,13 @@ import { AuditService } from "../audit/audit.service";
 import { DATABASE_TOKEN } from "../database/database.constants";
 import { UsersService } from "../users/users.service";
 import type { LoginDto } from "./dto/login.dto";
+import type {
+  ForgotPasswordDto,
+  RequestMagicLinkDto,
+  ResetPasswordDto,
+  VerifyMagicLinkDto,
+} from "./dto/magic-link.dto";
+import type { OAuthLoginDto } from "./dto/oauth-login.dto";
 import type { RefreshTokenDto } from "./dto/refresh-token.dto";
 import type { RegisterDto } from "./dto/register.dto";
 import type { TwoFactorAuthenticateDto } from "./dto/two-factor.dto";
@@ -36,6 +46,7 @@ const ACCESS_TOKEN_EXPIRY = "15m";
 const REFRESH_TOKEN_DAYS = 7;
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_MINUTES = 15;
+const MAGIC_LINK_EXPIRY_MINUTES = 15;
 
 @Injectable()
 export class AuthService {
@@ -229,51 +240,7 @@ export class AuthService {
       },
     });
 
-    const { roles: userRolesList, permissions: userPermsList } =
-      await this.usersService.getUserRolesAndPermissions(user.id);
-
-    const payload: JwtPayload = {
-      sub: user.id,
-      userId: user.id,
-      email: user.email,
-      roles: userRolesList,
-      permissions: userPermsList,
-    };
-
-    const accessToken = this.jwtService.sign(payload, {
-      expiresIn: ACCESS_TOKEN_EXPIRY,
-    });
-
-    const rawRefreshToken = generateRandomToken(40);
-    const hashedRefreshToken = hashToken(rawRefreshToken);
-    const refreshExpiresAt = new Date(
-      Date.now() + REFRESH_TOKEN_DAYS * 24 * 60 * 60 * 1000,
-    );
-
-    const [session] = await this.db
-      .insert(userSessions)
-      .values({
-        userId: user.id,
-        refreshTokenHash: hashedRefreshToken,
-        device: clientInfo?.device || "Desktop Browser",
-        ipAddress: clientInfo?.ipAddress || "Unknown IP",
-        userAgent: clientInfo?.userAgent || null,
-        expiresAt: refreshExpiresAt,
-      })
-      .returning();
-
-    return {
-      accessToken,
-      refreshToken: rawRefreshToken,
-      sessionId: session?.id,
-      user: {
-        id: user.id,
-        email: user.email,
-        status: user.status,
-        roles: userRolesList,
-        permissions: userPermsList,
-      },
-    };
+    return this.issueSessionTokens(user.id, user.email, clientInfo);
   }
 
   async generate2FaSecret(userId: string) {
@@ -441,13 +408,317 @@ export class AuthService {
       entityId: user.id,
     });
 
+    return this.issueSessionTokens(user.id, user.email, clientInfo);
+  }
+
+  async requestMagicLink(dto: RequestMagicLinkDto) {
+    const normalizedEmail = dto.email.toLowerCase().trim();
+    let user = await this.usersService.findByEmail(normalizedEmail);
+
+    // If customer doesn't exist, create account on the fly for frictionless UX
+    if (!user) {
+      const randomPassword = await hashPassword(generateRandomToken(32));
+      const result = await this.db.transaction(async (tx) => {
+        const [newUser] = await tx
+          .insert(users)
+          .values({
+            email: normalizedEmail,
+            passwordHash: randomPassword,
+            status: "active",
+          })
+          .returning();
+
+        if (!newUser) throw new Error("Failed to create user");
+
+        await tx.insert(customers).values({
+          userId: newUser.id,
+          name: normalizedEmail.split("@")[0] || "Customer",
+          email: normalizedEmail,
+          status: "active",
+        });
+
+        const customerRole = await tx
+          .select()
+          .from(roles)
+          .where(eq(roles.name, "customer"))
+          .limit(1);
+
+        if (customerRole[0]) {
+          await tx.insert(userRoles).values({
+            userId: newUser.id,
+            roleId: customerRole[0].id,
+          });
+        }
+
+        return newUser;
+      });
+      user = result ?? null;
+    }
+
+    if (!user) {
+      throw new InternalServerErrorException("User creation failed");
+    }
+
+    const rawToken = generateRandomToken(40);
+    const tokenHash = hashToken(rawToken);
+    const expiresAt = new Date(
+      Date.now() + MAGIC_LINK_EXPIRY_MINUTES * 60 * 1000,
+    );
+
+    await this.db.insert(magicLinks).values({
+      userId: user.id,
+      tokenHash,
+      type: "magic_link",
+      expiresAt,
+    });
+
+    await this.auditService.record({
+      actorUserId: user.id,
+      action: "AUTH_MAGIC_LINK_REQUESTED",
+      entityType: "magic_links",
+    });
+
+    return {
+      message: "Magic login link generated successfully",
+      token: rawToken,
+    };
+  }
+
+  async verifyMagicLink(
+    dto: VerifyMagicLinkDto,
+    clientInfo?: ClientConnectionInfo,
+  ) {
+    const tokenHash = hashToken(dto.token);
+
+    const [link] = await this.db
+      .select()
+      .from(magicLinks)
+      .where(
+        and(
+          eq(magicLinks.tokenHash, tokenHash),
+          eq(magicLinks.type, "magic_link"),
+          gt(magicLinks.expiresAt, new Date()),
+        ),
+      )
+      .limit(1);
+
+    if (!link || link.usedAt) {
+      throw new UnauthorizedException("Invalid or expired magic link");
+    }
+
+    await this.db
+      .update(magicLinks)
+      .set({ usedAt: new Date() })
+      .where(eq(magicLinks.id, link.id));
+
+    const user = await this.usersService.findById(link.userId);
+    if (!user || user.status !== "active") {
+      throw new UnauthorizedException("Account is disabled or does not exist");
+    }
+
+    await this.auditService.record({
+      actorUserId: user.id,
+      action: "AUTH_MAGIC_LINK_SUCCESS",
+      entityType: "users",
+      entityId: user.id,
+    });
+
+    return this.issueSessionTokens(user.id, user.email, clientInfo);
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const normalizedEmail = dto.email.toLowerCase().trim();
+    const user = await this.usersService.findByEmail(normalizedEmail);
+
+    if (user && user.status === "active") {
+      const rawToken = generateRandomToken(40);
+      const tokenHash = hashToken(rawToken);
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+
+      await this.db.insert(magicLinks).values({
+        userId: user.id,
+        tokenHash,
+        type: "password_reset",
+        expiresAt,
+      });
+
+      await this.auditService.record({
+        actorUserId: user.id,
+        action: "AUTH_PASSWORD_RESET_REQUESTED",
+        entityType: "users",
+        entityId: user.id,
+      });
+    }
+
+    return {
+      message:
+        "If an account exists with this email address, a password reset link has been dispatched.",
+    };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const tokenHash = hashToken(dto.token);
+
+    const [link] = await this.db
+      .select()
+      .from(magicLinks)
+      .where(
+        and(
+          eq(magicLinks.tokenHash, tokenHash),
+          eq(magicLinks.type, "password_reset"),
+          gt(magicLinks.expiresAt, new Date()),
+        ),
+      )
+      .limit(1);
+
+    if (!link || link.usedAt) {
+      throw new UnauthorizedException(
+        "Invalid or expired password reset token",
+      );
+    }
+
+    const hashedPassword = await hashPassword(dto.newPassword);
+
+    await this.db.transaction(async (tx) => {
+      await tx
+        .update(users)
+        .set({
+          passwordHash: hashedPassword,
+          failedLoginAttempts: 0,
+          lockedUntil: null,
+        })
+        .where(eq(users.id, link.userId));
+
+      await tx
+        .update(magicLinks)
+        .set({ usedAt: new Date() })
+        .where(eq(magicLinks.id, link.id));
+
+      // Revoke all existing sessions for security
+      await tx
+        .update(userSessions)
+        .set({ isRevoked: true })
+        .where(eq(userSessions.userId, link.userId));
+    });
+
+    await this.auditService.record({
+      actorUserId: link.userId,
+      action: "AUTH_PASSWORD_RESET_SUCCESS",
+      entityType: "users",
+      entityId: link.userId,
+    });
+
+    return {
+      message:
+        "Password has been reset successfully. Please log in with your new password.",
+    };
+  }
+
+  async handleOAuthLogin(
+    dto: OAuthLoginDto,
+    clientInfo?: ClientConnectionInfo,
+  ) {
+    const normalizedEmail = dto.email.toLowerCase().trim();
+
+    // Check if OAuth account link exists
+    const [existingOAuth] = await this.db
+      .select()
+      .from(oauthAccounts)
+      .where(
+        and(
+          eq(oauthAccounts.provider, dto.provider),
+          eq(oauthAccounts.providerUserId, dto.providerUserId),
+        ),
+      )
+      .limit(1);
+
+    let userId: string;
+
+    if (existingOAuth) {
+      userId = existingOAuth.userId;
+    } else {
+      // Check if user with this email already exists
+      const existingUser = await this.usersService.findByEmail(normalizedEmail);
+
+      if (existingUser) {
+        userId = existingUser.id;
+        await this.db.insert(oauthAccounts).values({
+          userId: existingUser.id,
+          provider: dto.provider,
+          providerUserId: dto.providerUserId,
+        });
+      } else {
+        // Create user, customer, and oauth link in transaction
+        const randomPassword = await hashPassword(generateRandomToken(32));
+        const createdUser = await this.db.transaction(async (tx) => {
+          const [newUser] = await tx
+            .insert(users)
+            .values({
+              email: normalizedEmail,
+              passwordHash: randomPassword,
+              status: "active",
+            })
+            .returning();
+
+          if (!newUser) throw new Error("Failed to create user");
+
+          await tx.insert(customers).values({
+            userId: newUser.id,
+            name: dto.name.trim(),
+            email: normalizedEmail,
+            status: "active",
+          });
+
+          await tx.insert(oauthAccounts).values({
+            userId: newUser.id,
+            provider: dto.provider,
+            providerUserId: dto.providerUserId,
+          });
+
+          const customerRole = await tx
+            .select()
+            .from(roles)
+            .where(eq(roles.name, "customer"))
+            .limit(1);
+
+          if (customerRole[0]) {
+            await tx.insert(userRoles).values({
+              userId: newUser.id,
+              roleId: customerRole[0].id,
+            });
+          }
+
+          return newUser;
+        });
+
+        if (!createdUser) throw new InternalServerErrorException("User creation failed");
+        userId = createdUser.id;
+      }
+    }
+
+    await this.auditService.record({
+      actorUserId: userId,
+      action: "AUTH_OAUTH_LOGIN_SUCCESS",
+      entityType: "users",
+      entityId: userId,
+      newState: { provider: dto.provider },
+    });
+
+    return this.issueSessionTokens(userId, normalizedEmail, clientInfo);
+  }
+
+  private async issueSessionTokens(
+    userId: string,
+    email: string,
+    clientInfo?: ClientConnectionInfo,
+  ) {
     const { roles: userRolesList, permissions: userPermsList } =
-      await this.usersService.getUserRolesAndPermissions(user.id);
+      await this.usersService.getUserRolesAndPermissions(userId);
 
     const payload: JwtPayload = {
-      sub: user.id,
-      userId: user.id,
-      email: user.email,
+      sub: userId,
+      userId,
+      email,
       roles: userRolesList,
       permissions: userPermsList,
     };
@@ -465,7 +736,7 @@ export class AuthService {
     const [session] = await this.db
       .insert(userSessions)
       .values({
-        userId: user.id,
+        userId,
         refreshTokenHash: hashedRefreshToken,
         device: clientInfo?.device || "Desktop Browser",
         ipAddress: clientInfo?.ipAddress || "Unknown IP",
@@ -479,9 +750,9 @@ export class AuthService {
       refreshToken: rawRefreshToken,
       sessionId: session?.id,
       user: {
-        id: user.id,
-        email: user.email,
-        status: user.status,
+        id: userId,
+        email,
+        status: "active",
         roles: userRolesList,
         permissions: userPermsList,
       },
