@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import type { JwtService } from "@nestjs/jwt";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { AuditService } from "../audit/audit.service";
 import type { UsersService } from "../users/users.service";
 import { AuthService } from "./auth.service";
 import * as passwordUtil from "./utils/password.util";
@@ -27,6 +28,9 @@ describe("AuthService", () => {
   let mockJwtService: {
     sign: ReturnType<typeof vi.fn>;
   };
+  let mockAuditService: {
+    record: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     mockDb = {
@@ -44,11 +48,15 @@ describe("AuthService", () => {
     mockJwtService = {
       sign: vi.fn(),
     };
+    mockAuditService = {
+      record: vi.fn().mockResolvedValue(null),
+    };
 
     service = new AuthService(
       mockDb as unknown as Database,
       mockUsersService as unknown as UsersService,
       mockJwtService as unknown as JwtService,
+      mockAuditService as unknown as AuditService,
     );
   });
 
@@ -110,6 +118,9 @@ describe("AuthService", () => {
       expect(response.user.email).toBe("jane@example.com");
       expect(response.user.customer.name).toBe("Jane Doe");
       expect(response.user.roles).toEqual(["customer"]);
+      expect(mockAuditService.record).toHaveBeenCalledWith(
+        expect.objectContaining({ action: "AUTH_USER_REGISTERED" }),
+      );
     });
 
     it("should throw ConflictException when email is already registered", async () => {
@@ -132,6 +143,8 @@ describe("AuthService", () => {
         email: "john@example.com",
         passwordHash: "$2b$10$hashedpass",
         status: "active",
+        failedLoginAttempts: 0,
+        lockedUntil: null,
       };
 
       mockUsersService.findByEmail.mockResolvedValue(mockUser);
@@ -157,6 +170,9 @@ describe("AuthService", () => {
       expect(result.refreshToken).toBeDefined();
       expect(result.sessionId).toBe("session-1");
       expect(result.user.id).toBe("user-1");
+      expect(mockAuditService.record).toHaveBeenCalledWith(
+        expect.objectContaining({ action: "AUTH_LOGIN_SUCCESS" }),
+      );
     });
 
     it("should throw UnauthorizedException on invalid email or password", async () => {
@@ -170,13 +186,21 @@ describe("AuthService", () => {
       ).rejects.toThrow(UnauthorizedException);
     });
 
-    it("should throw UnauthorizedException when password compare fails", async () => {
+    it("should throw UnauthorizedException and increment failed attempts on password failure", async () => {
       mockUsersService.findByEmail.mockResolvedValue({
         id: "user-1",
         status: "active",
         passwordHash: "hash",
+        failedLoginAttempts: 2,
+        lockedUntil: null,
       });
       vi.spyOn(passwordUtil, "comparePassword").mockResolvedValue(false);
+
+      mockDb.update.mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([]),
+        }),
+      });
 
       await expect(
         service.login({
@@ -184,6 +208,57 @@ describe("AuthService", () => {
           password: "wrongPassword",
         }),
       ).rejects.toThrow(UnauthorizedException);
+
+      expect(mockDb.update).toHaveBeenCalled();
+      expect(mockAuditService.record).toHaveBeenCalledWith(
+        expect.objectContaining({ action: "AUTH_LOGIN_FAILED" }),
+      );
+    });
+
+    it("should lock account after 5 consecutive failed login attempts", async () => {
+      mockUsersService.findByEmail.mockResolvedValue({
+        id: "user-1",
+        status: "active",
+        passwordHash: "hash",
+        failedLoginAttempts: 4, // 5th attempt!
+        lockedUntil: null,
+      });
+      vi.spyOn(passwordUtil, "comparePassword").mockResolvedValue(false);
+
+      mockDb.update.mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([]),
+        }),
+      });
+
+      await expect(
+        service.login({
+          email: "john@example.com",
+          password: "wrongPassword",
+        }),
+      ).rejects.toThrow(/locked for 15 minutes/);
+
+      expect(mockAuditService.record).toHaveBeenCalledWith(
+        expect.objectContaining({ action: "AUTH_ACCOUNT_LOCKED" }),
+      );
+    });
+
+    it("should reject login when account is currently locked", async () => {
+      const futureLockDate = new Date(Date.now() + 10 * 60 * 1000); // 10 mins remaining
+      mockUsersService.findByEmail.mockResolvedValue({
+        id: "user-1",
+        status: "active",
+        passwordHash: "hash",
+        failedLoginAttempts: 5,
+        lockedUntil: futureLockDate,
+      });
+
+      await expect(
+        service.login({
+          email: "john@example.com",
+          password: "anyPassword",
+        }),
+      ).rejects.toThrow(/temporarily locked/);
     });
   });
 
@@ -272,6 +347,9 @@ describe("AuthService", () => {
       ).rejects.toThrow(UnauthorizedException);
 
       expect(mockDb.update).toHaveBeenCalled();
+      expect(mockAuditService.record).toHaveBeenCalledWith(
+        expect.objectContaining({ action: "AUTH_TOKEN_THEFT_DETECTED" }),
+      );
     });
   });
 
