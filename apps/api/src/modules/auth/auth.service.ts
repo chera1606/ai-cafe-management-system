@@ -7,6 +7,7 @@ import {
   users,
 } from "@cafe/db";
 import {
+  BadRequestException,
   ConflictException,
   Inject,
   Injectable,
@@ -21,11 +22,13 @@ import { UsersService } from "../users/users.service";
 import type { LoginDto } from "./dto/login.dto";
 import type { RefreshTokenDto } from "./dto/refresh-token.dto";
 import type { RegisterDto } from "./dto/register.dto";
+import type { TwoFactorAuthenticateDto } from "./dto/two-factor.dto";
 import type { JwtPayload } from "./interfaces/jwt-payload.interface";
 import type {
   ClientConnectionInfo,
   UserSessionResponse,
 } from "./interfaces/session.interface";
+import { TwoFactorService } from "./services/two-factor.service";
 import { comparePassword, hashPassword } from "./utils/password.util";
 import { generateRandomToken, hashToken } from "./utils/token.util";
 
@@ -41,6 +44,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly auditService: AuditService,
+    private readonly twoFactorService: TwoFactorService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -190,6 +194,19 @@ export class AuthService {
       throw new UnauthorizedException("Invalid email or password");
     }
 
+    // Two-factor authentication required?
+    if (user.twoFactorEnabled) {
+      const tempToken = this.jwtService.sign(
+        { sub: user.id, is2faPending: true },
+        { expiresIn: "5m" },
+      );
+
+      return {
+        requires2fa: true,
+        tempToken,
+      };
+    }
+
     // Successful login: reset failed attempts if any
     if (user.failedLoginAttempts > 0 || user.lockedUntil) {
       await this.db
@@ -210,6 +227,218 @@ export class AuthService {
         ipAddress: clientInfo?.ipAddress,
         device: clientInfo?.device,
       },
+    });
+
+    const { roles: userRolesList, permissions: userPermsList } =
+      await this.usersService.getUserRolesAndPermissions(user.id);
+
+    const payload: JwtPayload = {
+      sub: user.id,
+      userId: user.id,
+      email: user.email,
+      roles: userRolesList,
+      permissions: userPermsList,
+    };
+
+    const accessToken = this.jwtService.sign(payload, {
+      expiresIn: ACCESS_TOKEN_EXPIRY,
+    });
+
+    const rawRefreshToken = generateRandomToken(40);
+    const hashedRefreshToken = hashToken(rawRefreshToken);
+    const refreshExpiresAt = new Date(
+      Date.now() + REFRESH_TOKEN_DAYS * 24 * 60 * 60 * 1000,
+    );
+
+    const [session] = await this.db
+      .insert(userSessions)
+      .values({
+        userId: user.id,
+        refreshTokenHash: hashedRefreshToken,
+        device: clientInfo?.device || "Desktop Browser",
+        ipAddress: clientInfo?.ipAddress || "Unknown IP",
+        userAgent: clientInfo?.userAgent || null,
+        expiresAt: refreshExpiresAt,
+      })
+      .returning();
+
+    return {
+      accessToken,
+      refreshToken: rawRefreshToken,
+      sessionId: session?.id,
+      user: {
+        id: user.id,
+        email: user.email,
+        status: user.status,
+        roles: userRolesList,
+        permissions: userPermsList,
+      },
+    };
+  }
+
+  async generate2FaSecret(userId: string) {
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+
+    const { secret, qrCodeUrl } = await this.twoFactorService.generateSecret(
+      user.email,
+    );
+
+    await this.db
+      .update(users)
+      .set({ twoFactorSecret: secret })
+      .where(eq(users.id, userId));
+
+    return { secret, qrCodeUrl };
+  }
+
+  async enable2Fa(userId: string, code: string) {
+    const user = await this.usersService.findById(userId);
+    if (!user || !user.twoFactorSecret) {
+      throw new BadRequestException(
+        "Please generate a 2FA secret before enabling 2FA",
+      );
+    }
+
+    const isValid = this.twoFactorService.verifyToken(
+      code,
+      user.twoFactorSecret,
+    );
+    if (!isValid) {
+      throw new UnauthorizedException("Invalid two-factor authentication code");
+    }
+
+    const { rawCodes, hashedCodes } =
+      this.twoFactorService.generateRecoveryCodes(8);
+
+    await this.db
+      .update(users)
+      .set({
+        twoFactorEnabled: true,
+        twoFactorRecoveryCodes: hashedCodes,
+      })
+      .where(eq(users.id, userId));
+
+    await this.auditService.record({
+      actorUserId: userId,
+      action: "AUTH_2FA_ENABLED",
+      entityType: "users",
+      entityId: userId,
+    });
+
+    return {
+      message: "Two-factor authentication enabled successfully",
+      recoveryCodes: rawCodes,
+    };
+  }
+
+  async disable2Fa(userId: string, code: string) {
+    const user = await this.usersService.findById(userId);
+    if (!user || !user.twoFactorEnabled || !user.twoFactorSecret) {
+      throw new BadRequestException("2FA is not currently enabled");
+    }
+
+    const isValid = this.twoFactorService.verifyToken(
+      code,
+      user.twoFactorSecret,
+    );
+    if (!isValid) {
+      throw new UnauthorizedException("Invalid two-factor authentication code");
+    }
+
+    await this.db
+      .update(users)
+      .set({
+        twoFactorEnabled: false,
+        twoFactorSecret: null,
+        twoFactorRecoveryCodes: null,
+      })
+      .where(eq(users.id, userId));
+
+    await this.auditService.record({
+      actorUserId: userId,
+      action: "AUTH_2FA_DISABLED",
+      entityType: "users",
+      entityId: userId,
+    });
+
+    return { message: "Two-factor authentication disabled successfully" };
+  }
+
+  async authenticateWith2Fa(
+    dto: TwoFactorAuthenticateDto,
+    clientInfo?: ClientConnectionInfo,
+  ) {
+    let decoded: { sub: string; is2faPending?: boolean };
+    try {
+      decoded = this.jwtService.verify(dto.tempToken);
+    } catch {
+      throw new UnauthorizedException("Invalid or expired 2FA session token");
+    }
+
+    if (!decoded.is2faPending || !decoded.sub) {
+      throw new UnauthorizedException("Invalid 2FA session token");
+    }
+
+    const user = await this.usersService.findById(decoded.sub);
+    if (!user || !user.twoFactorEnabled || !user.twoFactorSecret) {
+      throw new UnauthorizedException("2FA authentication is not available");
+    }
+
+    let isValid = this.twoFactorService.verifyToken(
+      dto.code,
+      user.twoFactorSecret,
+    );
+    let usedRecoveryCodeHash: string | null = null;
+
+    if (!isValid && user.twoFactorRecoveryCodes) {
+      const inputHash = hashToken(dto.code.trim());
+      const recoveryList = (user.twoFactorRecoveryCodes as string[]) || [];
+
+      if (recoveryList.includes(inputHash)) {
+        isValid = true;
+        usedRecoveryCodeHash = inputHash;
+      }
+    }
+
+    if (!isValid) {
+      throw new UnauthorizedException(
+        "Invalid two-factor code or recovery code",
+      );
+    }
+
+    // If recovery code was used, remove it from list
+    if (usedRecoveryCodeHash && user.twoFactorRecoveryCodes) {
+      const remainingCodes = (user.twoFactorRecoveryCodes as string[]).filter(
+        (c) => c !== usedRecoveryCodeHash,
+      );
+
+      await this.db
+        .update(users)
+        .set({ twoFactorRecoveryCodes: remainingCodes })
+        .where(eq(users.id, user.id));
+    }
+
+    // Reset lockout counters on success
+    if (user.failedLoginAttempts > 0 || user.lockedUntil) {
+      await this.db
+        .update(users)
+        .set({
+          failedLoginAttempts: 0,
+          lockedUntil: null,
+        })
+        .where(eq(users.id, user.id));
+    }
+
+    await this.auditService.record({
+      actorUserId: user.id,
+      action: usedRecoveryCodeHash
+        ? "AUTH_LOGIN_RECOVERY_CODE_SUCCESS"
+        : "AUTH_LOGIN_2FA_SUCCESS",
+      entityType: "users",
+      entityId: user.id,
     });
 
     const { roles: userRolesList, permissions: userPermsList } =

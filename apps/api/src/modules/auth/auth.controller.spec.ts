@@ -9,6 +9,10 @@ describe("AuthController", () => {
   let mockAuthService: {
     register: ReturnType<typeof vi.fn>;
     login: ReturnType<typeof vi.fn>;
+    authenticateWith2Fa: ReturnType<typeof vi.fn>;
+    generate2FaSecret: ReturnType<typeof vi.fn>;
+    enable2Fa: ReturnType<typeof vi.fn>;
+    disable2Fa: ReturnType<typeof vi.fn>;
     refreshTokens: ReturnType<typeof vi.fn>;
     logout: ReturnType<typeof vi.fn>;
     getUserSessions: ReturnType<typeof vi.fn>;
@@ -22,6 +26,10 @@ describe("AuthController", () => {
     mockAuthService = {
       register: vi.fn(),
       login: vi.fn(),
+      authenticateWith2Fa: vi.fn(),
+      generate2FaSecret: vi.fn(),
+      enable2Fa: vi.fn(),
+      disable2Fa: vi.fn(),
       refreshTokens: vi.fn(),
       logout: vi.fn(),
       getUserSessions: vi.fn(),
@@ -89,6 +97,41 @@ describe("AuthController", () => {
       dto,
       expect.objectContaining({ ipAddress: "127.0.0.1" }),
     );
+  });
+
+  it("should handle 2FA authentication", async () => {
+    const dto = { tempToken: "temp-token", code: "123456" };
+    const expected = {
+      accessToken: "access-token",
+      refreshToken: "refresh-token",
+    };
+    mockAuthService.authenticateWith2Fa.mockResolvedValue(expected);
+
+    const result = await controller.authenticate2Fa(
+      dto,
+      mockRequest as Request,
+    );
+    expect(result).toBe(expected);
+    expect(mockAuthService.authenticateWith2Fa).toHaveBeenCalledWith(
+      dto,
+      expect.any(Object),
+    );
+  });
+
+  it("should handle 2FA secret generation", async () => {
+    const userPayload: JwtPayload = {
+      sub: "user-1",
+      userId: "user-1",
+      email: "jane@example.com",
+      roles: [],
+      permissions: [],
+    };
+    const expected = { secret: "BASE32", qrCodeUrl: "data:image/png;base64" };
+    mockAuthService.generate2FaSecret.mockResolvedValue(expected);
+
+    const result = await controller.generate2Fa(userPayload);
+    expect(result).toBe(expected);
+    expect(mockAuthService.generate2FaSecret).toHaveBeenCalledWith("user-1");
   });
 
   it("should handle refresh tokens", async () => {

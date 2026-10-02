@@ -18,6 +18,10 @@ import { Public } from "./decorators/public.decorator";
 import { LoginDto } from "./dto/login.dto";
 import { RefreshTokenDto } from "./dto/refresh-token.dto";
 import { RegisterDto } from "./dto/register.dto";
+import {
+  TwoFactorAuthenticateDto,
+  TwoFactorCodeDto,
+} from "./dto/two-factor.dto";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import type { JwtPayload } from "./interfaces/jwt-payload.interface";
 import type { ClientConnectionInfo } from "./interfaces/session.interface";
@@ -53,6 +57,45 @@ export class AuthController {
   async login(@Body() dto: LoginDto, @Req() req: Request) {
     const clientInfo = extractConnectionInfo(req);
     return this.authService.login(dto, clientInfo);
+  }
+
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Public()
+  @Post("2fa/authenticate")
+  @HttpCode(HttpStatus.OK)
+  async authenticate2Fa(
+    @Body() dto: TwoFactorAuthenticateDto,
+    @Req() req: Request,
+  ) {
+    const clientInfo = extractConnectionInfo(req);
+    return this.authService.authenticateWith2Fa(dto, clientInfo);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post("2fa/generate")
+  @HttpCode(HttpStatus.OK)
+  async generate2Fa(@CurrentUser() user: JwtPayload) {
+    return this.authService.generate2FaSecret(user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post("2fa/enable")
+  @HttpCode(HttpStatus.OK)
+  async enable2Fa(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: TwoFactorCodeDto,
+  ) {
+    return this.authService.enable2Fa(user.userId, dto.code);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post("2fa/disable")
+  @HttpCode(HttpStatus.OK)
+  async disable2Fa(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: TwoFactorCodeDto,
+  ) {
+    return this.authService.disable2Fa(user.userId, dto.code);
   }
 
   @Throttle({ default: { limit: 10, ttl: 60000 } })
