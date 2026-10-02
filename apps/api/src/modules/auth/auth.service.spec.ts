@@ -12,9 +12,15 @@ import * as passwordUtil from "./utils/password.util";
 
 describe("AuthService", () => {
   let service: AuthService;
-  let mockDb: { transaction: ReturnType<typeof vi.fn> };
+  let mockDb: {
+    transaction: ReturnType<typeof vi.fn>;
+    insert: ReturnType<typeof vi.fn>;
+    select: ReturnType<typeof vi.fn>;
+    update: ReturnType<typeof vi.fn>;
+  };
   let mockUsersService: {
     findByEmail: ReturnType<typeof vi.fn>;
+    findById: ReturnType<typeof vi.fn>;
     getUserRolesAndPermissions: ReturnType<typeof vi.fn>;
     getUserProfile: ReturnType<typeof vi.fn>;
   };
@@ -25,9 +31,13 @@ describe("AuthService", () => {
   beforeEach(() => {
     mockDb = {
       transaction: vi.fn(),
+      insert: vi.fn(),
+      select: vi.fn(),
+      update: vi.fn(),
     };
     mockUsersService = {
       findByEmail: vi.fn(),
+      findById: vi.fn(),
       getUserRolesAndPermissions: vi.fn(),
       getUserProfile: vi.fn(),
     };
@@ -116,7 +126,7 @@ describe("AuthService", () => {
   });
 
   describe("login", () => {
-    it("should return access token on valid credentials", async () => {
+    it("should return access token and refresh token on valid credentials", async () => {
       const mockUser = {
         id: "user-1",
         email: "john@example.com",
@@ -132,12 +142,20 @@ describe("AuthService", () => {
       vi.spyOn(passwordUtil, "comparePassword").mockResolvedValue(true);
       mockJwtService.sign.mockReturnValue("mock-jwt-token");
 
+      mockDb.insert.mockReturnValue({
+        values: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue([{ id: "session-1" }]),
+        }),
+      });
+
       const result = await service.login({
         email: "john@example.com",
         password: "validPassword",
       });
 
       expect(result.accessToken).toBe("mock-jwt-token");
+      expect(result.refreshToken).toBeDefined();
+      expect(result.sessionId).toBe("session-1");
       expect(result.user.id).toBe("user-1");
     });
 
@@ -166,6 +184,141 @@ describe("AuthService", () => {
           password: "wrongPassword",
         }),
       ).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe("refreshTokens", () => {
+    it("should rotate refresh token and return new tokens", async () => {
+      const mockSession = {
+        id: "session-old",
+        userId: "user-1",
+        isRevoked: false,
+        replacedBySessionId: null,
+        expiresAt: new Date(Date.now() + 100000),
+        device: "Chrome on macOS",
+        ipAddress: "127.0.0.1",
+        userAgent: "Chrome",
+      };
+
+      mockDb.select.mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([mockSession]),
+          }),
+        }),
+      });
+
+      mockUsersService.findById.mockResolvedValue({
+        id: "user-1",
+        status: "active",
+      });
+      mockUsersService.getUserRolesAndPermissions.mockResolvedValue({
+        roles: ["customer"],
+        permissions: [],
+      });
+      mockJwtService.sign.mockReturnValue("new-jwt-token");
+
+      mockDb.transaction.mockImplementation(
+        async (cb: (tx: unknown) => Promise<unknown>) => {
+          const mockTx = {
+            insert: vi.fn().mockReturnValue({
+              values: vi.fn().mockReturnValue({
+                returning: vi.fn().mockResolvedValue([{ id: "session-new" }]),
+              }),
+            }),
+            update: vi.fn().mockReturnValue({
+              set: vi.fn().mockReturnValue({
+                where: vi.fn().mockResolvedValue([]),
+              }),
+            }),
+          };
+          return cb(mockTx);
+        },
+      );
+
+      const result = await service.refreshTokens({
+        refreshToken: "valid-old-refresh-token",
+      });
+
+      expect(result.accessToken).toBe("new-jwt-token");
+      expect(result.refreshToken).toBeDefined();
+    });
+
+    it("should detect token reuse and revoke all sessions", async () => {
+      const reusedSession = {
+        id: "session-old",
+        userId: "user-1",
+        isRevoked: true, // Already revoked or replaced!
+        replacedBySessionId: "session-compromised",
+        expiresAt: new Date(Date.now() + 100000),
+      };
+
+      mockDb.select.mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([reusedSession]),
+          }),
+        }),
+      });
+
+      mockDb.update.mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([]),
+        }),
+      });
+
+      await expect(
+        service.refreshTokens({ refreshToken: "reused-stolen-token" }),
+      ).rejects.toThrow(UnauthorizedException);
+
+      expect(mockDb.update).toHaveBeenCalled();
+    });
+  });
+
+  describe("session management", () => {
+    it("should return list of active sessions for user", async () => {
+      const mockSessions = [
+        {
+          id: "session-1",
+          device: "Safari on iPhone",
+          ipAddress: "10.0.0.1",
+          userAgent: "Safari",
+          createdAt: new Date(),
+          lastActiveAt: new Date(),
+          expiresAt: new Date(Date.now() + 100000),
+        },
+      ];
+
+      mockDb.select.mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockResolvedValue(mockSessions),
+          }),
+        }),
+      });
+
+      const sessions = await service.getUserSessions("user-1", "session-1");
+      expect(sessions).toHaveLength(1);
+      expect(sessions[0]?.isCurrentSession).toBe(true);
+    });
+
+    it("should revoke specific session", async () => {
+      mockDb.select.mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([{ id: "session-1" }]),
+          }),
+        }),
+      });
+
+      mockDb.update.mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([]),
+        }),
+      });
+
+      const result = await service.revokeSession("user-1", "session-1");
+      expect(result.message).toBe("Session revoked successfully");
     });
   });
 

@@ -1,4 +1,11 @@
-import { customers, type Database, roles, userRoles, users } from "@cafe/db";
+import {
+  customers,
+  type Database,
+  roles,
+  userRoles,
+  userSessions,
+  users,
+} from "@cafe/db";
 import {
   ConflictException,
   Inject,
@@ -7,13 +14,22 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { eq } from "drizzle-orm";
+import { and, desc, eq, gt } from "drizzle-orm";
 import { DATABASE_TOKEN } from "../database/database.constants";
 import { UsersService } from "../users/users.service";
 import type { LoginDto } from "./dto/login.dto";
+import type { RefreshTokenDto } from "./dto/refresh-token.dto";
 import type { RegisterDto } from "./dto/register.dto";
 import type { JwtPayload } from "./interfaces/jwt-payload.interface";
+import type {
+  ClientConnectionInfo,
+  UserSessionResponse,
+} from "./interfaces/session.interface";
 import { comparePassword, hashPassword } from "./utils/password.util";
+import { generateRandomToken, hashToken } from "./utils/token.util";
+
+const ACCESS_TOKEN_EXPIRY = "15m";
+const REFRESH_TOKEN_DAYS = 7;
 
 @Injectable()
 export class AuthService {
@@ -106,7 +122,7 @@ export class AuthService {
     };
   }
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto, clientInfo?: ClientConnectionInfo) {
     const normalizedEmail = dto.email.toLowerCase().trim();
 
     const user = await this.usersService.findByEmail(normalizedEmail);
@@ -133,10 +149,32 @@ export class AuthService {
       permissions: userPermsList,
     };
 
-    const accessToken = this.jwtService.sign(payload);
+    const accessToken = this.jwtService.sign(payload, {
+      expiresIn: ACCESS_TOKEN_EXPIRY,
+    });
+
+    const rawRefreshToken = generateRandomToken(40);
+    const hashedRefreshToken = hashToken(rawRefreshToken);
+    const refreshExpiresAt = new Date(
+      Date.now() + REFRESH_TOKEN_DAYS * 24 * 60 * 60 * 1000,
+    );
+
+    const [session] = await this.db
+      .insert(userSessions)
+      .values({
+        userId: user.id,
+        refreshTokenHash: hashedRefreshToken,
+        device: clientInfo?.device || "Desktop Browser",
+        ipAddress: clientInfo?.ipAddress || "Unknown IP",
+        userAgent: clientInfo?.userAgent || null,
+        expiresAt: refreshExpiresAt,
+      })
+      .returning();
 
     return {
       accessToken,
+      refreshToken: rawRefreshToken,
+      sessionId: session?.id,
       user: {
         id: user.id,
         email: user.email,
@@ -145,6 +183,169 @@ export class AuthService {
         permissions: userPermsList,
       },
     };
+  }
+
+  async refreshTokens(dto: RefreshTokenDto, clientInfo?: ClientConnectionInfo) {
+    const tokenHash = hashToken(dto.refreshToken);
+
+    const [session] = await this.db
+      .select()
+      .from(userSessions)
+      .where(eq(userSessions.refreshTokenHash, tokenHash))
+      .limit(1);
+
+    if (!session) {
+      throw new UnauthorizedException("Invalid refresh token");
+    }
+
+    // Token reuse detection: if revoked or already replaced, revoke all user sessions
+    if (session.isRevoked || session.replacedBySessionId) {
+      await this.db
+        .update(userSessions)
+        .set({ isRevoked: true })
+        .where(eq(userSessions.userId, session.userId));
+
+      throw new UnauthorizedException(
+        "Security alert: Refresh token reuse detected. All active sessions have been revoked.",
+      );
+    }
+
+    if (session.expiresAt < new Date()) {
+      throw new UnauthorizedException(
+        "Refresh token has expired. Please log in again.",
+      );
+    }
+
+    const user = await this.usersService.findById(session.userId);
+    if (!user || user.status !== "active") {
+      throw new UnauthorizedException(
+        "Account is inactive or no longer exists.",
+      );
+    }
+
+    const { roles: userRolesList, permissions: userPermsList } =
+      await this.usersService.getUserRolesAndPermissions(user.id);
+
+    const payload: JwtPayload = {
+      sub: user.id,
+      userId: user.id,
+      email: user.email,
+      roles: userRolesList,
+      permissions: userPermsList,
+    };
+
+    const newAccessToken = this.jwtService.sign(payload, {
+      expiresIn: ACCESS_TOKEN_EXPIRY,
+    });
+    const newRefreshToken = generateRandomToken(40);
+    const newHashedToken = hashToken(newRefreshToken);
+    const newExpiresAt = new Date(
+      Date.now() + REFRESH_TOKEN_DAYS * 24 * 60 * 60 * 1000,
+    );
+
+    await this.db.transaction(async (tx) => {
+      const [newSession] = await tx
+        .insert(userSessions)
+        .values({
+          userId: user.id,
+          refreshTokenHash: newHashedToken,
+          device: clientInfo?.device || session.device,
+          ipAddress: clientInfo?.ipAddress || session.ipAddress,
+          userAgent: clientInfo?.userAgent || session.userAgent,
+          expiresAt: newExpiresAt,
+        })
+        .returning();
+
+      if (!newSession) {
+        throw new Error("Failed to create rotated session record");
+      }
+
+      await tx
+        .update(userSessions)
+        .set({
+          isRevoked: true,
+          replacedBySessionId: newSession.id,
+          lastActiveAt: new Date(),
+        })
+        .where(eq(userSessions.id, session.id));
+    });
+
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    };
+  }
+
+  async logout(refreshToken?: string) {
+    if (refreshToken) {
+      const tokenHash = hashToken(refreshToken);
+      await this.db
+        .update(userSessions)
+        .set({ isRevoked: true })
+        .where(eq(userSessions.refreshTokenHash, tokenHash));
+    }
+
+    return { message: "Logged out successfully" };
+  }
+
+  async getUserSessions(
+    userId: string,
+    currentSessionId?: string,
+  ): Promise<UserSessionResponse[]> {
+    const activeSessions = await this.db
+      .select({
+        id: userSessions.id,
+        device: userSessions.device,
+        ipAddress: userSessions.ipAddress,
+        userAgent: userSessions.userAgent,
+        createdAt: userSessions.createdAt,
+        lastActiveAt: userSessions.lastActiveAt,
+        expiresAt: userSessions.expiresAt,
+      })
+      .from(userSessions)
+      .where(
+        and(
+          eq(userSessions.userId, userId),
+          eq(userSessions.isRevoked, false),
+          gt(userSessions.expiresAt, new Date()),
+        ),
+      )
+      .orderBy(desc(userSessions.lastActiveAt));
+
+    return activeSessions.map((s) => ({
+      ...s,
+      isCurrentSession: currentSessionId ? s.id === currentSessionId : false,
+    }));
+  }
+
+  async revokeSession(userId: string, sessionId: string) {
+    const [existing] = await this.db
+      .select({ id: userSessions.id })
+      .from(userSessions)
+      .where(
+        and(eq(userSessions.id, sessionId), eq(userSessions.userId, userId)),
+      )
+      .limit(1);
+
+    if (!existing) {
+      throw new NotFoundException("Active session not found");
+    }
+
+    await this.db
+      .update(userSessions)
+      .set({ isRevoked: true })
+      .where(eq(userSessions.id, sessionId));
+
+    return { message: "Session revoked successfully" };
+  }
+
+  async revokeAllSessions(userId: string) {
+    await this.db
+      .update(userSessions)
+      .set({ isRevoked: true })
+      .where(eq(userSessions.userId, userId));
+
+    return { message: "All sessions have been revoked successfully" };
   }
 
   async getProfile(userId: string) {
