@@ -1,5 +1,7 @@
 import {
+  boolean,
   index,
+  integer,
   jsonb,
   pgTable,
   primaryKey,
@@ -17,6 +19,14 @@ export const users = pgTable(
     email: varchar("email").notNull(),
     passwordHash: text("password_hash").notNull(),
     status: varchar("status").notNull(),
+    failedLoginAttempts: integer("failed_login_attempts").default(0).notNull(),
+    lockedUntil: timestamp("locked_until", {
+      withTimezone: true,
+      mode: "date",
+    }),
+    twoFactorSecret: text("two_factor_secret"),
+    twoFactorEnabled: boolean("two_factor_enabled").default(false).notNull(),
+    twoFactorRecoveryCodes: jsonb("two_factor_recovery_codes"),
     createdAt: timestamp("created_at", {
       withTimezone: true,
       mode: "date",
@@ -159,4 +169,96 @@ export const employees = pgTable(
       .notNull(),
   },
   (table) => [unique("employees_user_id_unique").on(table.userId)],
+);
+
+export const userSessions = pgTable(
+  "user_sessions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id),
+    refreshTokenHash: text("refresh_token_hash").notNull(),
+    device: varchar("device"),
+    ipAddress: varchar("ip_address"),
+    userAgent: text("user_agent"),
+    isRevoked: boolean("is_revoked").default(false).notNull(),
+    expiresAt: timestamp("expires_at", {
+      withTimezone: true,
+      mode: "date",
+    }).notNull(),
+    replacedBySessionId: uuid("replaced_by_session_id"),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "date",
+    })
+      .defaultNow()
+      .notNull(),
+    lastActiveAt: timestamp("last_active_at", {
+      withTimezone: true,
+      mode: "date",
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("user_sessions_user_id_idx").on(table.userId),
+    index("user_sessions_refresh_token_hash_idx").on(table.refreshTokenHash),
+    index("user_sessions_expires_at_idx").on(table.expiresAt),
+  ],
+);
+
+export const magicLinks = pgTable(
+  "magic_links",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id),
+    tokenHash: text("token_hash").notNull(),
+    type: varchar("type").notNull(), // 'magic_link', 'password_reset', 'email_verification'
+    expiresAt: timestamp("expires_at", {
+      withTimezone: true,
+      mode: "date",
+    }).notNull(),
+    usedAt: timestamp("used_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "date",
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("magic_links_user_id_idx").on(table.userId),
+    index("magic_links_token_hash_idx").on(table.tokenHash),
+  ],
+);
+
+export const oauthAccounts = pgTable(
+  "oauth_accounts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id),
+    provider: varchar("provider").notNull(), // 'google', 'apple'
+    providerUserId: varchar("provider_user_id").notNull(),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "date",
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    unique("oauth_accounts_provider_user_unique").on(
+      table.provider,
+      table.providerUserId,
+    ),
+    index("oauth_accounts_user_id_idx").on(table.userId),
+  ],
 );
