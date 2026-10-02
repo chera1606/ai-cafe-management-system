@@ -16,12 +16,20 @@ import { AuthService } from "./auth.service";
 import { CurrentUser } from "./decorators/current-user.decorator";
 import { Public } from "./decorators/public.decorator";
 import { LoginDto } from "./dto/login.dto";
+import {
+  ForgotPasswordDto,
+  RequestMagicLinkDto,
+  ResetPasswordDto,
+  VerifyMagicLinkDto,
+} from "./dto/magic-link.dto";
+import { OAuthLoginDto } from "./dto/oauth-login.dto";
 import { RefreshTokenDto } from "./dto/refresh-token.dto";
 import { RegisterDto } from "./dto/register.dto";
 import {
   TwoFactorAuthenticateDto,
   TwoFactorCodeDto,
 } from "./dto/two-factor.dto";
+import { GoogleAuthGuard } from "./guards/google-auth.guard";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import type { JwtPayload } from "./interfaces/jwt-payload.interface";
 import type { ClientConnectionInfo } from "./interfaces/session.interface";
@@ -96,6 +104,63 @@ export class AuthController {
     @Body() dto: TwoFactorCodeDto,
   ) {
     return this.authService.disable2Fa(user.userId, dto.code);
+  }
+
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Public()
+  @Post("magic-link/request")
+  @HttpCode(HttpStatus.OK)
+  async requestMagicLink(@Body() dto: RequestMagicLinkDto) {
+    return this.authService.requestMagicLink(dto);
+  }
+
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Public()
+  @Post("magic-link/verify")
+  @HttpCode(HttpStatus.OK)
+  async verifyMagicLink(@Body() dto: VerifyMagicLinkDto, @Req() req: Request) {
+    const clientInfo = extractConnectionInfo(req);
+    return this.authService.verifyMagicLink(dto, clientInfo);
+  }
+
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Public()
+  @Post("forgot-password")
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto);
+  }
+
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Public()
+  @Post("reset-password")
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto);
+  }
+
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  @Get("google")
+  async googleAuth() {
+    // Passport redirects to Google
+  }
+
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  @Get("google/callback")
+  async googleAuthRedirect(@Req() req: Request) {
+    const googleUser = req.user as OAuthLoginDto;
+    const clientInfo = extractConnectionInfo(req);
+    return this.authService.handleOAuthLogin(googleUser, clientInfo);
+  }
+
+  @Public()
+  @Post("oauth/login")
+  @HttpCode(HttpStatus.OK)
+  async oauthLogin(@Body() dto: OAuthLoginDto, @Req() req: Request) {
+    const clientInfo = extractConnectionInfo(req);
+    return this.authService.handleOAuthLogin(dto, clientInfo);
   }
 
   @Throttle({ default: { limit: 10, ttl: 60000 } })
