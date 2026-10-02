@@ -691,7 +691,8 @@ export class AuthService {
           return newUser;
         });
 
-        if (!createdUser) throw new InternalServerErrorException("User creation failed");
+        if (!createdUser)
+          throw new InternalServerErrorException("User creation failed");
         userId = createdUser.id;
       }
     }

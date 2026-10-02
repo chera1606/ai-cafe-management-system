@@ -181,7 +181,8 @@ describe("AuthService", () => {
         password: "validPassword",
       });
 
-      if (!("accessToken" in result)) throw new Error("Expected full login result");
+      if (!("accessToken" in result))
+        throw new Error("Expected full login result");
       expect(result.accessToken).toBe("mock-jwt-token");
       expect(result.refreshToken).toBeDefined();
       expect(result.sessionId).toBe("session-1");
