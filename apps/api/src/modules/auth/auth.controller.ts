@@ -10,6 +10,7 @@ import {
   Req,
   UseGuards,
 } from "@nestjs/common";
+import { Throttle } from "@nestjs/throttler";
 import type { Request } from "express";
 import { AuthService } from "./auth.service";
 import { CurrentUser } from "./decorators/current-user.decorator";
@@ -37,6 +38,7 @@ function extractConnectionInfo(req: Request): ClientConnectionInfo {
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Public()
   @Post("register")
   @HttpCode(HttpStatus.CREATED)
@@ -44,6 +46,7 @@ export class AuthController {
     return this.authService.register(dto);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Public()
   @Post("login")
   @HttpCode(HttpStatus.OK)
@@ -52,6 +55,7 @@ export class AuthController {
     return this.authService.login(dto, clientInfo);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Public()
   @Post("refresh")
   @HttpCode(HttpStatus.OK)
