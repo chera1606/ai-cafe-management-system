@@ -7,6 +7,7 @@ import {
 import type { JwtService } from "@nestjs/jwt";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AuditService } from "../audit/audit.service";
+import type { EmailService } from "../email/email.service";
 import type { UsersService } from "../users/users.service";
 import { AuthService } from "./auth.service";
 import type { TwoFactorService } from "./services/two-factor.service";
@@ -38,6 +39,11 @@ describe("AuthService", () => {
     verifyToken: ReturnType<typeof vi.fn>;
     generateRecoveryCodes: ReturnType<typeof vi.fn>;
   };
+  let mockEmailService: {
+    sendPasswordResetEmail: ReturnType<typeof vi.fn>;
+    sendMagicLinkEmail: ReturnType<typeof vi.fn>;
+    sendWelcomeVerificationEmail: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     mockDb = {
@@ -64,6 +70,11 @@ describe("AuthService", () => {
       verifyToken: vi.fn(),
       generateRecoveryCodes: vi.fn(),
     };
+    mockEmailService = {
+      sendPasswordResetEmail: vi.fn().mockResolvedValue(undefined),
+      sendMagicLinkEmail: vi.fn().mockResolvedValue(undefined),
+      sendWelcomeVerificationEmail: vi.fn().mockResolvedValue(undefined),
+    };
 
     service = new AuthService(
       mockDb as unknown as Database,
@@ -71,6 +82,7 @@ describe("AuthService", () => {
       mockJwtService as unknown as JwtService,
       mockAuditService as unknown as AuditService,
       mockTwoFactorService as unknown as TwoFactorService,
+      mockEmailService as unknown as EmailService,
     );
   });
 
@@ -126,9 +138,16 @@ describe("AuthService", () => {
         },
       );
 
+      // Mock the outer db.insert for the email verification token
+      mockDb.insert.mockReturnValue({
+        values: vi.fn().mockResolvedValue(undefined),
+      });
+
       const response = await service.register(dto);
 
-      expect(response.message).toBe("User registered successfully");
+      expect(response.message).toBe(
+        "User registered successfully. Please verify your email.",
+      );
       expect(response.user.email).toBe("jane@example.com");
       expect(response.user.customer.name).toBe("Jane Doe");
       expect(response.user.roles).toEqual(["customer"]);

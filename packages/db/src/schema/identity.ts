@@ -27,6 +27,11 @@ export const users = pgTable(
     twoFactorSecret: text("two_factor_secret"),
     twoFactorEnabled: boolean("two_factor_enabled").default(false).notNull(),
     twoFactorRecoveryCodes: jsonb("two_factor_recovery_codes"),
+    emailVerifiedAt: timestamp("email_verified_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
+    tokenVersion: integer("token_version").default(0).notNull(),
     createdAt: timestamp("created_at", {
       withTimezone: true,
       mode: "date",

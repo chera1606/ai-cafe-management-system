@@ -18,10 +18,12 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { and, desc, eq, gt } from "drizzle-orm";
+import { and, desc, eq, gt, sql } from "drizzle-orm";
 import { AuditService } from "../audit/audit.service";
 import { DATABASE_TOKEN } from "../database/database.constants";
+import { EmailService } from "../email/email.service";
 import { UsersService } from "../users/users.service";
+import type { ChangePasswordDto } from "./dto/change-password.dto";
 import type { LoginDto } from "./dto/login.dto";
 import type {
   ForgotPasswordDto,
@@ -33,6 +35,7 @@ import type { OAuthLoginDto } from "./dto/oauth-login.dto";
 import type { RefreshTokenDto } from "./dto/refresh-token.dto";
 import type { RegisterDto } from "./dto/register.dto";
 import type { TwoFactorAuthenticateDto } from "./dto/two-factor.dto";
+import type { VerifyEmailDto } from "./dto/verify-email.dto";
 import type { JwtPayload } from "./interfaces/jwt-payload.interface";
 import type {
   ClientConnectionInfo,
@@ -56,6 +59,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly auditService: AuditService,
     private readonly twoFactorService: TwoFactorService,
+    private readonly emailService: EmailService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -126,11 +130,25 @@ export class AuthService {
       newState: { email: result.user.email },
     });
 
+    // Send email verification link (fire-and-forget — never blocks registration)
+    const verifyToken = generateRandomToken(40);
+    const verifyTokenHash = hashToken(verifyToken);
+    await this.db.insert(magicLinks).values({
+      userId: result.user.id,
+      tokenHash: verifyTokenHash,
+      type: "email_verification",
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+    });
+    void this.emailService.sendWelcomeVerificationEmail(
+      result.user.email,
+      verifyToken,
+    );
+
     const { roles: userRolesList, permissions: userPermsList } =
       await this.usersService.getUserRolesAndPermissions(result.user.id);
 
     return {
-      message: "User registered successfully",
+      message: "User registered successfully. Please verify your email.",
       user: {
         id: result.user.id,
         email: result.user.email,
@@ -478,9 +496,12 @@ export class AuthService {
       entityType: "magic_links",
     });
 
+    // Fire-and-forget — email failure never blocks the API response
+    void this.emailService.sendMagicLinkEmail(user.email, rawToken);
+
     return {
-      message: "Magic login link generated successfully",
-      token: rawToken,
+      message:
+        "If an account exists with this email, a magic login link has been sent.",
     };
   }
 
@@ -548,6 +569,9 @@ export class AuthService {
         entityType: "users",
         entityId: user.id,
       });
+
+      // Fire-and-forget — never let email failure block the response
+      void this.emailService.sendPasswordResetEmail(user.email, rawToken);
     }
 
     return {
@@ -580,12 +604,14 @@ export class AuthService {
     const hashedPassword = await hashPassword(dto.newPassword);
 
     await this.db.transaction(async (tx) => {
+      // Update password + bump tokenVersion (invalidates all outstanding JWTs)
       await tx
         .update(users)
         .set({
           passwordHash: hashedPassword,
           failedLoginAttempts: 0,
           lockedUntil: null,
+          tokenVersion: sql`${users.tokenVersion} + 1`,
         })
         .where(eq(users.id, link.userId));
 
@@ -949,5 +975,102 @@ export class AuthService {
       throw new NotFoundException("User profile not found");
     }
     return profile;
+  }
+
+  async verifyEmail(dto: VerifyEmailDto) {
+    const tokenHash = hashToken(dto.token);
+
+    const [link] = await this.db
+      .select()
+      .from(magicLinks)
+      .where(
+        and(
+          eq(magicLinks.tokenHash, tokenHash),
+          eq(magicLinks.type, "email_verification"),
+          gt(magicLinks.expiresAt, new Date()),
+        ),
+      )
+      .limit(1);
+
+    if (!link || link.usedAt) {
+      throw new UnauthorizedException(
+        "Invalid or expired email verification token",
+      );
+    }
+
+    await this.db.transaction(async (tx) => {
+      await tx
+        .update(users)
+        .set({ emailVerifiedAt: new Date() })
+        .where(eq(users.id, link.userId));
+
+      await tx
+        .update(magicLinks)
+        .set({ usedAt: new Date() })
+        .where(eq(magicLinks.id, link.id));
+    });
+
+    await this.auditService.record({
+      actorUserId: link.userId,
+      action: "AUTH_EMAIL_VERIFIED",
+      entityType: "users",
+      entityId: link.userId,
+    });
+
+    return { message: "Email verified successfully" };
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const [user] = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+
+    const isMatch = await comparePassword(
+      dto.currentPassword,
+      user.passwordHash,
+    );
+    if (!isMatch) {
+      throw new UnauthorizedException("Current password is incorrect");
+    }
+
+    if (dto.currentPassword === dto.newPassword) {
+      throw new BadRequestException(
+        "New password must be different from current password",
+      );
+    }
+
+    const hashedPassword = await hashPassword(dto.newPassword);
+
+    await this.db.transaction(async (tx) => {
+      // Update password + bump tokenVersion to invalidate all existing JWTs
+      await tx
+        .update(users)
+        .set({
+          passwordHash: hashedPassword,
+          tokenVersion: sql`${users.tokenVersion} + 1`,
+        })
+        .where(eq(users.id, userId));
+
+      // Revoke all other sessions (user keeps current session)
+      await tx
+        .update(userSessions)
+        .set({ isRevoked: true })
+        .where(eq(userSessions.userId, userId));
+    });
+
+    await this.auditService.record({
+      actorUserId: userId,
+      action: "AUTH_PASSWORD_CHANGED",
+      entityType: "users",
+      entityId: userId,
+    });
+
+    return { message: "Password changed successfully. Please log in again." };
   }
 }

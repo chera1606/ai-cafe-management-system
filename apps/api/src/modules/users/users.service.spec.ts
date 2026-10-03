@@ -122,6 +122,8 @@ describe("UsersService", () => {
         twoFactorSecret: null,
         twoFactorEnabled: false,
         twoFactorRecoveryCodes: null,
+        emailVerifiedAt: null,
+        tokenVersion: 0,
         createdAt: new Date("2026-01-01"),
         passwordHash: "hash",
         updatedAt: new Date("2026-01-01"),
