@@ -19,6 +19,13 @@ describe("AuthController", () => {
     revokeSession: ReturnType<typeof vi.fn>;
     revokeAllSessions: ReturnType<typeof vi.fn>;
     getProfile: ReturnType<typeof vi.fn>;
+    requestMagicLink: ReturnType<typeof vi.fn>;
+    verifyMagicLink: ReturnType<typeof vi.fn>;
+    forgotPassword: ReturnType<typeof vi.fn>;
+    resetPassword: ReturnType<typeof vi.fn>;
+    handleOAuthLogin: ReturnType<typeof vi.fn>;
+    verifyEmail: ReturnType<typeof vi.fn>;
+    changePassword: ReturnType<typeof vi.fn>;
   };
   let mockRequest: Partial<Request>;
 
@@ -36,6 +43,13 @@ describe("AuthController", () => {
       revokeSession: vi.fn(),
       revokeAllSessions: vi.fn(),
       getProfile: vi.fn(),
+      requestMagicLink: vi.fn(),
+      verifyMagicLink: vi.fn(),
+      forgotPassword: vi.fn(),
+      resetPassword: vi.fn(),
+      handleOAuthLogin: vi.fn(),
+      verifyEmail: vi.fn(),
+      changePassword: vi.fn(),
     };
     mockRequest = {
       headers: { "user-agent": "Mozilla/5.0 Chrome/128" },
