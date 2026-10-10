@@ -48,7 +48,7 @@ export default function HomePage() {
                 </Link>
                 <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-stone-700 dark:text-stone-300">
                   <div className="w-7 h-7 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 flex items-center justify-center font-bold text-xs">
-                    {(user.customer?.name?.[0] || user.email[0]).toUpperCase()}
+                    {(user.customer?.name?.[0] || user.email?.[0] || "U").toUpperCase()}
                   </div>
                   <span>{user.customer?.name || user.email}</span>
                 </div>

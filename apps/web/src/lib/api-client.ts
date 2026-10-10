@@ -9,7 +9,7 @@ const REFRESH_TOKEN_KEY = "cafe_refresh_token";
 export class ApiClientError extends Error {
   constructor(
     public readonly status: number,
-    public readonly message: string,
+    public override readonly message: string,
     public readonly data?: unknown,
   ) {
     super(message);
