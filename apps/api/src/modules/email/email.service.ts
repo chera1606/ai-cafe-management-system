@@ -56,12 +56,20 @@ export class EmailService {
     }
 
     try {
-      await this.resend.emails.send({
+      const result = await this.resend.emails.send({
         from: this.fromAddress,
         to: opts.to,
         subject: opts.subject,
         html: opts.html,
       });
+
+      if (result?.error) {
+        this.logger.error(
+          `Resend API error sending to ${opts.to}: ${result.error.message}`,
+        );
+        return;
+      }
+
       this.logger.log(`Email sent to ${opts.to}: ${opts.subject}`);
     } catch (error) {
       // Never let a failed email crash the auth flow

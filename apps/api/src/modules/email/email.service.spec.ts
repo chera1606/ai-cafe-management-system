@@ -68,4 +68,14 @@ describe("EmailService", () => {
     ).resolves.not.toThrow();
     expect(mockResendSend).not.toHaveBeenCalled();
   });
+
+  it("should log and handle error object returned in Resend response", async () => {
+    mockResendSend.mockResolvedValue({
+      data: null,
+      error: { message: "Only send to registered address" },
+    });
+    await expect(
+      service.sendPasswordResetEmail("user@example.com", "tok_err"),
+    ).resolves.not.toThrow();
+  });
 });
