@@ -20,8 +20,8 @@ export interface AuthUser {
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
-  tokenType: string;
-  expiresIn: string;
+  tokenType?: string;
+  expiresIn?: string;
 }
 
 export interface SessionInfo {
@@ -34,15 +34,17 @@ export interface SessionInfo {
 }
 
 export interface LoginSuccessResponse {
-  requires2fa: false;
-  tokens: AuthTokens;
+  requires2fa?: false;
+  accessToken: string;
+  refreshToken: string;
+  sessionId?: string;
   user: AuthUser;
 }
 
 export interface Login2FaRequiredResponse {
   requires2fa: true;
   tempToken: string;
-  message: string;
+  message?: string;
 }
 
 export type LoginResponse = LoginSuccessResponse | Login2FaRequiredResponse;

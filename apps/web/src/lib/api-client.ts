@@ -1,5 +1,3 @@
-import type { AuthTokens } from "@/types/auth";
-
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
 
@@ -28,10 +26,15 @@ export function getRefreshToken(): string | null {
   return localStorage.getItem(REFRESH_TOKEN_KEY);
 }
 
-export function saveTokens(tokens: AuthTokens): void {
-  if (typeof window === "undefined") return;
+export function saveTokens(tokens: {
+  accessToken: string;
+  refreshToken?: string;
+}): void {
+  if (typeof window === "undefined" || !tokens?.accessToken) return;
   localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
-  localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
+  if (tokens.refreshToken) {
+    localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
+  }
   // Also store in cookie for Next.js middleware access
   // biome-ignore lint/suspicious/noDocumentCookie: cookie required for Next.js server middleware authentication
   document.cookie = `${ACCESS_TOKEN_KEY}=${tokens.accessToken}; path=/; max-age=86400; SameSite=Lax`;
@@ -118,8 +121,11 @@ export async function apiClient<T>(
         }
 
         const data = await refreshResponse.json();
-        saveTokens(data.tokens);
-        onTokenRefreshed(data.tokens.accessToken);
+        saveTokens({
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+        });
+        onTokenRefreshed(data.accessToken);
       } catch (err) {
         clearTokens();
         onTokenRefreshed(null);

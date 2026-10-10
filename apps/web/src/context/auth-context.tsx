@@ -17,8 +17,8 @@ import {
 import type {
   ApiMessageResponse,
   AuthUser,
-  Login2FaRequiredResponse,
   LoginResponse,
+  LoginSuccessResponse,
   RegisterResponse,
 } from "@/types/auth";
 
@@ -99,13 +99,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (res.requires2fa) {
       setTwoFactorPending({
         isPending: true,
-        tempToken: (res as Login2FaRequiredResponse).tempToken,
+        tempToken: res.tempToken,
       });
       return { requires2fa: true };
     }
 
-    saveTokens(res.tokens);
-    setUser(res.user);
+    const successRes = res as LoginSuccessResponse;
+    saveTokens({
+      accessToken: successRes.accessToken,
+      refreshToken: successRes.refreshToken,
+    });
+    setUser(successRes.user);
     setTwoFactorPending({ isPending: false, tempToken: null });
     return { requires2fa: false };
   };
@@ -126,8 +130,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (!res.requires2fa) {
-      saveTokens(res.tokens);
-      setUser(res.user);
+      const successRes = res as LoginSuccessResponse;
+      saveTokens({
+        accessToken: successRes.accessToken,
+        refreshToken: successRes.refreshToken,
+      });
+      setUser(successRes.user);
       setTwoFactorPending({ isPending: false, tempToken: null });
     }
   };
@@ -165,8 +173,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (!res.requires2fa) {
-      saveTokens(res.tokens);
-      setUser(res.user);
+      const successRes = res as LoginSuccessResponse;
+      saveTokens({
+        accessToken: successRes.accessToken,
+        refreshToken: successRes.refreshToken,
+      });
+      setUser(successRes.user);
     }
   };
 
