@@ -17,7 +17,10 @@ describe("EmailService", () => {
     mockResendSend.mockReset();
 
     const mockConfigService = {
-      get: vi.fn((_key: string, def: string) => def),
+      get: vi.fn((key: string, def?: string) => {
+        if (key === "RESEND_API_KEY") return "re_test_key";
+        return def ?? "";
+      }),
     } as unknown as ConfigService;
 
     service = new EmailService(mockConfigService);
@@ -51,6 +54,28 @@ describe("EmailService", () => {
     mockResendSend.mockRejectedValue(new Error("Resend API error"));
     await expect(
       service.sendPasswordResetEmail("user@example.com", "tok000"),
+    ).resolves.not.toThrow();
+  });
+
+  it("should handle missing RESEND_API_KEY gracefully without calling Resend", async () => {
+    const unconfiguredConfigService = {
+      get: vi.fn((_key: string, def?: string) => def ?? ""),
+    } as unknown as ConfigService;
+    const fallbackService = new EmailService(unconfiguredConfigService);
+
+    await expect(
+      fallbackService.sendPasswordResetEmail("user@example.com", "tok_dev"),
+    ).resolves.not.toThrow();
+    expect(mockResendSend).not.toHaveBeenCalled();
+  });
+
+  it("should log and handle error object returned in Resend response", async () => {
+    mockResendSend.mockResolvedValue({
+      data: null,
+      error: { message: "Only send to registered address" },
+    });
+    await expect(
+      service.sendPasswordResetEmail("user@example.com", "tok_err"),
     ).resolves.not.toThrow();
   });
 });

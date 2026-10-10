@@ -23,7 +23,26 @@ export const envSchema = z.object({
 
   // Resend email service
   RESEND_API_KEY: z.string().optional(),
-  RESEND_FROM_EMAIL: z.string().email().default("noreply@cafe.local"),
+  RESEND_FROM_EMAIL: z
+    .string()
+    .default("onboarding@resend.dev")
+    .transform((val) => {
+      const trimmed = (val ?? "").trim();
+      if (!trimmed) return "onboarding@resend.dev";
+      if (
+        trimmed.includes("@") &&
+        z.string().email().safeParse(trimmed).success
+      ) {
+        return trimmed;
+      }
+      if (!trimmed.includes("@") && trimmed.includes(".")) {
+        const withPrefix = `noreply@${trimmed}`;
+        if (z.string().email().safeParse(withPrefix).success) {
+          return withPrefix;
+        }
+      }
+      return "onboarding@resend.dev";
+    }),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

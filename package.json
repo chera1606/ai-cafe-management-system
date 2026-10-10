@@ -10,7 +10,10 @@
     "test:coverage": "pnpm --recursive test:coverage",
     "lint": "pnpm exec biome check .",
     "format": "pnpm exec biome format --write .",
-    "typecheck": "pnpm --recursive typecheck"
+    "typecheck": "pnpm --recursive typecheck",
+    "db:push": "pnpm --filter @cafe/db db:push",
+    "db:migrate": "pnpm --filter @cafe/db db:migrate",
+    "db:studio": "pnpm --filter @cafe/db db:studio"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.2",

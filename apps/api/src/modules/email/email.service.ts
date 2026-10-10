@@ -5,38 +5,71 @@ import { Resend } from "resend";
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private readonly resend: Resend;
+  private readonly resend: Resend | null = null;
   private readonly fromAddress: string;
   private readonly appUrl: string;
 
   constructor(private readonly configService: ConfigService) {
-    const apiKey = this.configService.get<string>(
-      "RESEND_API_KEY",
-      "re_placeholder",
-    );
+    const rawApiKey = this.configService.get<string>("RESEND_API_KEY");
+    const apiKey = rawApiKey?.trim();
     this.fromAddress = this.configService.get<string>(
       "RESEND_FROM_EMAIL",
       "noreply@cafe.local",
     );
     this.appUrl = this.configService.get<string>(
       "APP_URL",
-      "http://localhost:3000",
+      "http://localhost:3001",
     );
-    this.resend = new Resend(apiKey);
+
+    if (apiKey && apiKey.length > 0 && apiKey !== "re_placeholder") {
+      this.resend = new Resend(apiKey);
+    } else {
+      this.resend = null;
+      this.logger.warn(
+        "RESEND_API_KEY is not configured. Action links will be printed directly to the server console.",
+      );
+    }
   }
 
   private async sendEmail(opts: {
     to: string;
     subject: string;
     html: string;
+    actionUrl?: string;
   }): Promise<void> {
+    if (opts.actionUrl) {
+      this.logger.log(
+        `\n╔══════════════════════════════════════════════════════════════════════════════` +
+          `\n║ [DEV EMAIL ACTION LINK]` +
+          `\n║ To: ${opts.to}` +
+          `\n║ Subject: ${opts.subject}` +
+          `\n║ Action URL: ${opts.actionUrl}` +
+          `\n╚══════════════════════════════════════════════════════════════════════════════`,
+      );
+    }
+
+    if (!this.resend) {
+      this.logger.log(
+        `RESEND_API_KEY not configured — live email skipped. Action link printed above.`,
+      );
+      return;
+    }
+
     try {
-      await this.resend.emails.send({
+      const result = await this.resend.emails.send({
         from: this.fromAddress,
         to: opts.to,
         subject: opts.subject,
         html: opts.html,
       });
+
+      if (result?.error) {
+        this.logger.error(
+          `Resend API error sending to ${opts.to}: ${result.error.message}`,
+        );
+        return;
+      }
+
       this.logger.log(`Email sent to ${opts.to}: ${opts.subject}`);
     } catch (error) {
       // Never let a failed email crash the auth flow
@@ -50,6 +83,7 @@ export class EmailService {
       to,
       subject: "Reset your password — AI Cafe",
       html: this.buildPasswordResetTemplate(resetUrl),
+      actionUrl: resetUrl,
     });
   }
 
@@ -59,15 +93,17 @@ export class EmailService {
       to,
       subject: "Your magic login link — AI Cafe",
       html: this.buildMagicLinkTemplate(loginUrl),
+      actionUrl: loginUrl,
     });
   }
 
   async sendWelcomeVerificationEmail(to: string, token: string): Promise<void> {
-    const verifyUrl = `${this.appUrl}/auth/verify-email?token=${token}`;
+    const verifyUrl = `${this.appUrl}/verify-email?token=${token}`;
     await this.sendEmail({
       to,
       subject: "Verify your email — AI Cafe",
       html: this.buildWelcomeVerificationTemplate(verifyUrl),
+      actionUrl: verifyUrl,
     });
   }
 

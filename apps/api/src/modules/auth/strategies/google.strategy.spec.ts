@@ -1,4 +1,5 @@
 import type { ConfigService } from "@nestjs/config";
+import type { Profile } from "passport-google-oauth20";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GoogleStrategy } from "./google.strategy";
 
@@ -27,7 +28,7 @@ describe("GoogleStrategy", () => {
     await strategy.validate(
       "access-token",
       "refresh-token",
-      mockProfile as any,
+      mockProfile as unknown as Profile,
       done,
     );
 

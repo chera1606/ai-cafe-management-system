@@ -15,6 +15,7 @@ import { UsersModule } from "./modules/users/users.module";
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: [".env", "../../.env", "../.env"],
       validate: validateEnv,
     }),
     ThrottlerModule.forRoot([

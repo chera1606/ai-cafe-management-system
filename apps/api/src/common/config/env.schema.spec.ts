@@ -67,4 +67,26 @@ describe("validateEnv", () => {
       "Invalid environment configuration: [NODE_ENV]",
     );
   });
+
+  it("should normalize bare domain in RESEND_FROM_EMAIL to a valid email", () => {
+    const config = {
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/test_db",
+      JWT_SECRET: "super-secret-key-12345",
+      RESEND_FROM_EMAIL: "sablecafe.com",
+    };
+
+    const validated = validateEnv(config);
+    expect(validated.RESEND_FROM_EMAIL).toBe("noreply@sablecafe.com");
+  });
+
+  it("should fallback malformed RESEND_FROM_EMAIL to onboarding@resend.dev safely", () => {
+    const config = {
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/test_db",
+      JWT_SECRET: "super-secret-key-12345",
+      RESEND_FROM_EMAIL: "not-an-email",
+    };
+
+    const validated = validateEnv(config);
+    expect(validated.RESEND_FROM_EMAIL).toBe("onboarding@resend.dev");
+  });
 });
