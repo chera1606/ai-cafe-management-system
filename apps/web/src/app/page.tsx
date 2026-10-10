@@ -10,7 +10,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button, LinkButton } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
 
 export default function HomePage() {
@@ -40,12 +40,15 @@ export default function HomePage() {
               <div className="w-20 h-8 bg-stone-200 dark:bg-stone-800 animate-pulse rounded-lg" />
             ) : isAuthenticated && user ? (
               <div className="flex items-center gap-3">
-                <Link href="/settings/security">
-                  <Button variant="outline" size="sm" className="text-xs">
-                    <Settings className="w-3.5 h-3.5 mr-1" />
-                    Security
-                  </Button>
-                </Link>
+                <LinkButton
+                  href="/settings/security"
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                >
+                  <Settings className="w-3.5 h-3.5 mr-1" />
+                  Security
+                </LinkButton>
                 <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-stone-700 dark:text-stone-300">
                   <div className="w-7 h-7 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 flex items-center justify-center font-bold text-xs">
                     {(
@@ -67,16 +70,17 @@ export default function HomePage() {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Link href="/login">
-                  <Button variant="ghost" size="sm" className="text-xs">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link href="/register">
-                  <Button size="sm" className="text-xs">
-                    Create Account
-                  </Button>
-                </Link>
+                <LinkButton
+                  href="/login"
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs"
+                >
+                  Sign In
+                </LinkButton>
+                <LinkButton href="/register" size="sm" className="text-xs">
+                  Create Account
+                </LinkButton>
               </div>
             )}
           </div>
@@ -114,16 +118,15 @@ export default function HomePage() {
                 rotation and TOTP two-factor security.
               </p>
               <div className="pt-2 flex flex-wrap gap-3">
-                <Link href="/settings/security">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="text-xs font-semibold bg-white hover:bg-stone-100 text-stone-900"
-                  >
-                    <ShieldCheck className="w-4 h-4 mr-1 text-emerald-600" />
-                    Manage 2FA & Active Devices
-                  </Button>
-                </Link>
+                <LinkButton
+                  href="/settings/security"
+                  variant="secondary"
+                  size="sm"
+                  className="text-xs font-semibold bg-white hover:bg-stone-100 text-stone-900"
+                >
+                  <ShieldCheck className="w-4 h-4 mr-1 text-emerald-600" />
+                  Manage 2FA & Active Devices
+                </LinkButton>
               </div>
             </div>
 
@@ -183,17 +186,17 @@ export default function HomePage() {
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-              <Link href="/register">
-                <Button size="lg" className="shadow-lg shadow-amber-700/20">
-                  Get Started
-                  <ArrowRight className="w-4 h-4 ml-1.5" />
-                </Button>
-              </Link>
-              <Link href="/login">
-                <Button variant="outline" size="lg">
-                  Sign In to Account
-                </Button>
-              </Link>
+              <LinkButton
+                href="/register"
+                size="lg"
+                className="shadow-lg shadow-amber-700/20"
+              >
+                Get Started
+                <ArrowRight className="w-4 h-4 ml-1.5" />
+              </LinkButton>
+              <LinkButton href="/login" variant="outline" size="lg">
+                Sign In to Account
+              </LinkButton>
             </div>
 
             {/* Feature Checklist */}

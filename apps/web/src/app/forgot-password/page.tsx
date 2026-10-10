@@ -5,7 +5,7 @@ import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { Alert } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { Button, LinkButton } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth-context";
 
@@ -51,12 +51,10 @@ export default function ForgotPasswordPage() {
           </p>
 
           <div className="pt-2">
-            <Link href="/login">
-              <Button variant="outline" className="w-full">
-                <ArrowLeft className="w-3.5 h-3.5 mr-1" />
-                Back to Sign In
-              </Button>
-            </Link>
+            <LinkButton href="/login" variant="outline" className="w-full">
+              <ArrowLeft className="w-3.5 h-3.5 mr-1" />
+              Back to Sign In
+            </LinkButton>
           </div>
         </div>
       </AuthLayout>

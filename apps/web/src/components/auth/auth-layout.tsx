@@ -11,12 +11,14 @@ interface AuthLayoutProps {
 export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
   return (
     <div className="min-h-screen w-full flex flex-col justify-center items-center bg-stone-50 dark:bg-stone-950 p-4 sm:p-6 lg:p-8 relative selection:bg-amber-500/20 selection:text-amber-900">
-      {/* Decorative ambient cafe gradients */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 -right-40 w-96 h-96 bg-orange-600/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 left-1/3 w-96 h-96 bg-stone-500/10 rounded-full blur-3xl" />
-      </div>
+      {/* High-performance ambient cafe glow (zero GPU blur overhead) */}
+      <div
+        className="absolute inset-0 pointer-events-none -z-10 opacity-80"
+        style={{
+          backgroundImage:
+            "radial-gradient(at 0% 0%, rgba(245, 158, 11, 0.08) 0px, transparent 50%), radial-gradient(at 100% 50%, rgba(234, 88, 12, 0.08) 0px, transparent 50%), radial-gradient(at 50% 100%, rgba(120, 113, 108, 0.08) 0px, transparent 50%)",
+        }}
+      />
 
       {/* Main card wrapper */}
       <div className="w-full max-w-md space-y-6">

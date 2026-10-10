@@ -1,11 +1,10 @@
 "use client";
 
 import { AlertCircle, CheckCircle2, Loader2, Sparkles } from "lucide-react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { AuthLayout } from "@/components/auth/auth-layout";
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
 
 function MagicLinkVerifyContent() {
@@ -97,11 +96,9 @@ function MagicLinkVerifyContent() {
         <p className="text-xs text-stone-500 leading-relaxed">{errorMsg}</p>
       </div>
       <div className="pt-2">
-        <Link href="/login">
-          <Button variant="outline" className="w-full">
-            Back to Sign In
-          </Button>
-        </Link>
+        <LinkButton href="/login" variant="outline" className="w-full">
+          Back to Sign In
+        </LinkButton>
       </div>
     </div>
   );

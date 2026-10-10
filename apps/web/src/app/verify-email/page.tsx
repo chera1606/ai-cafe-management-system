@@ -1,11 +1,10 @@
 "use client";
 
 import { AlertCircle, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { AuthLayout } from "@/components/auth/auth-layout";
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
 
 function VerifyEmailContent() {
@@ -80,12 +79,10 @@ function VerifyEmailContent() {
           <p className="text-xs text-stone-500 leading-relaxed">{message}</p>
         </div>
         <div className="pt-2">
-          <Link href="/login">
-            <Button className="w-full">
-              Proceed to Sign In
-              <ArrowRight className="w-4 h-4 ml-1.5" />
-            </Button>
-          </Link>
+          <LinkButton href="/login" className="w-full">
+            Proceed to Sign In
+            <ArrowRight className="w-4 h-4 ml-1.5" />
+          </LinkButton>
         </div>
       </div>
     );
@@ -103,11 +100,9 @@ function VerifyEmailContent() {
         <p className="text-xs text-stone-500 leading-relaxed">{message}</p>
       </div>
       <div className="pt-2 space-y-2">
-        <Link href="/login">
-          <Button variant="outline" className="w-full">
-            Back to Sign In
-          </Button>
-        </Link>
+        <LinkButton href="/login" variant="outline" className="w-full">
+          Back to Sign In
+        </LinkButton>
       </div>
     </div>
   );

@@ -1,12 +1,11 @@
 "use client";
 
 import { AlertCircle, CheckCircle2, Eye, EyeOff, Lock } from "lucide-react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, Suspense, useState } from "react";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { Alert } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { Button, LinkButton } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth-context";
 
@@ -37,11 +36,13 @@ function ResetPasswordForm() {
           The password reset link is invalid or has expired. Please request a
           new one.
         </p>
-        <Link href="/forgot-password">
-          <Button variant="outline" className="w-full">
-            Request New Reset Link
-          </Button>
-        </Link>
+        <LinkButton
+          href="/forgot-password"
+          variant="outline"
+          className="w-full"
+        >
+          Request New Reset Link
+        </LinkButton>
       </div>
     );
   }
@@ -90,9 +91,9 @@ function ResetPasswordForm() {
           Your password has been reset. All previous sessions have been signed
           out. Redirecting to sign in...
         </p>
-        <Link href="/login">
-          <Button className="w-full">Sign In Now</Button>
-        </Link>
+        <LinkButton href="/login" className="w-full">
+          Sign In Now
+        </LinkButton>
       </div>
     );
   }

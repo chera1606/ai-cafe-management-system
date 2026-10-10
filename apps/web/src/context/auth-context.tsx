@@ -59,7 +59,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return !!localStorage.getItem("cafe_access_token");
+    }
+    return false;
+  });
   const [twoFactorPending, setTwoFactorPending] = useState<{
     isPending: boolean;
     tempToken: string | null;

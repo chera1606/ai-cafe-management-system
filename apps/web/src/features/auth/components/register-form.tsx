@@ -12,7 +12,7 @@ import {
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import { Alert } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { Button, LinkButton } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth-context";
 import { registerSchema } from "../schemas/auth.schema";
@@ -93,9 +93,9 @@ export function RegisterForm() {
         </div>
 
         <div className="pt-2">
-          <Link href="/login">
-            <Button className="w-full">Proceed to Sign In</Button>
-          </Link>
+          <LinkButton href="/login" className="w-full">
+            Proceed to Sign In
+          </LinkButton>
         </div>
       </div>
     );
