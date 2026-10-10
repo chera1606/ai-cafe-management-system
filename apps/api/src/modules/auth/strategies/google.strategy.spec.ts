@@ -27,7 +27,7 @@ describe("GoogleStrategy", () => {
     await strategy.validate(
       "access-token",
       "refresh-token",
-      mockProfile as any,
+      mockProfile as unknown as Profile,
       done,
     );
 
