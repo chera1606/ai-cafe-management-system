@@ -1,22 +1,17 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import {
-  Smartphone,
-  AlertTriangle,
-  Copy,
-  Check,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { AlertTriangle, Check, Copy, Smartphone } from "lucide-react";
+import { type FormEvent, useState } from "react";
 import { Alert } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { apiClient } from "@/lib/api-client";
 import type {
   TwoFactorEnableResponse,
@@ -24,7 +19,9 @@ import type {
 } from "@/types/auth";
 
 export function TwoFactorSetupWizard() {
-  const [setupData, setSetupData] = useState<TwoFactorGenerateResponse | null>(null);
+  const [setupData, setSetupData] = useState<TwoFactorGenerateResponse | null>(
+    null,
+  );
   const [verifyCode, setVerifyCode] = useState("");
   const [disableCode, setDisableCode] = useState("");
   const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
@@ -38,9 +35,12 @@ export function TwoFactorSetupWizard() {
     setError(null);
     setIsLoading(true);
     try {
-      const data = await apiClient<TwoFactorGenerateResponse>("/auth/2fa/generate", {
-        method: "POST",
-      });
+      const data = await apiClient<TwoFactorGenerateResponse>(
+        "/auth/2fa/generate",
+        {
+          method: "POST",
+        },
+      );
       setSetupData(data);
     } catch (err: unknown) {
       setError(
@@ -109,7 +109,8 @@ export function TwoFactorSetupWizard() {
           Two-Factor Authentication (2FA)
         </CardTitle>
         <CardDescription>
-          Add an extra layer of security using Google Authenticator or 1Password.
+          Add an extra layer of security using Google Authenticator or
+          1Password.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -123,11 +124,14 @@ export function TwoFactorSetupWizard() {
               <span>Save your backup recovery codes!</span>
             </div>
             <p className="text-xs text-amber-800 dark:text-amber-300">
-              If you lose access to your phone, these are the only way to sign in. Store them in a password manager.
+              If you lose access to your phone, these are the only way to sign
+              in. Store them in a password manager.
             </p>
             <div className="grid grid-cols-2 gap-1.5 p-2.5 bg-white dark:bg-stone-900 rounded border border-amber-200 dark:border-amber-800/80 font-mono text-xs text-stone-800 dark:text-stone-200">
               {recoveryCodes.map((code) => (
-                <span key={code} className="text-center py-0.5">{code}</span>
+                <span key={code} className="text-center py-0.5">
+                  {code}
+                </span>
               ))}
             </div>
             <Button
@@ -229,7 +233,8 @@ export function TwoFactorSetupWizard() {
             ) : (
               <div className="space-y-3">
                 <p className="text-xs text-stone-500">
-                  Protect your cafe account by requiring a time-based one-time password on sign in.
+                  Protect your cafe account by requiring a time-based one-time
+                  password on sign in.
                 </p>
                 <Button
                   type="button"

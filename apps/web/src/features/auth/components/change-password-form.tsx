@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
 import { Key } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { type FormEvent, useState } from "react";
 import { Alert } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth-context";
 import { changePasswordSchema } from "../schemas/auth.schema";
 

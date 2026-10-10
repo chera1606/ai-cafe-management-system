@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
 import { Mail, Sparkles } from "lucide-react";
+import { type FormEvent, useState } from "react";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Alert } from "@/components/ui/alert";
 import { useAuth } from "@/context/auth-context";
 import { magicLinkSchema } from "../schemas/auth.schema";
 
@@ -24,7 +24,9 @@ export function MagicLinkForm() {
 
     const validation = magicLinkSchema.safeParse({ email });
     if (!validation.success) {
-      setFieldError(validation.error.errors[0]?.message || "Invalid email address");
+      setFieldError(
+        validation.error.errors[0]?.message || "Invalid email address",
+      );
       return;
     }
 
@@ -44,7 +46,8 @@ export function MagicLinkForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <p className="text-xs text-stone-500 dark:text-stone-400">
-        We&apos;ll email you an instant, secure login link. No password required.
+        We&apos;ll email you an instant, secure login link. No password
+        required.
       </p>
 
       {generalError && <Alert variant="error">{generalError}</Alert>}

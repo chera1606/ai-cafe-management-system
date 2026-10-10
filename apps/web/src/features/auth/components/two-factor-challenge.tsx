@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { ArrowLeft, KeyRound } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { KeyRound, ArrowLeft } from "lucide-react";
+import { type FormEvent, useState } from "react";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Alert } from "@/components/ui/alert";
 import { useAuth } from "@/context/auth-context";
 
 export function TwoFactorChallenge() {

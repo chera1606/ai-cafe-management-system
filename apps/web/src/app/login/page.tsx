@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
 import { Sparkles } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { useAuth } from "@/context/auth-context";
 import {
   LoginForm,
   MagicLinkForm,
-  TwoFactorChallenge,
   SocialLogin,
+  TwoFactorChallenge,
 } from "@/features/auth";
 
 export default function LoginPage() {
@@ -28,10 +28,7 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthLayout
-      title="Welcome Back"
-      subtitle="Sign in to your AI Cafe account"
-    >
+    <AuthLayout title="Welcome Back" subtitle="Sign in to your AI Cafe account">
       <div className="space-y-6">
         {/* Method selector tabs */}
         <div className="grid grid-cols-2 p-1 bg-stone-100 dark:bg-stone-800 rounded-lg text-xs font-medium">

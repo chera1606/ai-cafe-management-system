@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { type FormEvent, useState } from "react";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Alert } from "@/components/ui/alert";
 import { useAuth } from "@/context/auth-context";
 import { loginSchema } from "../schemas/auth.schema";
 
@@ -47,7 +47,9 @@ export function LoginForm() {
       }
     } catch (err: unknown) {
       setGeneralError(
-        err instanceof Error ? err.message : "Failed to sign in. Please verify your credentials.",
+        err instanceof Error
+          ? err.message
+          : "Failed to sign in. Please verify your credentials.",
       );
     } finally {
       setIsLoading(false);
@@ -65,7 +67,8 @@ export function LoginForm() {
         value={email}
         onChange={(e) => {
           setEmail(e.target.value);
-          if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: "" }));
+          if (fieldErrors.email)
+            setFieldErrors((prev) => ({ ...prev, email: "" }));
         }}
         error={fieldErrors.email}
         required
@@ -94,7 +97,8 @@ export function LoginForm() {
           value={password}
           onChange={(e) => {
             setPassword(e.target.value);
-            if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: "" }));
+            if (fieldErrors.password)
+              setFieldErrors((prev) => ({ ...prev, password: "" }));
           }}
           error={fieldErrors.password}
           required

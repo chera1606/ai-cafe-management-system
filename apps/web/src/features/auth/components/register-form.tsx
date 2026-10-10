@@ -1,11 +1,19 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import {
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  Phone,
+  User,
+} from "lucide-react";
 import Link from "next/link";
-import { Mail, Lock, User, Phone, CheckCircle2, Eye, EyeOff } from "lucide-react";
+import { type FormEvent, useState } from "react";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Alert } from "@/components/ui/alert";
 import { useAuth } from "@/context/auth-context";
 import { registerSchema } from "../schemas/auth.schema";
 
@@ -78,7 +86,9 @@ export function RegisterForm() {
             Check Your Email
           </h3>
           <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
-            Your account has been registered for <strong>{email}</strong>. Please check your inbox and click the verification link to activate your account.
+            Your account has been registered for <strong>{email}</strong>.
+            Please check your inbox and click the verification link to activate
+            your account.
           </p>
         </div>
 
@@ -102,7 +112,8 @@ export function RegisterForm() {
         value={name}
         onChange={(e) => {
           setName(e.target.value);
-          if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: "" }));
+          if (fieldErrors.name)
+            setFieldErrors((prev) => ({ ...prev, name: "" }));
         }}
         error={fieldErrors.name}
         required
@@ -116,7 +127,8 @@ export function RegisterForm() {
         value={email}
         onChange={(e) => {
           setEmail(e.target.value);
-          if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: "" }));
+          if (fieldErrors.email)
+            setFieldErrors((prev) => ({ ...prev, email: "" }));
         }}
         error={fieldErrors.email}
         required
@@ -130,7 +142,8 @@ export function RegisterForm() {
         value={phone}
         onChange={(e) => {
           setPhone(e.target.value);
-          if (fieldErrors.phone) setFieldErrors((prev) => ({ ...prev, phone: "" }));
+          if (fieldErrors.phone)
+            setFieldErrors((prev) => ({ ...prev, phone: "" }));
         }}
         error={fieldErrors.phone}
         leftIcon={<Phone className="w-4 h-4" />}
@@ -144,7 +157,8 @@ export function RegisterForm() {
           value={password}
           onChange={(e) => {
             setPassword(e.target.value);
-            if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: "" }));
+            if (fieldErrors.password)
+              setFieldErrors((prev) => ({ ...prev, password: "" }));
           }}
           error={fieldErrors.password}
           required
@@ -173,7 +187,8 @@ export function RegisterForm() {
         value={confirmPassword}
         onChange={(e) => {
           setConfirmPassword(e.target.value);
-          if (fieldErrors.confirmPassword) setFieldErrors((prev) => ({ ...prev, confirmPassword: "" }));
+          if (fieldErrors.confirmPassword)
+            setFieldErrors((prev) => ({ ...prev, confirmPassword: "" }));
         }}
         error={fieldErrors.confirmPassword}
         required

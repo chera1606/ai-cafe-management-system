@@ -1,12 +1,12 @@
 "use client";
 
+import { ArrowLeft, Coffee, Shield } from "lucide-react";
 import Link from "next/link";
-import { Shield, ArrowLeft, Coffee } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import {
+  ActiveSessionsTable,
   ChangePasswordForm,
   TwoFactorSetupWizard,
-  ActiveSessionsTable,
 } from "@/features/auth";
 
 export default function SecuritySettingsPage() {
@@ -30,7 +30,8 @@ export default function SecuritySettingsPage() {
                 Security & Authentication
               </h1>
               <p className="text-xs text-stone-500">
-                Manage your credentials, two-factor authentication, and active sessions
+                Manage your credentials, two-factor authentication, and active
+                sessions
               </p>
             </div>
           </div>
