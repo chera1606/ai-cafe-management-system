@@ -5,24 +5,30 @@ import { Resend } from "resend";
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private readonly resend: Resend;
+  private readonly resend: Resend | null = null;
   private readonly fromAddress: string;
   private readonly appUrl: string;
 
   constructor(private readonly configService: ConfigService) {
-    const apiKey = this.configService.get<string>(
-      "RESEND_API_KEY",
-      "re_placeholder",
-    );
+    const rawApiKey = this.configService.get<string>("RESEND_API_KEY");
+    const apiKey = rawApiKey?.trim();
     this.fromAddress = this.configService.get<string>(
       "RESEND_FROM_EMAIL",
       "noreply@cafe.local",
     );
     this.appUrl = this.configService.get<string>(
       "APP_URL",
-      "http://localhost:3000",
+      "http://localhost:3001",
     );
-    this.resend = new Resend(apiKey);
+
+    if (apiKey && apiKey.length > 0 && apiKey !== "re_placeholder") {
+      this.resend = new Resend(apiKey);
+    } else {
+      this.resend = null;
+      this.logger.warn(
+        "RESEND_API_KEY is not configured. Action links will be printed directly to the server console.",
+      );
+    }
   }
 
   private async sendEmail(opts: {
@@ -40,6 +46,13 @@ export class EmailService {
           `\n║ Action URL: ${opts.actionUrl}` +
           `\n╚══════════════════════════════════════════════════════════════════════════════`,
       );
+    }
+
+    if (!this.resend) {
+      this.logger.log(
+        `RESEND_API_KEY not configured — live email skipped. Action link printed above.`,
+      );
+      return;
     }
 
     try {
