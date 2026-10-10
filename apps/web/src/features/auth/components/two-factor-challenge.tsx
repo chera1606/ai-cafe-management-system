@@ -23,7 +23,7 @@ export function TwoFactorChallenge() {
     setIsLoading(true);
 
     try {
-      await complete2Fa(code.trim(), isRecoveryCode);
+      await complete2Fa(code.trim());
       router.push("/");
     } catch (err: unknown) {
       setError(

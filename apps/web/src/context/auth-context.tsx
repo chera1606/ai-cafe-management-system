@@ -31,7 +31,7 @@ interface AuthContextType {
     tempToken: string | null;
   };
   login: (email: string, password: string) => Promise<{ requires2fa: boolean }>;
-  complete2Fa: (code: string, isRecoveryCode?: boolean) => Promise<void>;
+  complete2Fa: (code: string) => Promise<void>;
   cancel2Fa: () => void;
   register: (data: {
     name: string;
@@ -68,9 +68,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [twoFactorPending, setTwoFactorPending] = useState<{
     isPending: boolean;
     tempToken: string | null;
-  }>({
-    isPending: false,
-    tempToken: null,
+  }>(() => {
+    if (typeof window !== "undefined") {
+      const saved = sessionStorage.getItem("cafe_2fa_temp_token");
+      if (saved) return { isPending: true, tempToken: saved };
+    }
+    return { isPending: false, tempToken: null };
   });
 
   const refreshUser = useCallback(async () => {
@@ -106,6 +109,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isPending: true,
         tempToken: res.tempToken,
       });
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("cafe_2fa_temp_token", res.tempToken);
+      }
       return { requires2fa: true };
     }
 
@@ -116,22 +122,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     setUser(successRes.user);
     setTwoFactorPending({ isPending: false, tempToken: null });
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("cafe_2fa_temp_token");
+    }
     return { requires2fa: false };
   };
 
-  const complete2Fa = async (code: string, isRecoveryCode = false) => {
+  const complete2Fa = async (code: string) => {
     if (!twoFactorPending.tempToken) {
-      throw new Error("No 2FA session in progress.");
+      throw new Error("No 2FA session in progress. Please sign in again.");
     }
 
-    const payload = isRecoveryCode ? { recoveryCode: code } : { code };
+    const payload = {
+      tempToken: twoFactorPending.tempToken,
+      code: code.trim(),
+    };
 
     const res = await apiClient<LoginResponse>("/auth/2fa/authenticate", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${twoFactorPending.tempToken}`,
-      },
       body: JSON.stringify(payload),
+      skipAuth: true,
     });
 
     if (!res.requires2fa) {
@@ -142,11 +152,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       setUser(successRes.user);
       setTwoFactorPending({ isPending: false, tempToken: null });
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("cafe_2fa_temp_token");
+      }
     }
   };
 
   const cancel2Fa = () => {
     setTwoFactorPending({ isPending: false, tempToken: null });
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("cafe_2fa_temp_token");
+    }
   };
 
   const register = async (data: {

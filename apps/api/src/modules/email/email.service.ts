@@ -29,7 +29,19 @@ export class EmailService {
     to: string;
     subject: string;
     html: string;
+    actionUrl?: string;
   }): Promise<void> {
+    if (opts.actionUrl) {
+      this.logger.log(
+        `\n╔══════════════════════════════════════════════════════════════════════════════` +
+          `\n║ [DEV EMAIL ACTION LINK]` +
+          `\n║ To: ${opts.to}` +
+          `\n║ Subject: ${opts.subject}` +
+          `\n║ Action URL: ${opts.actionUrl}` +
+          `\n╚══════════════════════════════════════════════════════════════════════════════`,
+      );
+    }
+
     try {
       await this.resend.emails.send({
         from: this.fromAddress,
@@ -50,6 +62,7 @@ export class EmailService {
       to,
       subject: "Reset your password — AI Cafe",
       html: this.buildPasswordResetTemplate(resetUrl),
+      actionUrl: resetUrl,
     });
   }
 
@@ -59,15 +72,17 @@ export class EmailService {
       to,
       subject: "Your magic login link — AI Cafe",
       html: this.buildMagicLinkTemplate(loginUrl),
+      actionUrl: loginUrl,
     });
   }
 
   async sendWelcomeVerificationEmail(to: string, token: string): Promise<void> {
-    const verifyUrl = `${this.appUrl}/auth/verify-email?token=${token}`;
+    const verifyUrl = `${this.appUrl}/verify-email?token=${token}`;
     await this.sendEmail({
       to,
       subject: "Verify your email — AI Cafe",
       html: this.buildWelcomeVerificationTemplate(verifyUrl),
+      actionUrl: verifyUrl,
     });
   }
 
