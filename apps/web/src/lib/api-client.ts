@@ -1,5 +1,22 @@
+export function getApiBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1"
+  ) {
+    return `http://${window.location.hostname}:3000/api/v1`;
+  }
+  return "http://localhost:3000/api/v1";
+}
+
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
+  typeof window !== "undefined"
+    ? getApiBaseUrl()
+    : process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
 
 const ACCESS_TOKEN_KEY = "cafe_access_token";
 const REFRESH_TOKEN_KEY = "cafe_refresh_token";
@@ -72,9 +89,10 @@ export async function apiClient<T>(
 ): Promise<T> {
   const { skipAuth = false, headers = {}, ...rest } = options;
 
+  const baseUrl = getApiBaseUrl();
   const url = endpoint.startsWith("http")
     ? endpoint
-    : `${API_BASE_URL}${endpoint.startsWith("/") ? "" : "/"}${endpoint}`;
+    : `${baseUrl}${endpoint.startsWith("/") ? "" : "/"}${endpoint}`;
 
   const requestHeaders: Record<string, string> = {
     "Content-Type": "application/json",
@@ -108,7 +126,7 @@ export async function apiClient<T>(
     if (!isRefreshing) {
       isRefreshing = true;
       try {
-        const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        const refreshResponse = await fetch(`${baseUrl}/auth/refresh`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ refreshToken }),
