@@ -1,16 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import {
-  Coffee,
-  ShieldCheck,
-  User,
-  LogOut,
-  Settings,
-  Sparkles,
   ArrowRight,
   CheckCircle,
+  Coffee,
+  LogOut,
+  Settings,
+  ShieldCheck,
+  Sparkles,
 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
 
@@ -107,7 +106,8 @@ export default function HomePage() {
                 </div>
               </div>
               <p className="text-sm text-stone-300 max-w-2xl">
-                Your account is verified and protected with modern JWT token rotation and TOTP two-factor security.
+                Your account is verified and protected with modern JWT token
+                rotation and TOTP two-factor security.
               </p>
               <div className="pt-2 flex flex-wrap gap-3">
                 <Link href="/settings/security">
@@ -131,7 +131,8 @@ export default function HomePage() {
                   Menu & Ordering
                 </h3>
                 <p className="text-xs text-stone-500">
-                  Explore fresh coffees, pastries, and smart orders coming soon in the next update.
+                  Explore fresh coffees, pastries, and smart orders coming soon
+                  in the next update.
                 </p>
               </div>
               <div className="p-6 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 space-y-2">
@@ -140,7 +141,8 @@ export default function HomePage() {
                   Security Status
                 </h3>
                 <p className="text-xs text-stone-500">
-                  Email verification complete. Review your connected devices anytime.
+                  Email verification complete. Review your connected devices
+                  anytime.
                 </p>
               </div>
               <div className="p-6 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 space-y-2">
@@ -149,7 +151,8 @@ export default function HomePage() {
                   AI Assistant
                 </h3>
                 <p className="text-xs text-stone-500">
-                  Intelligent recommendations and cafe management tools ready to activate.
+                  Intelligent recommendations and cafe management tools ready to
+                  activate.
                 </p>
               </div>
             </div>
@@ -170,7 +173,9 @@ export default function HomePage() {
             </h1>
 
             <p className="text-base sm:text-lg text-stone-600 dark:text-stone-400 max-w-2xl mx-auto leading-relaxed">
-              Order seamlessly, streamline kitchen workflows, monitor real-time inventory, and secure operations with enterprise-grade authentication.
+              Order seamlessly, streamline kitchen workflows, monitor real-time
+              inventory, and secure operations with enterprise-grade
+              authentication.
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-4 pt-4">

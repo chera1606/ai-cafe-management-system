@@ -33,6 +33,7 @@ export function saveTokens(tokens: AuthTokens): void {
   localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
   localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
   // Also store in cookie for Next.js middleware access
+  // biome-ignore lint/suspicious/noDocumentCookie: cookie required for Next.js server middleware authentication
   document.cookie = `${ACCESS_TOKEN_KEY}=${tokens.accessToken}; path=/; max-age=86400; SameSite=Lax`;
 }
 
@@ -40,6 +41,7 @@ export function clearTokens(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
+  // biome-ignore lint/suspicious/noDocumentCookie: cookie required for Next.js server middleware authentication
   document.cookie = `${ACCESS_TOKEN_KEY}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
 }
 
@@ -47,7 +49,9 @@ let isRefreshing = false;
 let refreshSubscribers: ((token: string | null) => void)[] = [];
 
 function onTokenRefreshed(token: string | null) {
-  refreshSubscribers.forEach((cb) => cb(token));
+  refreshSubscribers.forEach((cb) => {
+    cb(token);
+  });
   refreshSubscribers = [];
 }
 
@@ -143,12 +147,14 @@ export async function apiClient<T>(
   }
 
   const contentType = response.headers.get("content-type");
-  const isJson = contentType && contentType.includes("application/json");
+  const isJson = contentType?.includes("application/json");
   const responseData = isJson ? await response.json() : await response.text();
 
   if (!response.ok) {
     const errorMessage =
-      typeof responseData === "object" && responseData !== null && "message" in responseData
+      typeof responseData === "object" &&
+      responseData !== null &&
+      "message" in responseData
         ? Array.isArray(responseData.message)
           ? responseData.message.join(", ")
           : String(responseData.message)

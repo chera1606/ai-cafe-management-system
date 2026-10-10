@@ -1,9 +1,9 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { AlertCircle, CheckCircle2, Loader2, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle2, AlertCircle, Loader2, Sparkles } from "lucide-react";
+import { Suspense, useEffect, useState } from "react";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
@@ -113,7 +113,13 @@ export default function MagicLinkVerifyPage() {
       title="Magic Link Sign In"
       subtitle="Passwordless authentication for AI Cafe"
     >
-      <Suspense fallback={<div className="text-center text-xs text-stone-400 py-6">Validating magic link...</div>}>
+      <Suspense
+        fallback={
+          <div className="text-center text-xs text-stone-400 py-6">
+            Validating magic link...
+          </div>
+        }
+      >
         <MagicLinkVerifyContent />
       </Suspense>
     </AuthLayout>

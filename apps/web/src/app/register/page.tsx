@@ -1,12 +1,20 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import {
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  Phone,
+  User,
+} from "lucide-react";
 import Link from "next/link";
-import { Mail, Lock, User, Phone, CheckCircle2, Eye, EyeOff } from "lucide-react";
+import { type FormEvent, useState } from "react";
 import { AuthLayout } from "@/components/auth/auth-layout";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Alert } from "@/components/ui/alert";
 import { useAuth } from "@/context/auth-context";
 
 export default function RegisterPage() {
@@ -68,7 +76,9 @@ export default function RegisterPage() {
           </div>
 
           <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
-            Your account has been registered for <strong>{email}</strong>. Please click the link in your verification email to activate your account.
+            Your account has been registered for <strong>{email}</strong>.
+            Please click the link in your verification email to activate your
+            account.
           </p>
 
           <div className="pt-2">

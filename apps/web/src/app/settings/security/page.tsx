@@ -1,29 +1,29 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
-import Link from "next/link";
 import {
-  Shield,
-  Key,
-  Smartphone,
-  Laptop,
-  Trash2,
-  Copy,
-  Check,
   AlertTriangle,
   ArrowLeft,
+  Check,
   Coffee,
+  Copy,
+  Key,
+  Laptop,
+  Shield,
+  Smartphone,
+  Trash2,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import Link from "next/link";
+import { type FormEvent, useEffect, useState } from "react";
 import { Alert } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth-context";
 import { apiClient } from "@/lib/api-client";
 import type {
@@ -60,7 +60,7 @@ export default function SecuritySettingsPage() {
   const [sessionsLoading, setSessionsLoading] = useState(true);
 
   // Fetch active sessions
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
     try {
       setSessionsLoading(true);
       const data = await apiClient<SessionInfo[]>("/auth/sessions");
@@ -70,11 +70,11 @@ export default function SecuritySettingsPage() {
     } finally {
       setSessionsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchSessions();
-  }, []);
+  }, [fetchSessions]);
 
   const handleChangePassword = async (e: FormEvent) => {
     e.preventDefault();
@@ -212,7 +212,8 @@ export default function SecuritySettingsPage() {
                 Security & Authentication
               </h1>
               <p className="text-xs text-stone-500">
-                Manage your credentials, two-factor authentication, and active sessions
+                Manage your credentials, two-factor authentication, and active
+                sessions
               </p>
             </div>
           </div>
@@ -285,7 +286,8 @@ export default function SecuritySettingsPage() {
                 Two-Factor Authentication (2FA)
               </CardTitle>
               <CardDescription>
-                Add an extra layer of security using Google Authenticator or 1Password.
+                Add an extra layer of security using Google Authenticator or
+                1Password.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -300,11 +302,14 @@ export default function SecuritySettingsPage() {
                     <span>Save your recovery codes!</span>
                   </div>
                   <p className="text-xs text-amber-800 dark:text-amber-300">
-                    If you lose access to your phone, these are the only way to sign in. Store them in a password manager.
+                    If you lose access to your phone, these are the only way to
+                    sign in. Store them in a password manager.
                   </p>
                   <div className="grid grid-cols-2 gap-1.5 p-2.5 bg-white dark:bg-stone-900 rounded border border-amber-200 dark:border-amber-800/80 font-mono text-xs text-stone-800 dark:text-stone-200">
                     {recoveryCodes.map((code) => (
-                      <span key={code} className="text-center py-0.5">{code}</span>
+                      <span key={code} className="text-center py-0.5">
+                        {code}
+                      </span>
                     ))}
                   </div>
                   <Button
@@ -333,7 +338,7 @@ export default function SecuritySettingsPage() {
               {twoFaSetupData && (
                 <form onSubmit={handleConfirmEnable2Fa} className="space-y-4">
                   <div className="text-center p-3 bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    {/* biome-ignore lint/performance/noImgElement: Data URI base64 QR code image is generated dynamically in memory */}
                     <img
                       src={twoFaSetupData.qrCodeUrl}
                       alt="2FA QR Code"
@@ -408,7 +413,8 @@ export default function SecuritySettingsPage() {
                   ) : (
                     <div className="space-y-3">
                       <p className="text-xs text-stone-500">
-                        Protect your cafe account from unauthorized access by requiring a time-based one-time password on sign in.
+                        Protect your cafe account from unauthorized access by
+                        requiring a time-based one-time password on sign in.
                       </p>
                       <Button
                         type="button"

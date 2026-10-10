@@ -1,9 +1,9 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { AlertCircle, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { CheckCircle2, AlertCircle, Loader2, ArrowRight } from "lucide-react";
+import { Suspense, useEffect, useState } from "react";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
@@ -16,7 +16,9 @@ function VerifyEmailContent() {
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     "loading",
   );
-  const [message, setMessage] = useState<string>("Verifying your email address...");
+  const [message, setMessage] = useState<string>(
+    "Verifying your email address...",
+  );
 
   useEffect(() => {
     if (!token) {
@@ -30,7 +32,9 @@ function VerifyEmailContent() {
       .then((res) => {
         if (isMounted) {
           setStatus("success");
-          setMessage(res.message || "Your email address has been successfully verified.");
+          setMessage(
+            res.message || "Your email address has been successfully verified.",
+          );
         }
       })
       .catch((err: unknown) => {
@@ -115,7 +119,13 @@ export default function VerifyEmailPage() {
       title="Email Verification"
       subtitle="Activating your AI Cafe account"
     >
-      <Suspense fallback={<div className="text-center text-xs text-stone-400 py-6">Loading verification...</div>}>
+      <Suspense
+        fallback={
+          <div className="text-center text-xs text-stone-400 py-6">
+            Loading verification...
+          </div>
+        }
+      >
         <VerifyEmailContent />
       </Suspense>
     </AuthLayout>

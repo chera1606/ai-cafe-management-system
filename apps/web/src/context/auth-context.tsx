@@ -2,11 +2,11 @@
 
 import {
   createContext,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
   useState,
-  type ReactNode,
 } from "react";
 import {
   apiClient,
@@ -42,7 +42,10 @@ interface AuthContextType {
   requestMagicLink: (email: string) => Promise<ApiMessageResponse>;
   verifyMagicLink: (token: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<ApiMessageResponse>;
-  resetPassword: (token: string, newPassword: string) => Promise<ApiMessageResponse>;
+  resetPassword: (
+    token: string,
+    newPassword: string,
+  ) => Promise<ApiMessageResponse>;
   verifyEmail: (token: string) => Promise<ApiMessageResponse>;
   changePassword: (
     currentPassword: string,
@@ -112,9 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error("No 2FA session in progress.");
     }
 
-    const payload = isRecoveryCode
-      ? { recoveryCode: code }
-      : { code };
+    const payload = isRecoveryCode ? { recoveryCode: code } : { code };
 
     const res = await apiClient<LoginResponse>("/auth/2fa/authenticate", {
       method: "POST",
@@ -196,7 +197,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return res;
   };
 
-  const changePassword = async (currentPassword: string, newPassword: string) => {
+  const changePassword = async (
+    currentPassword: string,
+    newPassword: string,
+  ) => {
     return apiClient<ApiMessageResponse>("/auth/change-password", {
       method: "POST",
       body: JSON.stringify({ currentPassword, newPassword }),

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
+import type { ReactNode } from "react";
 import { AuthProvider } from "@/context/auth-context";
 import "./globals.css";
 
@@ -16,7 +16,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "AI Cafe Management System",
-  description: "Intelligent cafe operations, ordering, inventory, and management",
+  description:
+    "Intelligent cafe operations, ordering, inventory, and management",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

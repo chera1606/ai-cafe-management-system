@@ -1,13 +1,21 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import {
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  KeyRound,
+  Lock,
+  Mail,
+  Sparkles,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, KeyRound, Sparkles, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { type FormEvent, useState } from "react";
 import { AuthLayout } from "@/components/auth/auth-layout";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Alert } from "@/components/ui/alert";
 import { useAuth } from "@/context/auth-context";
 import { API_BASE_URL } from "@/lib/api-client";
 
@@ -60,7 +68,8 @@ export default function LoginPage() {
       await complete2Fa(twoFactorCode.trim(), isRecoveryCode);
       router.push("/");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Invalid verification code";
+      const message =
+        err instanceof Error ? err.message : "Invalid verification code";
       setError(message);
     } finally {
       setIsLoading(false);
@@ -154,10 +163,7 @@ export default function LoginPage() {
 
   // ─── STANDARD LOGIN SCREEN ─────────────────────────────────────────────────
   return (
-    <AuthLayout
-      title="Welcome Back"
-      subtitle="Sign in to your AI Cafe account"
-    >
+    <AuthLayout title="Welcome Back" subtitle="Sign in to your AI Cafe account">
       <div className="space-y-6">
         {/* Method selector tabs */}
         <div className="grid grid-cols-2 p-1 bg-stone-100 dark:bg-stone-800 rounded-lg text-xs font-medium">
@@ -211,7 +217,10 @@ export default function LoginPage() {
 
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-medium text-stone-700 dark:text-stone-300">
+                <label
+                  htmlFor="login-password"
+                  className="block text-xs font-medium text-stone-700 dark:text-stone-300"
+                >
                   Password
                 </label>
                 <Link
@@ -222,6 +231,7 @@ export default function LoginPage() {
                 </Link>
               </div>
               <Input
+                id="login-password"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 value={password}
@@ -251,7 +261,8 @@ export default function LoginPage() {
         ) : (
           <form onSubmit={handleMagicLinkSubmit} className="space-y-4">
             <p className="text-xs text-stone-500 dark:text-stone-400">
-              We&apos;ll email you an instant, secure login link. No password required.
+              We&apos;ll email you an instant, secure login link. No password
+              required.
             </p>
 
             <Input
@@ -290,7 +301,13 @@ export default function LoginPage() {
           onClick={handleGoogleLogin}
           className="w-full"
         >
-          <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
+          <svg
+            role="img"
+            aria-label="Google logo"
+            className="w-4 h-4 mr-2"
+            viewBox="0 0 24 24"
+          >
+            <title>Google</title>
             <path
               fill="#4285F4"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

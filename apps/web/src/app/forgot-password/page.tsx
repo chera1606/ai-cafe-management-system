@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { ArrowLeft, CheckCircle2, Mail } from "lucide-react";
 import Link from "next/link";
-import { Mail, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { type FormEvent, useState } from "react";
 import { AuthLayout } from "@/components/auth/auth-layout";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Alert } from "@/components/ui/alert";
 import { useAuth } from "@/context/auth-context";
 
 export default function ForgotPasswordPage() {
@@ -45,7 +45,9 @@ export default function ForgotPasswordPage() {
           </div>
 
           <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
-            If an account is registered with <strong>{email}</strong>, you will receive an email shortly with a secure password reset link (valid for 15 minutes).
+            If an account is registered with <strong>{email}</strong>, you will
+            receive an email shortly with a secure password reset link (valid
+            for 15 minutes).
           </p>
 
           <div className="pt-2">

@@ -1,13 +1,13 @@
 "use client";
 
-import { Suspense, useState, type FormEvent } from "react";
+import { AlertCircle, CheckCircle2, Eye, EyeOff, Lock } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Lock, Eye, EyeOff, CheckCircle2, AlertCircle } from "lucide-react";
+import { type FormEvent, Suspense, useState } from "react";
 import { AuthLayout } from "@/components/auth/auth-layout";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Alert } from "@/components/ui/alert";
 import { useAuth } from "@/context/auth-context";
 
 function ResetPasswordForm() {
@@ -34,7 +34,8 @@ function ResetPasswordForm() {
           Invalid or Missing Token
         </h3>
         <p className="text-xs text-stone-500">
-          The password reset link is invalid or has expired. Please request a new one.
+          The password reset link is invalid or has expired. Please request a
+          new one.
         </p>
         <Link href="/forgot-password">
           <Button variant="outline" className="w-full">
@@ -86,7 +87,8 @@ function ResetPasswordForm() {
           Password Updated Successfully
         </h3>
         <p className="text-xs text-stone-500">
-          Your password has been reset. All previous sessions have been signed out. Redirecting to sign in...
+          Your password has been reset. All previous sessions have been signed
+          out. Redirecting to sign in...
         </p>
         <Link href="/login">
           <Button className="w-full">Sign In Now</Button>
@@ -147,7 +149,13 @@ export default function ResetPasswordPage() {
       title="Create New Password"
       subtitle="Enter a strong new password for your account"
     >
-      <Suspense fallback={<div className="text-center text-xs text-stone-400 py-6">Loading reset form...</div>}>
+      <Suspense
+        fallback={
+          <div className="text-center text-xs text-stone-400 py-6">
+            Loading reset form...
+          </div>
+        }
+      >
         <ResetPasswordForm />
       </Suspense>
     </AuthLayout>

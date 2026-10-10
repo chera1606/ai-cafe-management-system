@@ -24,7 +24,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     },
     ref,
   ) => {
-    const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, "-") : undefined);
+    const inputId =
+      id || (label ? label.toLowerCase().replace(/\s+/g, "-") : undefined);
 
     return (
       <div className="w-full space-y-1.5">
@@ -50,7 +51,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               "w-full rounded-lg border border-stone-300 bg-white px-3.5 py-2 text-sm text-stone-900 placeholder-stone-400 transition-colors focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600 disabled:bg-stone-50 disabled:text-stone-400 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 dark:placeholder-stone-500",
               leftIcon && "pl-10",
               rightIcon && "pr-10",
-              error && "border-rose-500 focus:border-rose-500 focus:ring-rose-500",
+              error &&
+                "border-rose-500 focus:border-rose-500 focus:ring-rose-500",
               className,
             )}
             {...props}
@@ -65,7 +67,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <p className="text-xs text-rose-600 dark:text-rose-400">{error}</p>
         )}
         {!error && helperText && (
-          <p className="text-xs text-stone-500 dark:text-stone-400">{helperText}</p>
+          <p className="text-xs text-stone-500 dark:text-stone-400">
+            {helperText}
+          </p>
         )}
       </div>
     );
