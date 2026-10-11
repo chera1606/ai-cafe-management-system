@@ -298,7 +298,7 @@ describe("MenuItemsService", () => {
       });
 
       const result = await service.updateAvailability("m1", "UNAVAILABLE");
-      expect(result.availabilityStatus).toBe("UNAVAILABLE");
+      expect(result?.availabilityStatus).toBe("UNAVAILABLE");
     });
   });
 

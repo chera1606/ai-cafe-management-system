@@ -49,7 +49,7 @@ describe("DepartmentsController", () => {
     const dto = { name: "Barista Bar" };
     mockService.update.mockResolvedValue({ id: "d1", ...dto });
     const result = await controller.update("d1", dto);
-    expect(result.name).toBe("Barista Bar");
+    expect(result?.name).toBe("Barista Bar");
   });
 
   it("should delete department", async () => {

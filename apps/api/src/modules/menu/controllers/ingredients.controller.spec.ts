@@ -51,7 +51,7 @@ describe("IngredientsController", () => {
     const dto = { name: "Madagascar Vanilla Syrup" };
     mockService.update.mockResolvedValue({ id: "i2", ...dto });
     const result = await controller.update("i2", dto);
-    expect(result.name).toBe("Madagascar Vanilla Syrup");
+    expect(result?.name).toBe("Madagascar Vanilla Syrup");
   });
 
   it("should delete ingredient", async () => {

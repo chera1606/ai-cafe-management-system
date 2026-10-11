@@ -52,7 +52,7 @@ describe("CategoriesController", () => {
     const dto = { name: "Specialty Tea" };
     mockService.update.mockResolvedValue({ id: "c2", ...dto });
     const result = await controller.update("c2", dto);
-    expect(result.name).toBe("Specialty Tea");
+    expect(result?.name).toBe("Specialty Tea");
   });
 
   it("should update category status", async () => {
@@ -61,7 +61,7 @@ describe("CategoriesController", () => {
       status: "inactive",
     });
     const result = await controller.updateStatus("c2", { status: "inactive" });
-    expect(result.status).toBe("inactive");
+    expect(result?.status).toBe("inactive");
   });
 
   it("should delete category", async () => {

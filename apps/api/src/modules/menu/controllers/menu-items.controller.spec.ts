@@ -58,7 +58,7 @@ describe("MenuItemsController", () => {
     const dto = { name: "Iced Latte" };
     mockService.update.mockResolvedValue({ id: "m1", ...dto });
     const result = await controller.update("m1", dto);
-    expect(result.name).toBe("Iced Latte");
+    expect(result?.name).toBe("Iced Latte");
   });
 
   it("should update availability", async () => {
@@ -69,7 +69,7 @@ describe("MenuItemsController", () => {
     const result = await controller.updateAvailability("m1", {
       availabilityStatus: "UNAVAILABLE",
     });
-    expect(result.availabilityStatus).toBe("UNAVAILABLE");
+    expect(result?.availabilityStatus).toBe("UNAVAILABLE");
   });
 
   it("should delete item", async () => {

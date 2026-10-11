@@ -161,7 +161,7 @@ describe("IngredientsService", () => {
       });
 
       const result = await service.update("i1", { unitOfMeasure: "l" });
-      expect(result.unitOfMeasure).toBe("l");
+      expect(result?.unitOfMeasure).toBe("l");
     });
   });
 
