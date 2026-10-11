@@ -156,6 +156,64 @@ describe("AuthService", () => {
       );
     });
 
+    it("should gracefully succeed if customer role is not found in database", async () => {
+      const dto = {
+        name: "Jane Doe",
+        email: "jane2@example.com",
+        password: "Password123!",
+      };
+
+      mockUsersService.findByEmail.mockResolvedValue(null);
+      mockUsersService.getUserRolesAndPermissions.mockResolvedValue({
+        roles: [],
+        permissions: [],
+      });
+
+      mockDb.transaction.mockImplementation(
+        async (cb: (tx: unknown) => Promise<unknown>) => {
+          const mockTx = {
+            insert: vi.fn().mockReturnValue({
+              values: vi.fn().mockReturnValue({
+                returning: vi
+                  .fn()
+                  .mockResolvedValueOnce([
+                    {
+                      id: "user-2",
+                      email: "jane2@example.com",
+                      status: "active",
+                      createdAt: new Date(),
+                    },
+                  ])
+                  .mockResolvedValueOnce([
+                    {
+                      id: "cust-2",
+                      name: "Jane Doe",
+                      email: "jane2@example.com",
+                      status: "active",
+                    },
+                  ]),
+              }),
+            }),
+            select: vi.fn().mockReturnValue({
+              from: vi.fn().mockReturnValue({
+                where: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockResolvedValue([]),
+                }),
+              }),
+            }),
+          };
+          return cb(mockTx);
+        },
+      );
+
+      mockDb.insert.mockReturnValue({
+        values: vi.fn().mockResolvedValue(undefined),
+      });
+
+      const response = await service.register(dto);
+      expect(response.user.roles).toEqual([]);
+    });
+
     it("should throw ConflictException when email is already registered", async () => {
       mockUsersService.findByEmail.mockResolvedValue({ id: "user-existing" });
 
