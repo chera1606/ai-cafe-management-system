@@ -18,7 +18,7 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { and, desc, eq, gt, sql } from "drizzle-orm";
+import { and, desc, eq, gt, or, sql } from "drizzle-orm";
 import { AuditService } from "../audit/audit.service";
 import { DATABASE_TOKEN } from "../database/database.constants";
 import { EmailService } from "../email/email.service";
@@ -106,7 +106,7 @@ export class AuthService {
       const customerRole = await tx
         .select()
         .from(roles)
-        .where(eq(roles.name, "customer"))
+        .where(or(eq(roles.name, "CUSTOMER"), eq(roles.name, "customer")))
         .limit(1);
 
       if (customerRole[0]) {
@@ -458,7 +458,7 @@ export class AuthService {
         const customerRole = await tx
           .select()
           .from(roles)
-          .where(eq(roles.name, "customer"))
+          .where(or(eq(roles.name, "CUSTOMER"), eq(roles.name, "customer")))
           .limit(1);
 
         if (customerRole[0]) {
@@ -704,7 +704,7 @@ export class AuthService {
           const customerRole = await tx
             .select()
             .from(roles)
-            .where(eq(roles.name, "customer"))
+            .where(or(eq(roles.name, "CUSTOMER"), eq(roles.name, "customer")))
             .limit(1);
 
           if (customerRole[0]) {
