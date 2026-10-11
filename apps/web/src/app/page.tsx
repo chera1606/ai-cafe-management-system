@@ -15,6 +15,9 @@ import { useAuth } from "@/context/auth-context";
 
 export default function HomePage() {
   const { user, isAuthenticated, logout, isLoading } = useAuth();
+  const isAdminOrManager = user?.roles?.some((r) =>
+    ["admin", "manager", "ADMIN", "MANAGER"].includes(r),
+  );
 
   return (
     <div className="min-h-screen flex flex-col bg-stone-50 dark:bg-stone-950">
@@ -36,17 +39,37 @@ export default function HomePage() {
           </Link>
 
           <div className="flex items-center gap-3">
+            <LinkButton
+              href="/menu"
+              variant="ghost"
+              size="sm"
+              className="text-xs hidden sm:inline-flex"
+            >
+              Explore Menu
+            </LinkButton>
+
             {isLoading ? (
               <div className="w-20 h-8 bg-stone-200 dark:bg-stone-800 animate-pulse rounded-lg" />
             ) : isAuthenticated && user ? (
               <div className="flex items-center gap-3">
+                {isAdminOrManager && (
+                  <LinkButton
+                    href="/admin/menu"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs"
+                  >
+                    <Settings className="w-3.5 h-3.5 mr-1" />
+                    Manage Menu
+                  </LinkButton>
+                )}
                 <LinkButton
                   href="/settings/security"
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   className="text-xs"
                 >
-                  <Settings className="w-3.5 h-3.5 mr-1" />
+                  <ShieldCheck className="w-3.5 h-3.5 mr-1" />
                   Security
                 </LinkButton>
                 <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-stone-700 dark:text-stone-300">
@@ -119,28 +142,56 @@ export default function HomePage() {
               </p>
               <div className="pt-2 flex flex-wrap gap-3">
                 <LinkButton
-                  href="/settings/security"
+                  href="/menu"
                   variant="secondary"
                   size="sm"
                   className="text-xs font-semibold bg-white hover:bg-stone-100 text-stone-900"
                 >
-                  <ShieldCheck className="w-4 h-4 mr-1 text-emerald-600" />
-                  Manage 2FA & Active Devices
+                  <Coffee className="w-4 h-4 mr-1 text-amber-700" />
+                  View Menu Catalog
+                </LinkButton>
+                {isAdminOrManager && (
+                  <LinkButton
+                    href="/admin/menu"
+                    variant="secondary"
+                    size="sm"
+                    className="text-xs font-semibold bg-amber-800 hover:bg-amber-700 text-white"
+                  >
+                    <Settings className="w-4 h-4 mr-1" />
+                    Manage Menu & Recipes
+                  </LinkButton>
+                )}
+                <LinkButton
+                  href="/settings/security"
+                  variant="outline"
+                  size="sm"
+                  className="text-xs font-semibold text-white border-white/20 hover:bg-white/10"
+                >
+                  <ShieldCheck className="w-4 h-4 mr-1 text-emerald-400" />
+                  Security Settings
                 </LinkButton>
               </div>
             </div>
 
             {/* Quick Stats & Modules Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <div className="p-6 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 space-y-2">
+              <div className="p-6 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 space-y-3">
                 <h3 className="text-sm font-semibold text-stone-900 dark:text-stone-100 flex items-center gap-2">
                   <Coffee className="w-4 h-4 text-amber-600" />
                   Menu & Ordering
                 </h3>
                 <p className="text-xs text-stone-500">
-                  Explore fresh coffees, pastries, and smart orders coming soon
-                  in the next update.
+                  Explore fresh coffees, pastries, and smart orders with live
+                  availability.
                 </p>
+                <LinkButton
+                  href="/menu"
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs px-0 hover:bg-transparent text-amber-700 dark:text-amber-400"
+                >
+                  Browse Catalog &rarr;
+                </LinkButton>
               </div>
               <div className="p-6 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 space-y-2">
                 <h3 className="text-sm font-semibold text-stone-900 dark:text-stone-100 flex items-center gap-2">
@@ -187,15 +238,19 @@ export default function HomePage() {
 
             <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
               <LinkButton
-                href="/register"
+                href="/menu"
                 size="lg"
                 className="shadow-lg shadow-amber-700/20"
               >
+                <Coffee className="w-4 h-4 mr-1.5" />
+                Explore Menu
+              </LinkButton>
+              <LinkButton href="/register" variant="outline" size="lg">
                 Get Started
                 <ArrowRight className="w-4 h-4 ml-1.5" />
               </LinkButton>
-              <LinkButton href="/login" variant="outline" size="lg">
-                Sign In to Account
+              <LinkButton href="/login" variant="ghost" size="lg">
+                Sign In
               </LinkButton>
             </div>
 

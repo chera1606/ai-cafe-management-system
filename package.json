@@ -12,6 +12,7 @@
     "format": "pnpm exec biome format --write .",
     "typecheck": "pnpm --recursive typecheck",
     "db:push": "pnpm --filter @cafe/db db:push",
+    "db:seed": "pnpm --filter @cafe/db db:seed",
     "db:migrate": "pnpm --filter @cafe/db db:migrate",
     "db:studio": "pnpm --filter @cafe/db db:studio"
   },

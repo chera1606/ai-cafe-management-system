@@ -29,7 +29,11 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException("Access denied: missing role privileges");
     }
 
-    const hasRole = requiredRoles.some((role) => user.roles.includes(role));
+    const userRoleSet = new Set(user.roles.map((r) => r.toUpperCase()));
+    const hasRole = requiredRoles.some(
+      (role) =>
+        user.roles.includes(role) || userRoleSet.has(role.toUpperCase()),
+    );
 
     if (!hasRole) {
       throw new ForbiddenException(
