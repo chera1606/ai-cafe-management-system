@@ -9,6 +9,7 @@ import { HealthModule } from "./health/health.module";
 import { AuditModule } from "./modules/audit";
 import { AuthModule } from "./modules/auth/auth.module";
 import { DatabaseModule } from "./modules/database";
+import { MenuModule } from "./modules/menu";
 import { UsersModule } from "./modules/users/users.module";
 
 @Module({
@@ -28,6 +29,7 @@ import { UsersModule } from "./modules/users/users.module";
     AuditModule,
     UsersModule,
     AuthModule,
+    MenuModule,
     HealthModule,
   ],
   controllers: [AppController],
