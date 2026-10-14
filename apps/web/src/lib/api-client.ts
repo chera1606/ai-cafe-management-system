@@ -104,10 +104,25 @@ export async function apiClient<T>(
     requestHeaders.Authorization = `Bearer ${token}`;
   }
 
-  let response = await fetch(url, {
-    ...rest,
-    headers: requestHeaders,
-  });
+  // Fast timeout to prevent browser hanging when API is cold or starting
+  const timeoutSignal = AbortSignal.timeout(2500);
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...rest,
+      headers: requestHeaders,
+      signal: rest.signal || timeoutSignal,
+    });
+  } catch (err: unknown) {
+    if (err instanceof Error && err.name === "TimeoutError") {
+      throw new ApiClientError(
+        408,
+        "Connection timed out. API server did not respond quickly.",
+      );
+    }
+    throw err;
+  }
 
   // Handle 401 Unauthorized with token refresh (avoid infinite loop on auth routes)
   if (

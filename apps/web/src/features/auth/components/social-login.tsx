@@ -10,10 +10,10 @@ export function SocialLogin() {
     <div className="space-y-4">
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-stone-200 dark:border-stone-800" />
+          <span className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white dark:bg-stone-900 px-2 text-stone-400">
+          <span className="bg-white px-3 text-sage font-medium">
             Or continue with
           </span>
         </div>
@@ -23,7 +23,7 @@ export function SocialLogin() {
         type="button"
         variant="outline"
         onClick={handleGoogleLogin}
-        className="w-full"
+        className="w-full rounded-2xl py-3 border-border hover:border-meadow text-forest hover:bg-cream-alt font-bold text-xs shadow-xs"
       >
         <svg
           role="img"
