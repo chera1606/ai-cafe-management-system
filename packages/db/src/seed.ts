@@ -37,8 +37,8 @@ const DATABASE_URL =
   process.env.DATABASE_URL ||
   "postgresql://postgres:postgres@localhost:5432/cafe_db";
 
-console.log("🌱 Starting idempotent cafe database seeder...");
-console.log(`📡 Target DB: ${DATABASE_URL.replace(/:[^:@]*@/, ":****@")}`);
+console.log("[SEED] Starting idempotent cafe database seeder...");
+console.log(`[SEED] Target DB: ${DATABASE_URL.replace(/:[^:@]*@/, ":****@")}`);
 
 const sqlClient = postgres(DATABASE_URL, { max: 1 });
 const db = drizzle(sqlClient, { schema });
@@ -46,7 +46,7 @@ const db = drizzle(sqlClient, { schema });
 async function seed() {
   try {
     // 1. Roles
-    console.log("👥 Seeding default roles...");
+    console.log("[SEED] Seeding default roles...");
     const defaultRoles = [
       {
         name: "ADMIN",
@@ -105,7 +105,7 @@ async function seed() {
     }
 
     // 2. Permissions
-    console.log("🔑 Seeding default permissions...");
+    console.log("[SEED] Seeding default permissions...");
     const defaultPermissions = [
       {
         name: "menu:read",
@@ -166,7 +166,7 @@ async function seed() {
     }
 
     // 3. Role-Permission Mappings
-    console.log("🔗 Seeding role-permission mappings...");
+    console.log("[SEED] Seeding role-permission mappings...");
     const rolePermissionBindings: Record<string, string[]> = {
       ADMIN: [
         "menu:read",
@@ -225,7 +225,9 @@ async function seed() {
     }
 
     // 4. Default Admin Account
-    console.log("👤 Seeding default admin account (admin@sablecafe.com)...");
+    console.log(
+      "[SEED] Seeding default admin account (admin@sablecafe.com)...",
+    );
     const adminEmail = "admin@sablecafe.com";
     // Bcrypt hash for password "Admin123!@#"
     const adminPasswordHash =
@@ -296,21 +298,29 @@ async function seed() {
     }
 
     // 5. Initial Cafe Catalog: Departments
-    console.log("🏢 Seeding departments...");
+    console.log("[SEED] Seeding departments...");
     const defaultDepartments = [
       {
-        name: "Espresso Bar",
-        description: "Hot coffee and espresso extraction bar",
+        name: "Jebena & Coffee Ceremony",
+        description:
+          "Clay pot Jebena extraction, roasting, frankincense station",
         status: "active",
       },
       {
-        name: "Cold Beverage Station",
-        description: "Iced drinks, cold brew kegs, and blenders",
+        name: "Traditional Kitchen",
+        description: "Mitad injera baking, wot slow-cookers, and clay pots",
         status: "active",
       },
       {
-        name: "Bakery & Kitchen",
-        description: "Ovens, pastry warming, and savory food prep",
+        name: "Espresso & Cold Bar",
+        description:
+          "Modern espresso machines, iced concoctions, and specialty tea",
+        status: "active",
+      },
+      {
+        name: "Pastry & Breakfast",
+        description:
+          "Fresh pastry ovens, morning breakfast station, and snacks",
         status: "active",
       },
     ];
@@ -334,26 +344,36 @@ async function seed() {
     }
 
     // 6. Initial Cafe Catalog: Categories
-    console.log("📂 Seeding categories...");
+    console.log("[SEED] Seeding categories...");
     const defaultCategories = [
       {
-        name: "Signature Espresso",
-        description: "Artisan espresso handcrafted with premium beans",
+        name: "Traditional Mains",
+        description:
+          "Authentic slow-simmered wots served with sourdough teff injera",
         status: "active",
       },
       {
-        name: "Iced & Cold Brew",
-        description: "Refreshing cold brews and chilled specialty concoctions",
+        name: "Ethiopian Coffee Ceremony",
+        description:
+          "Hand-roasted Yirgacheffe & Sidama coffee brewed in traditional clay Jebena",
         status: "active",
       },
       {
-        name: "Artisan Pastries",
-        description: "Freshly baked daily pastries and viennoiseries",
+        name: "Breakfast & Morning Bites",
+        description:
+          "Hearty traditional morning dishes: Chechebsa, Ful, and Kinche",
         status: "active",
       },
       {
-        name: "All-Day Breakfast",
-        description: "Wholesome gourmet breakfast and brunch favorites",
+        name: "Beverages & Herbal Teas",
+        description:
+          "Spiced Ethiopian teas, fresh juices, and signature iced drinks",
+        status: "active",
+      },
+      {
+        name: "Vegetarian & Vegan",
+        description:
+          "Wholesome fasting (Tsom) platters: Misir, Shiro, and Gomen",
         status: "active",
       },
     ];
@@ -377,10 +397,65 @@ async function seed() {
     }
 
     // 7. Initial Cafe Catalog: Ingredients
-    console.log("🧂 Seeding raw ingredients...");
+    console.log("[SEED] Seeding raw ingredients...");
     const defaultIngredients = [
       {
-        name: "Arabica Beans",
+        name: "Teff Injera",
+        unitOfMeasure: "pcs",
+        status: "active",
+      },
+      {
+        name: "Yirgacheffe Coffee Beans",
+        unitOfMeasure: "g",
+        status: "active",
+      },
+      {
+        name: "Sidama Coffee Beans",
+        unitOfMeasure: "g",
+        status: "active",
+      },
+      {
+        name: "Niter Kibbeh (Spiced Butter)",
+        unitOfMeasure: "g",
+        status: "active",
+      },
+      {
+        name: "Berbere Spice Blend",
+        unitOfMeasure: "g",
+        status: "active",
+      },
+      {
+        name: "Shiro Powder (Chickpea Flour)",
+        unitOfMeasure: "g",
+        status: "active",
+      },
+      {
+        name: "Prime Beef Cuts",
+        unitOfMeasure: "g",
+        status: "active",
+      },
+      {
+        name: "Chicken Drumsticks & Thighs",
+        unitOfMeasure: "pcs",
+        status: "active",
+      },
+      {
+        name: "Hard Boiled Egg",
+        unitOfMeasure: "pcs",
+        status: "active",
+      },
+      {
+        name: "Split Red Lentils",
+        unitOfMeasure: "g",
+        status: "active",
+      },
+      {
+        name: "Collard Greens (Gomen)",
+        unitOfMeasure: "g",
+        status: "active",
+      },
+      {
+        name: "Ethiopian Tea Spices (Cardamom, Cinnamon, Clove)",
         unitOfMeasure: "g",
         status: "active",
       },
@@ -395,13 +470,8 @@ async function seed() {
         status: "active",
       },
       {
-        name: "Vanilla Syrup",
-        unitOfMeasure: "ml",
-        status: "active",
-      },
-      {
-        name: "Butter Croissant Dough",
-        unitOfMeasure: "pcs",
+        name: "Korerima (Black Cardamom)",
+        unitOfMeasure: "g",
         status: "active",
       },
     ];
@@ -425,90 +495,204 @@ async function seed() {
     }
 
     // 8. Initial Cafe Catalog: Menu Items
-    console.log("☕ Seeding menu items and recipes...");
+    console.log("[SEED] Seeding Ethiopian food and drink menu items...");
     const defaultMenuItems = [
       {
-        name: "Signature Espresso",
-        categoryName: "Signature Espresso",
-        departmentName: "Espresso Bar",
-        price: "3.50",
+        name: "Doro Wot Deluxe",
+        categoryName: "Traditional Mains",
+        departmentName: "Traditional Kitchen",
+        price: "16.50",
         availabilityStatus: "AVAILABLE",
         description:
-          "Rich double shot of artisan espresso with thick hazelnut crema",
+          "The crown jewel of Ethiopian cuisine: slow-cooked chicken drumstick in fragrant berbere sauce, seasoned with niter kibbeh and hard-boiled farm egg. Served with fresh teff injera.",
         recipeIngredients: [
           {
-            ingredientName: "Arabica Beans",
-            quantity: "18.000",
-            unitOfMeasure: "g",
-          },
-        ],
-      },
-      {
-        name: "Iced Vanilla Latte",
-        categoryName: "Iced & Cold Brew",
-        departmentName: "Cold Beverage Station",
-        price: "5.50",
-        availabilityStatus: "AVAILABLE",
-        description:
-          "Smooth espresso over cold milk and artisanal Madagascar vanilla syrup",
-        recipeIngredients: [
-          {
-            ingredientName: "Arabica Beans",
-            quantity: "18.000",
-            unitOfMeasure: "g",
-          },
-          {
-            ingredientName: "Whole Milk",
-            quantity: "220.000",
-            unitOfMeasure: "ml",
-          },
-          {
-            ingredientName: "Vanilla Syrup",
-            quantity: "30.000",
-            unitOfMeasure: "ml",
-          },
-        ],
-      },
-      {
-        name: "Cold Brew Reserve",
-        categoryName: "Iced & Cold Brew",
-        departmentName: "Cold Beverage Station",
-        price: "4.75",
-        availabilityStatus: "AVAILABLE",
-        description:
-          "Steeped for 18 hours for an exceptionally smooth, low-acidity profile",
-        recipeIngredients: [
-          {
-            ingredientName: "Arabica Beans",
-            quantity: "35.000",
-            unitOfMeasure: "g",
-          },
-        ],
-      },
-      {
-        name: "Artisan Butter Croissant",
-        categoryName: "Artisan Pastries",
-        departmentName: "Bakery & Kitchen",
-        price: "4.25",
-        availabilityStatus: "AVAILABLE",
-        description:
-          "Flaky, golden-brown Parisian croissant made with cultured French butter",
-        recipeIngredients: [
-          {
-            ingredientName: "Butter Croissant Dough",
+            ingredientName: "Chicken Drumsticks & Thighs",
             quantity: "1.000",
+            unitOfMeasure: "pcs",
+          },
+          {
+            ingredientName: "Hard Boiled Egg",
+            quantity: "1.000",
+            unitOfMeasure: "pcs",
+          },
+          {
+            ingredientName: "Berbere Spice Blend",
+            quantity: "25.000",
+            unitOfMeasure: "g",
+          },
+          {
+            ingredientName: "Niter Kibbeh (Spiced Butter)",
+            quantity: "30.000",
+            unitOfMeasure: "g",
+          },
+          {
+            ingredientName: "Teff Injera",
+            quantity: "2.000",
             unitOfMeasure: "pcs",
           },
         ],
       },
       {
-        name: "Avocado Toast Breakfast",
-        categoryName: "All-Day Breakfast",
-        departmentName: "Bakery & Kitchen",
-        price: "8.50",
+        name: "Special Sizzling Tibs",
+        categoryName: "Traditional Mains",
+        departmentName: "Traditional Kitchen",
+        price: "14.75",
         availabilityStatus: "AVAILABLE",
         description:
-          "Crushed Hass avocado on toasted sourdough with microgreens and chili flakes",
+          "Tender prime beef cubes pan-seared with rosemary, sweet onions, jalapeños, and fragrant garlic butter served sizzling on a clay burner with injera and awaze dip.",
+        recipeIngredients: [
+          {
+            ingredientName: "Prime Beef Cuts",
+            quantity: "220.000",
+            unitOfMeasure: "g",
+          },
+          {
+            ingredientName: "Niter Kibbeh (Spiced Butter)",
+            quantity: "25.000",
+            unitOfMeasure: "g",
+          },
+          {
+            ingredientName: "Teff Injera",
+            quantity: "2.000",
+            unitOfMeasure: "pcs",
+          },
+        ],
+      },
+      {
+        name: "Clay Pot Shiro Miteen",
+        categoryName: "Vegetarian & Vegan",
+        departmentName: "Traditional Kitchen",
+        price: "11.50",
+        availabilityStatus: "AVAILABLE",
+        description:
+          "Bubbling ground seasoned chickpeas simmered in garlic, ginger, and berbere served piping hot in a traditional handcrafted black clay pot with injera.",
+        recipeIngredients: [
+          {
+            ingredientName: "Shiro Powder (Chickpea Flour)",
+            quantity: "80.000",
+            unitOfMeasure: "g",
+          },
+          {
+            ingredientName: "Berbere Spice Blend",
+            quantity: "10.000",
+            unitOfMeasure: "g",
+          },
+          {
+            ingredientName: "Teff Injera",
+            quantity: "2.000",
+            unitOfMeasure: "pcs",
+          },
+        ],
+      },
+      {
+        name: "Yetsom Beyaynetu Platter",
+        categoryName: "Vegetarian & Vegan",
+        departmentName: "Traditional Kitchen",
+        price: "13.95",
+        availabilityStatus: "AVAILABLE",
+        description:
+          "Vibrant plant-based banquet platter: spicy red lentil wot (Misir), turmeric yellow split peas (Kik), steamed spiced collard greens (Gomen), and crisp beet salad over sourdough teff injera.",
+        recipeIngredients: [
+          {
+            ingredientName: "Split Red Lentils",
+            quantity: "70.000",
+            unitOfMeasure: "g",
+          },
+          {
+            ingredientName: "Collard Greens (Gomen)",
+            quantity: "60.000",
+            unitOfMeasure: "g",
+          },
+          {
+            ingredientName: "Teff Injera",
+            quantity: "2.000",
+            unitOfMeasure: "pcs",
+          },
+        ],
+      },
+      {
+        name: "Traditional Jebena Buna Ceremony",
+        categoryName: "Ethiopian Coffee Ceremony",
+        departmentName: "Jebena & Coffee Ceremony",
+        price: "6.50",
+        availabilityStatus: "AVAILABLE",
+        description:
+          "Full sensory ceremony: green beans freshly washed, pan-roasted to medium-dark, ground and slow-brewed in a charcoal-heated clay Jebena pot. Served with popcorn and frankincense aroma.",
+        recipeIngredients: [
+          {
+            ingredientName: "Yirgacheffe Coffee Beans",
+            quantity: "25.000",
+            unitOfMeasure: "g",
+          },
+          {
+            ingredientName: "Korerima (Black Cardamom)",
+            quantity: "2.000",
+            unitOfMeasure: "g",
+          },
+        ],
+      },
+      {
+        name: "Yirgacheffe Pour-Over Reserve",
+        categoryName: "Ethiopian Coffee Ceremony",
+        departmentName: "Espresso & Cold Bar",
+        price: "4.85",
+        availabilityStatus: "AVAILABLE",
+        description:
+          "Single-origin specialty roast from high-altitude Yirgacheffe washed lots. Bright floral jasmine aromatics, citrus notes of bergamot, and a honey-smooth tea-like finish.",
+        recipeIngredients: [
+          {
+            ingredientName: "Yirgacheffe Coffee Beans",
+            quantity: "20.000",
+            unitOfMeasure: "g",
+          },
+        ],
+      },
+      {
+        name: "Chechebsa (Kita Firfir) Honey & Kibbeh",
+        categoryName: "Breakfast & Morning Bites",
+        departmentName: "Pastry & Breakfast",
+        price: "8.75",
+        availabilityStatus: "AVAILABLE",
+        description:
+          "Torn pieces of freshly baked flatbread pan-fried in warm spiced berbere niter kibbeh, finished with raw highland honey and a side of fresh yogurt.",
+        recipeIngredients: [
+          {
+            ingredientName: "Niter Kibbeh (Spiced Butter)",
+            quantity: "35.000",
+            unitOfMeasure: "g",
+          },
+          {
+            ingredientName: "Berbere Spice Blend",
+            quantity: "5.000",
+            unitOfMeasure: "g",
+          },
+        ],
+      },
+      {
+        name: "Spiced Ethiopian Chai (Shai)",
+        categoryName: "Beverages & Herbal Teas",
+        departmentName: "Espresso & Cold Bar",
+        price: "3.75",
+        availabilityStatus: "AVAILABLE",
+        description:
+          "Aromatic loose black tea infused with cracked cinnamon bark, whole cloves, and crushed korerima cardamom pods. Served sweet and piping hot.",
+        recipeIngredients: [
+          {
+            ingredientName: "Ethiopian Tea Spices (Cardamom, Cinnamon, Clove)",
+            quantity: "8.000",
+            unitOfMeasure: "g",
+          },
+        ],
+      },
+      {
+        name: "Avocado & Mango Layered Juice (Espris)",
+        categoryName: "Beverages & Herbal Teas",
+        departmentName: "Espresso & Cold Bar",
+        price: "5.25",
+        availabilityStatus: "AVAILABLE",
+        description:
+          "Classic Addis Ababa cafe style: dense layers of pure crushed Hass avocado, sweet mango puree, and squeezed lime, served with a straw and spoon.",
         recipeIngredients: [],
       },
     ];
@@ -519,7 +703,7 @@ async function seed() {
 
       if (!categoryId || !departmentId) {
         console.warn(
-          `⚠️ Skipping item ${item.name}: Category or Department not found.`,
+          `[WARN] Skipping item ${item.name}: Category or Department not found.`,
         );
         continue;
       }
@@ -603,9 +787,9 @@ async function seed() {
       }
     }
 
-    console.log("✅ Database seeding completed successfully!");
+    console.log("[SUCCESS] Database seeding completed successfully!");
   } catch (error) {
-    console.error("❌ Seeding failed with error:", error);
+    console.error("[ERROR] Seeding failed with error:", error);
     throw error;
   } finally {
     await sqlClient.end();
