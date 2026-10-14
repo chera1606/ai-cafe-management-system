@@ -1,5 +1,6 @@
+"use client";
+
 import { forwardRef, type InputHTMLAttributes, type ReactNode } from "react";
-import { cn } from "@/lib/utils";
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -12,65 +13,67 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   (
     {
-      className,
       label,
       error,
       helperText,
       leftIcon,
       rightIcon,
       id,
+      className = "",
       disabled,
       ...props
     },
     ref,
   ) => {
-    const inputId =
-      id || (label ? label.toLowerCase().replace(/\s+/g, "-") : undefined);
+    const inputId = id || props.name || Math.random().toString(36).substring(7);
 
     return (
-      <div className="w-full space-y-1.5">
+      <div className="w-full space-y-1.5 text-left">
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-xs font-medium text-stone-700 dark:text-stone-300"
+            className="block text-xs font-bold text-forest tracking-wide"
           >
             {label}
+            {props.required && <span className="text-amber ml-0.5">*</span>}
           </label>
         )}
-        <div className="relative flex items-center">
+
+        <div className="relative rounded-2xl transition-all shadow-forest">
           {leftIcon && (
-            <div className="absolute left-3 text-stone-400 pointer-events-none flex items-center">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-sage">
               {leftIcon}
             </div>
           )}
+
           <input
             ref={ref}
             id={inputId}
             disabled={disabled}
-            className={cn(
-              "w-full rounded-lg border border-stone-300 bg-white px-3.5 py-2 text-sm text-stone-900 placeholder-stone-400 transition-colors focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600 disabled:bg-stone-50 disabled:text-stone-400 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 dark:placeholder-stone-500",
-              leftIcon && "pl-10",
-              rightIcon && "pr-10",
-              error &&
-                "border-rose-500 focus:border-rose-500 focus:ring-rose-500",
-              className,
-            )}
+            className={`w-full rounded-2xl bg-white border text-sm text-forest placeholder-sage/70 transition-all duration-200 outline-none ${
+              leftIcon ? "pl-10" : "pl-4"
+            } ${rightIcon ? "pr-10" : "pr-4"} py-3 ${
+              error
+                ? "border-rose-400 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10"
+                : "border-border hover:border-sage/50 focus:border-meadow focus:ring-4 focus:ring-meadow-tint"
+            } ${disabled ? "bg-cream-alt text-sage/60 cursor-not-allowed" : ""} ${className}`}
             {...props}
           />
+
           {rightIcon && (
-            <div className="absolute right-3 text-stone-400 flex items-center">
+            <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-sage">
               {rightIcon}
             </div>
           )}
         </div>
-        {error && (
-          <p className="text-xs text-rose-600 dark:text-rose-400">{error}</p>
-        )}
-        {!error && helperText && (
-          <p className="text-xs text-stone-500 dark:text-stone-400">
-            {helperText}
+
+        {error ? (
+          <p className="text-xs text-rose-500 font-medium flex items-center gap-1 mt-1">
+            <span>{error}</span>
           </p>
-        )}
+        ) : helperText ? (
+          <p className="text-xs text-sage mt-1">{helperText}</p>
+        ) : null}
       </div>
     );
   },

@@ -1,56 +1,110 @@
-import { Coffee, Settings } from "lucide-react";
-import type { Metadata } from "next";
-import Link from "next/link";
-import { LinkButton } from "@/components/ui/button";
-import { CustomerMenuView } from "@/features/menu/components/customer-menu-view";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Artisan Menu & Offerings | AI Cafe",
-  description:
-    "Explore our artisan coffee selections, iced specialties, fresh pastries, and breakfast menu.",
-};
+import { useEffect, useState } from "react";
+import { Footer } from "@/components/layout/footer";
+import { Navbar } from "@/components/layout/navbar";
+import { ProductModal } from "@/components/product/product-modal";
+import { AiAssistantButton } from "@/components/ui/ai-assistant-button";
+import { useCart } from "@/context/cart-context";
+import { CATEGORIES, MENU_ITEMS } from "@/data/mock-cafe";
+import type { MenuCategory, MenuItem } from "@/data/types";
+import {
+  MenuCartPill,
+  MenuFilterBar,
+  MenuHeader,
+  MenuProductGrid,
+  useMenuFilters,
+} from "@/features/menu";
 
 export default function MenuPage() {
+  const { totalItems, total, setIsCartOpen } = useCart();
+  const [categories] = useState<MenuCategory[]>(CATEGORIES);
+  const [menuItems] = useState<MenuItem[]>(MENU_ITEMS);
+  const [isLoading] = useState(false);
+  const [activeModalItem, setActiveModalItem] = useState<MenuItem | null>(null);
+
+  const {
+    searchQuery,
+    setSearchQuery,
+    activeCategoryId,
+    setActiveCategoryId,
+    onlyAvailable,
+    setOnlyAvailable,
+    selectedDietary,
+    setSelectedDietary,
+    sortBy,
+    setSortBy,
+    filteredItems,
+    resetFilters,
+  } = useMenuFilters(menuItems);
+
+  // Synchronize modal state with browser back/forward history
+  useEffect(() => {
+    const handlePopState = () => {
+      const match = window.location.pathname.match(/^\/menu\/([^/]+)$/);
+      if (match?.[1]) {
+        const found = MENU_ITEMS.find(
+          (i) => i.slug === match[1] || i.id === match[1],
+        );
+        setActiveModalItem(found || null);
+      } else {
+        setActiveModalItem(null);
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   return (
-    <div className="min-h-screen flex flex-col bg-stone-50 dark:bg-stone-950">
-      {/* Top Navigation */}
-      <header className="border-b border-stone-200/80 dark:border-stone-800 bg-white/80 dark:bg-stone-900/80 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-amber-700 text-white shadow-sm shadow-amber-700/20">
-              <Coffee className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="font-bold text-base tracking-tight text-stone-900 dark:text-stone-100">
-                AI Cafe
-              </span>
-              <span className="hidden sm:inline-block text-[11px] text-amber-700 dark:text-amber-400 font-medium ml-2 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 border border-amber-200/60 dark:border-amber-900/60">
-                Artisan Catalog
-              </span>
-            </div>
-          </Link>
+    <div className="min-h-screen flex flex-col bg-cream text-forest">
+      <Navbar />
 
-          <div className="flex items-center gap-2.5">
-            <LinkButton href="/" variant="ghost" size="sm" className="text-xs">
-              Home
-            </LinkButton>
-            <LinkButton
-              href="/admin/menu"
-              variant="outline"
-              size="sm"
-              className="text-xs"
-            >
-              <Settings className="w-3.5 h-3.5 mr-1" />
-              Manage Menu
-            </LinkButton>
-          </div>
-        </div>
-      </header>
+      <main id="main-content" className="flex-1 pt-28 sm:pt-36 pb-20">
+        <MenuHeader
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onClearSearch={() => setSearchQuery("")}
+        />
 
-      {/* Main Catalog View Container */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        <CustomerMenuView />
+        <MenuFilterBar
+          categories={categories}
+          activeCategoryId={activeCategoryId}
+          onSelectCategory={setActiveCategoryId}
+          selectedDietary={selectedDietary}
+          onSelectDietary={setSelectedDietary}
+          onlyAvailable={onlyAvailable}
+          onToggleAvailable={() => setOnlyAvailable(!onlyAvailable)}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+        />
+
+        <MenuProductGrid
+          items={filteredItems}
+          isLoading={isLoading}
+          onOpenDetail={(item) => setActiveModalItem(item)}
+          onResetFilters={resetFilters}
+        />
       </main>
+
+      {/* Floating Mobile Cart Pill */}
+      <MenuCartPill
+        totalItems={totalItems}
+        total={total}
+        onOpenCart={() => setIsCartOpen(true)}
+      />
+
+      <Footer />
+
+      {/* Interactive Detail & Customization Modal */}
+      {activeModalItem && (
+        <ProductModal
+          item={activeModalItem}
+          onClose={() => setActiveModalItem(null)}
+        />
+      )}
+
+      {/* Floating AI Ordering Assistant CTA */}
+      <AiAssistantButton />
     </div>
   );
 }

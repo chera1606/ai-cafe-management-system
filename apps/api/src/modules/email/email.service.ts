@@ -123,7 +123,7 @@ export class EmailService {
     <tr><td align="center">
       <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1);">
         <tr><td style="background:#1a1a2e;padding:32px 40px;text-align:center;">
-          <h1 style="margin:0;color:#fff;font-size:22px;letter-spacing:.5px;">☕ AI Cafe</h1>
+          <h1 style="margin:0;color:#fff;font-size:22px;letter-spacing:.5px;">AI Cafe</h1>
         </td></tr>
         <tr><td style="padding:40px;">
           <h2 style="margin:0 0 16px;color:#111;font-size:20px;">Reset your password</h2>
@@ -165,10 +165,10 @@ export class EmailService {
     <tr><td align="center">
       <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1);">
         <tr><td style="background:#1a1a2e;padding:32px 40px;text-align:center;">
-          <h1 style="margin:0;color:#fff;font-size:22px;letter-spacing:.5px;">☕ AI Cafe</h1>
+          <h1 style="margin:0;color:#fff;font-size:22px;letter-spacing:.5px;">AI Cafe</h1>
         </td></tr>
         <tr><td style="padding:40px;">
-          <h2 style="margin:0 0 16px;color:#111;font-size:20px;">Your magic login link ✨</h2>
+          <h2 style="margin:0 0 16px;color:#111;font-size:20px;">Your magic login link</h2>
           <p style="color:#555;line-height:1.6;margin:0 0 24px;">
             Click the button below to sign in instantly — no password needed.
             This link expires in <strong>15 minutes</strong> and can only be used once.
@@ -207,10 +207,10 @@ export class EmailService {
     <tr><td align="center">
       <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1);">
         <tr><td style="background:#1a1a2e;padding:32px 40px;text-align:center;">
-          <h1 style="margin:0;color:#fff;font-size:22px;letter-spacing:.5px;">☕ AI Cafe</h1>
+          <h1 style="margin:0;color:#fff;font-size:22px;letter-spacing:.5px;">AI Cafe</h1>
         </td></tr>
         <tr><td style="padding:40px;">
-          <h2 style="margin:0 0 16px;color:#111;font-size:20px;">Welcome! Verify your email 🎉</h2>
+          <h2 style="margin:0 0 16px;color:#111;font-size:20px;">Welcome! Verify your email</h2>
           <p style="color:#555;line-height:1.6;margin:0 0 24px;">
             Thanks for joining AI Cafe! Click below to verify your email address and activate your account.
             This link expires in <strong>24 hours</strong>.

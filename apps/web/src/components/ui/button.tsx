@@ -1,103 +1,142 @@
+"use client";
+
 import { Loader2 } from "lucide-react";
-import Link, { type LinkProps } from "next/link";
+import Link from "next/link";
 import { type ButtonHTMLAttributes, forwardRef, type ReactNode } from "react";
-import { cn } from "@/lib/utils";
-
-export type ButtonVariant =
-  | "primary"
-  | "secondary"
-  | "outline"
-  | "ghost"
-  | "danger";
-export type ButtonSize = "sm" | "md" | "lg";
-
-export interface ButtonStyleOptions {
-  variant?: ButtonVariant;
-  size?: ButtonSize;
-  className?: string;
-}
-
-export function buttonVariants({
-  variant = "primary",
-  size = "md",
-  className,
-}: ButtonStyleOptions = {}): string {
-  const baseStyles =
-    "inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed select-none cursor-pointer";
-
-  const variants: Record<ButtonVariant, string> = {
-    primary:
-      "bg-amber-700 hover:bg-amber-800 text-white focus:ring-amber-600 shadow-sm",
-    secondary:
-      "bg-stone-100 hover:bg-stone-200 text-stone-900 focus:ring-stone-400 dark:bg-stone-800 dark:hover:bg-stone-700 dark:text-stone-100",
-    outline:
-      "border border-stone-300 hover:bg-stone-100 text-stone-700 focus:ring-stone-400 dark:border-stone-700 dark:hover:bg-stone-800 dark:text-stone-200",
-    ghost:
-      "hover:bg-stone-100 text-stone-700 focus:ring-stone-400 dark:hover:bg-stone-800 dark:text-stone-200",
-    danger:
-      "bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-500 shadow-sm",
-  };
-
-  const sizes: Record<ButtonSize, string> = {
-    sm: "text-xs px-3 py-1.5 gap-1.5",
-    md: "text-sm px-4 py-2 gap-2",
-    lg: "text-base px-6 py-2.5 gap-2.5",
-  };
-
-  return cn(baseStyles, variants[variant], sizes[size], className);
-}
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant;
-  size?: ButtonSize;
+  variant?:
+    | "primary"
+    | "secondary"
+    | "outline"
+    | "ghost"
+    | "amber"
+    | "dark"
+    | "danger";
+  size?: "sm" | "md" | "lg" | "icon";
   isLoading?: boolean;
+  leftIcon?: ReactNode;
+  rightIcon?: ReactNode;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
-      className,
+      children,
+      className = "",
       variant = "primary",
       size = "md",
       isLoading = false,
+      leftIcon,
+      rightIcon,
       disabled,
-      children,
       ...props
     },
     ref,
   ) => {
+    const baseStyles =
+      "inline-flex items-center justify-center font-bold tracking-tight rounded-full transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.98]";
+
+    const sizeStyles = {
+      sm: "text-xs px-3.5 py-1.5 gap-1.5",
+      md: "text-sm px-5 py-2.5 gap-2",
+      lg: "text-base px-7 py-3.5 gap-2.5",
+      icon: "p-2.5 rounded-full aspect-square",
+    };
+
+    const variantStyles = {
+      primary:
+        "bg-meadow hover:bg-meadow-alt active:bg-meadow-dark text-white shadow-forest border border-meadow-alt/30",
+      secondary: "bg-cream-alt hover:bg-cream text-forest border border-border",
+      outline:
+        "border-2 border-meadow text-forest hover:bg-meadow-tint active:bg-meadow-tint/80 bg-transparent",
+      ghost:
+        "text-forest hover:text-meadow-dark hover:bg-meadow-tint bg-transparent",
+      amber:
+        "bg-amber hover:bg-amber-alt text-white shadow-sm border border-amber/30",
+      dark: "bg-forest hover:bg-forest-2 text-white shadow-forest border border-white/10",
+      danger:
+        "bg-rose-600 hover:bg-rose-700 text-white shadow-sm border border-rose-500/40",
+    };
+
     return (
       <button
         ref={ref}
         disabled={disabled || isLoading}
-        className={buttonVariants({ variant, size, className })}
+        className={`${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
         {...props}
       >
-        {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-        {children}
+        {isLoading ? (
+          <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+        ) : (
+          leftIcon && <span className="shrink-0">{leftIcon}</span>
+        )}
+        <span>{children}</span>
+        {!isLoading && rightIcon && (
+          <span className="shrink-0">{rightIcon}</span>
+        )}
       </button>
     );
   },
 );
+
 Button.displayName = "Button";
 
-export interface LinkButtonProps extends LinkProps {
-  variant?: ButtonVariant;
-  size?: ButtonSize;
-  className?: string;
+export interface LinkButtonProps {
+  href: string;
   children: ReactNode;
+  variant?: ButtonProps["variant"];
+  size?: ButtonProps["size"];
+  className?: string;
+  leftIcon?: ReactNode;
+  rightIcon?: ReactNode;
+  onClick?: () => void;
 }
 
 export function LinkButton({
+  href,
+  children,
   variant = "primary",
   size = "md",
-  className,
-  children,
-  ...props
+  className = "",
+  leftIcon,
+  rightIcon,
+  onClick,
 }: LinkButtonProps) {
+  const baseStyles =
+    "inline-flex items-center justify-center font-bold tracking-tight rounded-full transition-all duration-200 cursor-pointer select-none active:scale-[0.98]";
+
+  const sizeStyles = {
+    sm: "text-xs px-3.5 py-1.5 gap-1.5",
+    md: "text-sm px-5 py-2.5 gap-2",
+    lg: "text-base px-7 py-3.5 gap-2.5",
+    icon: "p-2.5 rounded-full aspect-square",
+  };
+
+  const variantStyles = {
+    primary:
+      "bg-meadow hover:bg-meadow-alt active:bg-meadow-dark text-white shadow-forest border border-meadow-alt/30",
+    secondary: "bg-cream-alt hover:bg-cream text-forest border border-border",
+    outline:
+      "border-2 border-meadow text-forest hover:bg-meadow-tint active:bg-meadow-tint/80 bg-transparent",
+    ghost:
+      "text-forest hover:text-meadow-dark hover:bg-meadow-tint bg-transparent",
+    amber:
+      "bg-amber hover:bg-amber-alt text-white shadow-sm border border-amber/30",
+    dark: "bg-forest hover:bg-forest-2 text-white shadow-forest border border-white/10",
+    danger:
+      "bg-rose-600 hover:bg-rose-700 text-white shadow-sm border border-rose-500/40",
+  };
+
   return (
-    <Link className={buttonVariants({ variant, size, className })} {...props}>
-      {children}
+    <Link
+      href={href}
+      onClick={onClick}
+      className={`${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
+    >
+      {leftIcon && <span className="shrink-0">{leftIcon}</span>}
+      <span>{children}</span>
+      {rightIcon && <span className="shrink-0">{rightIcon}</span>}
     </Link>
   );
 }

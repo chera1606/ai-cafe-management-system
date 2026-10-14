@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 const PROTECTED_ROUTES = ["/settings", "/dashboard", "/orders", "/admin"];
 const AUTH_ROUTES = [
   "/login",
+  "/signup",
   "/register",
   "/forgot-password",
   "/reset-password",
@@ -25,9 +26,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // If user is already authenticated and visits login/register
+  // If user is already authenticated and visits login/signup
   if (isAuthRoute && token) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/menu", request.url));
   }
 
   return NextResponse.next();
@@ -40,6 +41,7 @@ export const config = {
     "/orders/:path*",
     "/admin/:path*",
     "/login",
+    "/signup",
     "/register",
     "/forgot-password",
     "/reset-password",
