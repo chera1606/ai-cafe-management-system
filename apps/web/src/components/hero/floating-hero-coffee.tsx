@@ -165,6 +165,7 @@ export function FloatingHeroCoffee() {
               src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=85"
               alt="Ceremonial Claypot Jebena Coffee Cup"
               fill
+              sizes="(max-width: 640px) 192px, 256px"
               priority
               className="object-cover group-hover:scale-105 transition-transform duration-500"
             />

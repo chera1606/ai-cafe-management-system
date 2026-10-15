@@ -37,7 +37,11 @@ export default function RootLayout({
   modal?: ReactNode;
 }) {
   return (
-    <html lang="en" className="scroll-smooth antialiased">
+    <html
+      lang="en"
+      className="scroll-smooth antialiased"
+      data-scroll-behavior="smooth"
+    >
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
