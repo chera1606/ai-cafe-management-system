@@ -30,11 +30,32 @@ export interface CreateOrderPayload {
   orderType: OrderType;
   tableNumber?: string;
   notes?: string;
+  specialInstruction?: string;
   idempotencyKey?: string;
   items: CreateOrderItemPayload[];
   guestCustomer?: GuestCustomerPayload;
   deliveryInfo?: DeliveryInfoPayload;
 }
+
+export const MENU_ITEM_UUID_MAP: Record<string, string> = {
+  "item-yirgacheffe-pour-over": "11111111-1111-4111-8111-111111111101",
+  "item-jebena-buna": "11111111-1111-4111-8111-111111111102",
+  "item-honey-pistachio-latte": "11111111-1111-4111-8111-111111111103",
+  "item-doro-wot-flatbread": "11111111-1111-4111-8111-111111111104",
+  "item-cardamom-croissant": "11111111-1111-4111-8111-111111111105",
+  "item-injera-crisps": "11111111-1111-4111-8111-111111111106",
+  "item-coffee-tiramisu": "11111111-1111-4111-8111-111111111107",
+  "item-cold-brew-nitro": "11111111-1111-4111-8111-111111111108",
+  "item-shai-spiced-tea": "11111111-1111-4111-8111-111111111109",
+  "item-avocado-toast": "11111111-1111-4111-8111-111111111110",
+  "item-sambusa-lentil": "11111111-1111-4111-8111-111111111111",
+  "item-tibs-sizzler": "11111111-1111-4111-8111-111111111112",
+  "item-chechebsa": "11111111-1111-4111-8111-111111111113",
+  "item-mango-juice": "11111111-1111-4111-8111-111111111114",
+  "item-ginger-latte": "11111111-1111-4111-8111-111111111115",
+  "item-shiro-pot": "11111111-1111-4111-8111-111111111116",
+  "item-baklava": "11111111-1111-4111-8111-111111111117",
+};
 
 export interface OrderItemDetail {
   id: string;

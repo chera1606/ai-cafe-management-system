@@ -14,7 +14,11 @@ import { Navbar } from "@/components/layout/navbar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
 import { useCart } from "@/context/cart-context";
-import { type CreateOrderPayload, createOrder } from "@/lib/orders-api";
+import {
+  type CreateOrderPayload,
+  MENU_ITEM_UUID_MAP,
+  createOrder,
+} from "@/lib/orders-api";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -97,12 +101,18 @@ export default function CheckoutPage() {
             ? formData.tableNumber.trim()
             : undefined,
         notes: formData.kitchenNotes.trim() || undefined,
+        specialInstruction: formData.kitchenNotes.trim() || undefined,
         idempotencyKey: generateCheckoutIdempotencyKey(),
-        items: items.map((it) => ({
-          menuItemId: it.menuItemId || it.id,
-          quantity: it.quantity,
-          specialInstruction: it.specialInstructions || it.notes || undefined,
-        })),
+        items: items.map((it) => {
+          const rawId = it.menuItemId || it.id;
+          const resolvedId = MENU_ITEM_UUID_MAP[rawId] || rawId;
+          return {
+            menuItemId: resolvedId,
+            quantity: it.quantity,
+            specialInstruction:
+              it.specialInstructions || it.notes || undefined,
+          };
+        }),
         guestCustomer: !isAuthenticated
           ? {
               name: effectiveName,

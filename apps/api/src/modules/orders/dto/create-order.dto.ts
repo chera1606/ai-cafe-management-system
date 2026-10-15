@@ -28,10 +28,10 @@ export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 export class OrderItemDto {
   @ApiProperty({
-    description: "UUID of the menu item to order",
+    description: "UUID or identifier of the menu item to order",
     example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
   })
-  @IsUUID()
+  @IsString({ message: "menuItemId must be a string or UUID" })
   @IsNotEmpty()
   menuItemId!: string;
 
@@ -132,6 +132,14 @@ export class CreateOrderDto {
   @IsString()
   @IsOptional()
   specialInstruction?: string;
+
+  @ApiPropertyOptional({
+    description: "Order-level notes or preparation instructions (alias for specialInstruction)",
+    example: "Rush order if possible",
+  })
+  @IsString()
+  @IsOptional()
+  notes?: string;
 
   @ApiPropertyOptional({
     description: "Delivery details (required when orderType is DELIVERY)",
