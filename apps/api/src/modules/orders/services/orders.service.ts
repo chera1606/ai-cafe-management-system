@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import {
   customers,
   type Database,
@@ -342,30 +343,37 @@ export class OrdersService {
     // 3. Resolve Customer (FR-ORD-001)
     let customerId: string | null = null;
 
-    if (authUserId) {
-      const [existingCustomer] = await this.db
-        .select()
-        .from(customers)
-        .where(eq(customers.userId, authUserId))
-        .limit(1);
+    try {
+      if (authUserId) {
+        const [existingCustomer] = await this.db
+          .select()
+          .from(customers)
+          .where(eq(customers.userId, authUserId))
+          .limit(1);
 
-      if (existingCustomer) {
-        customerId = existingCustomer.id;
+        if (existingCustomer) {
+          customerId = existingCustomer.id;
+        }
+      } else if (dto.guestCustomer) {
+        // Create guest customer profile record if guest information provided
+        const [newGuest] = await this.db
+          .insert(customers)
+          .values({
+            name: dto.guestCustomer.name.trim(),
+            email: dto.guestCustomer.email?.trim() || null,
+            phone: dto.guestCustomer.phone?.trim() || null,
+            status: "ACTIVE",
+          })
+          .returning();
+
+        if (newGuest) {
+          customerId = newGuest.id;
+        }
       }
-    } else if (dto.guestCustomer) {
-      // Create guest customer profile record if guest information provided
-      const [newGuest] = await this.db
-        .insert(customers)
-        .values({
-          name: dto.guestCustomer.name.trim(),
-          email: dto.guestCustomer.email?.trim() || null,
-          phone: dto.guestCustomer.phone?.trim() || null,
-          status: "ACTIVE",
-        })
-        .returning();
-
-      if (newGuest) {
-        customerId = newGuest.id;
+    } catch {
+      // In dev mode when Postgres is offline, use generated guest ID or null
+      if (dto.guestCustomer || authUserId) {
+        customerId = randomUUID();
       }
     }
 
@@ -569,7 +577,7 @@ export class OrdersService {
       const fallbackOrderId =
         dto.idempotencyKey && isUuid(dto.idempotencyKey)
           ? dto.idempotencyKey
-          : `11111111-2222-4333-8444-${String(Date.now()).slice(-12)}`;
+          : randomUUID();
 
       createdOrder = {
         id: fallbackOrderId,
@@ -589,14 +597,14 @@ export class OrdersService {
         delivery:
           dto.orderType === "DELIVERY" && dto.deliveryInfo
             ? {
-                id: `del-${Date.now()}`,
+                id: randomUUID(),
                 address: dto.deliveryInfo.address,
                 status: "PENDING",
                 deliveryFee,
               }
             : null,
-        items: computedItems.map((ci, index) => ({
-          id: `item-${index + 1}`,
+        items: computedItems.map((ci) => ({
+          id: randomUUID(),
           menuItemId: ci.menuItemId,
           name: ci.name,
           quantity: ci.quantity,
@@ -630,92 +638,102 @@ export class OrdersService {
       return this.devOrdersStore.get(orderId)!;
     }
 
-    const [order] = await this.db
-      .select({
-        id: orders.id,
-        customerId: orders.customerId,
-        orderType: orders.orderType,
-        status: orders.status,
-        subtotal: orders.subtotal,
-        deliveryFee: orders.deliveryFee,
-        discountAmount: orders.discountAmount,
-        totalAmount: orders.totalAmount,
-        createdAt: orders.createdAt,
-        updatedAt: orders.updatedAt,
-        confirmedAt: orders.confirmedAt,
-        completedAt: orders.completedAt,
-        cancelledAt: orders.cancelledAt,
-        customerName: customers.name,
-        customerPhone: customers.phone,
-        customerEmail: customers.email,
-      })
-      .from(orders)
-      .leftJoin(customers, eq(orders.customerId, customers.id))
-      .where(eq(orders.id, orderId))
-      .limit(1);
+    try {
+      const [order] = await this.db
+        .select({
+          id: orders.id,
+          customerId: orders.customerId,
+          orderType: orders.orderType,
+          status: orders.status,
+          subtotal: orders.subtotal,
+          deliveryFee: orders.deliveryFee,
+          discountAmount: orders.discountAmount,
+          totalAmount: orders.totalAmount,
+          createdAt: orders.createdAt,
+          updatedAt: orders.updatedAt,
+          confirmedAt: orders.confirmedAt,
+          completedAt: orders.completedAt,
+          cancelledAt: orders.cancelledAt,
+          customerName: customers.name,
+          customerPhone: customers.phone,
+          customerEmail: customers.email,
+        })
+        .from(orders)
+        .leftJoin(customers, eq(orders.customerId, customers.id))
+        .where(eq(orders.id, orderId))
+        .limit(1);
 
-    if (!order) {
+      if (!order) {
+        throw new NotFoundException(`Order with ID '${orderId}' not found.`);
+      }
+
+      // Fetch items with menu item names
+      const items = await this.db
+        .select({
+          id: orderItems.id,
+          menuItemId: orderItems.menuItemId,
+          name: menuItems.name,
+          quantity: orderItems.quantity,
+          unitPrice: orderItems.unitPrice,
+          subtotal: orderItems.subtotal,
+          specialInstruction: orderItems.specialInstruction,
+        })
+        .from(orderItems)
+        .leftJoin(menuItems, eq(orderItems.menuItemId, menuItems.id))
+        .where(eq(orderItems.orderId, orderId));
+
+      // Fetch delivery if applicable
+      const [del] = await this.db
+        .select()
+        .from(deliveries)
+        .where(eq(deliveries.orderId, orderId))
+        .limit(1);
+
+      return {
+        id: order.id,
+        orderNumber: this.generateOrderNumber(order.id),
+        customerId: order.customerId,
+        customerName: order.customerName,
+        customerPhone: order.customerPhone,
+        customerEmail: order.customerEmail,
+        orderType: order.orderType as OrderType,
+        status: order.status as OrderStatus,
+        subtotal: Number(order.subtotal),
+        deliveryFee: Number(order.deliveryFee),
+        discountAmount: Number(order.discountAmount),
+        totalAmount: Number(order.totalAmount),
+        delivery: del
+          ? {
+              id: del.id,
+              address: del.address,
+              status: del.status,
+              deliveryFee: Number(del.deliveryFee),
+            }
+          : null,
+        items: items.map((i) => ({
+          id: i.id,
+          menuItemId: i.menuItemId,
+          name: i.name || "Menu Item",
+          quantity: Number(i.quantity),
+          unitPrice: Number(i.unitPrice),
+          subtotal: Number(i.subtotal),
+          specialInstruction: i.specialInstruction,
+        })),
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt,
+        confirmedAt: order.confirmedAt,
+        completedAt: order.completedAt,
+        cancelledAt: order.cancelledAt,
+      };
+    } catch (err) {
+      if (err instanceof NotFoundException) {
+        throw err;
+      }
+      if (this.devOrdersStore.has(orderId)) {
+        return this.devOrdersStore.get(orderId)!;
+      }
       throw new NotFoundException(`Order with ID '${orderId}' not found.`);
     }
-
-    // Fetch items with menu item names
-    const items = await this.db
-      .select({
-        id: orderItems.id,
-        menuItemId: orderItems.menuItemId,
-        name: menuItems.name,
-        quantity: orderItems.quantity,
-        unitPrice: orderItems.unitPrice,
-        subtotal: orderItems.subtotal,
-        specialInstruction: orderItems.specialInstruction,
-      })
-      .from(orderItems)
-      .leftJoin(menuItems, eq(orderItems.menuItemId, menuItems.id))
-      .where(eq(orderItems.orderId, orderId));
-
-    // Fetch delivery if applicable
-    const [del] = await this.db
-      .select()
-      .from(deliveries)
-      .where(eq(deliveries.orderId, orderId))
-      .limit(1);
-
-    return {
-      id: order.id,
-      orderNumber: this.generateOrderNumber(order.id),
-      customerId: order.customerId,
-      customerName: order.customerName,
-      customerPhone: order.customerPhone,
-      customerEmail: order.customerEmail,
-      orderType: order.orderType as OrderType,
-      status: order.status as OrderStatus,
-      subtotal: Number(order.subtotal),
-      deliveryFee: Number(order.deliveryFee),
-      discountAmount: Number(order.discountAmount),
-      totalAmount: Number(order.totalAmount),
-      delivery: del
-        ? {
-            id: del.id,
-            address: del.address,
-            status: del.status,
-            deliveryFee: Number(del.deliveryFee),
-          }
-        : null,
-      items: items.map((i) => ({
-        id: i.id,
-        menuItemId: i.menuItemId,
-        name: i.name || "Menu Item",
-        quantity: Number(i.quantity),
-        unitPrice: Number(i.unitPrice),
-        subtotal: Number(i.subtotal),
-        specialInstruction: i.specialInstruction,
-      })),
-      createdAt: order.createdAt,
-      updatedAt: order.updatedAt,
-      confirmedAt: order.confirmedAt,
-      completedAt: order.completedAt,
-      cancelledAt: order.cancelledAt,
-    };
   }
 
   /**
