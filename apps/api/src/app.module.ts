@@ -10,6 +10,7 @@ import { AuditModule } from "./modules/audit";
 import { AuthModule } from "./modules/auth/auth.module";
 import { DatabaseModule } from "./modules/database";
 import { MenuModule } from "./modules/menu";
+import { OrdersModule } from "./modules/orders";
 import { UsersModule } from "./modules/users/users.module";
 
 @Module({
@@ -30,6 +31,7 @@ import { UsersModule } from "./modules/users/users.module";
     UsersModule,
     AuthModule,
     MenuModule,
+    OrdersModule,
     HealthModule,
   ],
   controllers: [AppController],
