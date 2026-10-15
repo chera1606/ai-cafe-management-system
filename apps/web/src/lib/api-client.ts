@@ -121,6 +121,15 @@ export async function apiClient<T>(
         "Connection timed out. API server did not respond quickly.",
       );
     }
+    if (
+      err instanceof TypeError &&
+      (err.message === "Failed to fetch" || err.message.includes("fetch"))
+    ) {
+      throw new ApiClientError(
+        503,
+        `Unable to reach the backend API at ${baseUrl}. Please ensure the NestJS API server is running on port 3000 (run: pnpm --filter @cafe/api dev).`,
+      );
+    }
     throw err;
   }
 
