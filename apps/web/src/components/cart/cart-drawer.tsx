@@ -10,6 +10,7 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { QuantityStepper } from "@/components/ui/quantity-stepper";
@@ -30,6 +31,7 @@ export function CartDrawer() {
     tax,
     total,
   } = useCart();
+  const router = useRouter();
 
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [fulfilmentMode, setFulfilmentMode] =
@@ -424,7 +426,10 @@ export function CartDrawer() {
                   <div className="flex gap-2">
                     <Button
                       variant="primary"
-                      onClick={() => setIsCheckingOut(true)}
+                      onClick={() => {
+                        setIsCartOpen(false);
+                        router.push("/checkout");
+                      }}
                       className="flex-1"
                       rightIcon={<ArrowRight className="w-4 h-4" />}
                     >
