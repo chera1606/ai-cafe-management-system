@@ -47,7 +47,7 @@ export default function CheckoutPage() {
     if (user) {
       setFormData((prev) => ({
         ...prev,
-        name: prev.name || user.name || "",
+        name: prev.name || user.customer?.name || "",
         email: prev.email || user.email || "",
       }));
     }
@@ -79,7 +79,9 @@ export default function CheckoutPage() {
       return;
     }
 
-    const effectiveName = isAuthenticated ? user?.name : formData.name.trim();
+    const effectiveName = isAuthenticated
+      ? user?.customer?.name || user?.email
+      : formData.name.trim();
     if (!effectiveName) {
       setErrorMsg("Please provide your name for order identification.");
       return;
@@ -201,7 +203,7 @@ export default function CheckoutPage() {
                   data={formData}
                   onChange={handleFormChange}
                   isAuthenticated={isAuthenticated}
-                  userName={user?.name}
+                  userName={user?.customer?.name || user?.email}
                   userEmail={user?.email}
                   disabled={isSubmitting}
                 />
