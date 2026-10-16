@@ -41,8 +41,8 @@ export function Navbar() {
   const navLinks = [
     { label: "Home", href: "/" },
     { label: "Menu", href: "/menu" },
+    { label: "Kitchen KDS", href: "/kitchen" },
     { label: "About", href: "/#why-us" },
-    { label: "Experience", href: "/#how-it-works" },
   ];
 
   return (

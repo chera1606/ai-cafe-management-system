@@ -20,6 +20,7 @@ import { AuditService } from "../../audit/audit.service";
 import { DATABASE_TOKEN } from "../../database/database.constants";
 import type {
   CreateOrderDto,
+  KdsStation,
   OrderQueryDto,
   OrderStatus,
   OrderType,
@@ -65,10 +66,51 @@ export interface OrderDetail {
   cancelledAt?: Date | null;
 }
 
+export interface KdsWorkloadSummary {
+  activeCount: number;
+  pendingCount: number;
+  confirmedCount: number;
+  preparingCount: number;
+  readyCount: number;
+  completedTodayCount: number;
+  averagePrepTimeMinutes: number;
+}
+
+export interface KdsQueueResponse {
+  orders: OrderDetail[];
+  metrics: KdsWorkloadSummary;
+  station: KdsStation;
+}
+
+export const BARISTA_ITEMS = new Set([
+  "item-yirgacheffe-pour-over",
+  "11111111-1111-4111-8111-111111111101",
+  "item-jebena-buna",
+  "11111111-1111-4111-8111-111111111102",
+  "item-pistachio-honey-latte",
+  "item-honey-pistachio-latte",
+  "11111111-1111-4111-8111-111111111103",
+  "item-spanish-latte",
+  "11111111-1111-4111-8111-111111111104",
+  "item-cardamom-cold-brew",
+  "item-cold-brew-nitro",
+  "11111111-1111-4111-8111-111111111105",
+  "item-layered-spris-juice",
+  "item-mango-juice",
+  "11111111-1111-4111-8111-111111111106",
+  "item-clove-spiced-chai",
+  "item-shai-spiced-tea",
+  "11111111-1111-4111-8111-111111111107",
+  "item-hibiscus-mint-fizz",
+  "11111111-1111-4111-8111-111111111108",
+  "item-ginger-latte",
+]);
+
 export const ARTISAN_CATALOG: Record<
   string,
   { id: string; name: string; price: number; availabilityStatus: string }
 > = {
+  // 1. Ceremonial Yirgacheffe Pour-Over
   "item-yirgacheffe-pour-over": {
     id: "11111111-1111-4111-8111-111111111101",
     name: "Ceremonial Yirgacheffe Pour-Over",
@@ -81,196 +123,308 @@ export const ARTISAN_CATALOG: Record<
     price: 6.5,
     availabilityStatus: "AVAILABLE",
   },
+
+  // 2. Claypot Jebena Buna Ritual
   "item-jebena-buna": {
     id: "11111111-1111-4111-8111-111111111102",
     name: "Claypot Jebena Buna Ritual",
-    price: 8.0,
+    price: 9.0,
     availabilityStatus: "AVAILABLE",
   },
   "11111111-1111-4111-8111-111111111102": {
     id: "11111111-1111-4111-8111-111111111102",
     name: "Claypot Jebena Buna Ritual",
-    price: 8.0,
+    price: 9.0,
+    availabilityStatus: "AVAILABLE",
+  },
+
+  // 3. Pistachio Highland Honey Latte
+  "item-pistachio-honey-latte": {
+    id: "11111111-1111-4111-8111-111111111103",
+    name: "Pistachio Highland Honey Latte",
+    price: 7.25,
     availabilityStatus: "AVAILABLE",
   },
   "item-honey-pistachio-latte": {
     id: "11111111-1111-4111-8111-111111111103",
-    name: "Highland Honey Pistachio Latte",
+    name: "Pistachio Highland Honey Latte",
     price: 7.25,
     availabilityStatus: "AVAILABLE",
   },
   "11111111-1111-4111-8111-111111111103": {
     id: "11111111-1111-4111-8111-111111111103",
-    name: "Highland Honey Pistachio Latte",
+    name: "Pistachio Highland Honey Latte",
     price: 7.25,
     availabilityStatus: "AVAILABLE",
   },
-  "item-doro-wot-flatbread": {
+
+  // 4. Iced Cardamom Spanish Latte
+  "item-spanish-latte": {
     id: "11111111-1111-4111-8111-111111111104",
-    name: "Spiced Doro Wot Flatbread",
-    price: 14.5,
+    name: "Iced Cardamom Spanish Latte",
+    price: 6.8,
     availabilityStatus: "AVAILABLE",
   },
   "11111111-1111-4111-8111-111111111104": {
     id: "11111111-1111-4111-8111-111111111104",
-    name: "Spiced Doro Wot Flatbread",
-    price: 14.5,
+    name: "Iced Cardamom Spanish Latte",
+    price: 6.8,
     availabilityStatus: "AVAILABLE",
   },
-  "item-cardamom-croissant": {
+
+  // 5. Nitro Smoked Cardamom Cold Brew
+  "item-cardamom-cold-brew": {
     id: "11111111-1111-4111-8111-111111111105",
-    name: "Cardamom Saffron Morning Knot",
-    price: 5.75,
+    name: "Nitro Smoked Cardamom Cold Brew",
+    price: 6.75,
+    availabilityStatus: "AVAILABLE",
+  },
+  "item-cold-brew-nitro": {
+    id: "11111111-1111-4111-8111-111111111105",
+    name: "Nitro Smoked Cardamom Cold Brew",
+    price: 6.75,
     availabilityStatus: "AVAILABLE",
   },
   "11111111-1111-4111-8111-111111111105": {
     id: "11111111-1111-4111-8111-111111111105",
-    name: "Cardamom Saffron Morning Knot",
-    price: 5.75,
+    name: "Nitro Smoked Cardamom Cold Brew",
+    price: 6.75,
     availabilityStatus: "AVAILABLE",
   },
-  "item-injera-crisps": {
+
+  // 6. Artisan Layered Spris Juice
+  "item-layered-spris-juice": {
     id: "11111111-1111-4111-8111-111111111106",
-    name: "Crispy Spiced Injera Chips & Dip",
-    price: 6.0,
+    name: "Artisan Layered Spris Juice",
+    price: 8.5,
+    availabilityStatus: "AVAILABLE",
+  },
+  "item-mango-juice": {
+    id: "11111111-1111-4111-8111-111111111106",
+    name: "Artisan Layered Spris Juice",
+    price: 8.5,
     availabilityStatus: "AVAILABLE",
   },
   "11111111-1111-4111-8111-111111111106": {
     id: "11111111-1111-4111-8111-111111111106",
-    name: "Crispy Spiced Injera Chips & Dip",
-    price: 6.0,
+    name: "Artisan Layered Spris Juice",
+    price: 8.5,
     availabilityStatus: "AVAILABLE",
   },
-  "item-coffee-tiramisu": {
+
+  // 7. Simmered Spiced Chai Shai
+  "item-clove-spiced-chai": {
     id: "11111111-1111-4111-8111-111111111107",
-    name: "Yirgacheffe Coffee Bean Tiramisu",
-    price: 8.5,
+    name: "Simmered Spiced Chai Shai",
+    price: 5.75,
+    availabilityStatus: "AVAILABLE",
+  },
+  "item-shai-spiced-tea": {
+    id: "11111111-1111-4111-8111-111111111107",
+    name: "Simmered Spiced Chai Shai",
+    price: 5.75,
     availabilityStatus: "AVAILABLE",
   },
   "11111111-1111-4111-8111-111111111107": {
     id: "11111111-1111-4111-8111-111111111107",
-    name: "Yirgacheffe Coffee Bean Tiramisu",
-    price: 8.5,
+    name: "Simmered Spiced Chai Shai",
+    price: 5.75,
     availabilityStatus: "AVAILABLE",
   },
-  "item-cold-brew-nitro": {
+
+  // 8. Wild Karkadeh Hibiscus Mint Fizz
+  "item-hibiscus-mint-fizz": {
     id: "11111111-1111-4111-8111-111111111108",
-    name: "Nitro Highland Cold Brew",
-    price: 5.5,
+    name: "Wild Karkadeh Hibiscus Mint Fizz",
+    price: 6.0,
     availabilityStatus: "AVAILABLE",
   },
   "11111111-1111-4111-8111-111111111108": {
     id: "11111111-1111-4111-8111-111111111108",
-    name: "Nitro Highland Cold Brew",
-    price: 5.5,
+    name: "Wild Karkadeh Hibiscus Mint Fizz",
+    price: 6.0,
     availabilityStatus: "AVAILABLE",
   },
-  "item-shai-spiced-tea": {
+
+  // 9. Crispy Chechebsa with Spiced Kibbeh
+  "item-chechebsa-kita-firfir": {
     id: "11111111-1111-4111-8111-111111111109",
-    name: "Traditional Spiced Tea",
-    price: 4.25,
+    name: "Crispy Chechebsa with Spiced Kibbeh",
+    price: 13.5,
+    availabilityStatus: "AVAILABLE",
+  },
+  "item-chechebsa": {
+    id: "11111111-1111-4111-8111-111111111109",
+    name: "Crispy Chechebsa with Spiced Kibbeh",
+    price: 13.5,
     availabilityStatus: "AVAILABLE",
   },
   "11111111-1111-4111-8111-111111111109": {
     id: "11111111-1111-4111-8111-111111111109",
-    name: "Traditional Spiced Tea",
-    price: 4.25,
+    name: "Crispy Chechebsa with Spiced Kibbeh",
+    price: 13.5,
     availabilityStatus: "AVAILABLE",
   },
-  "item-avocado-toast": {
+
+  // 10. Slow-Stewed Fava Bean Foul
+  "item-foul-mudammas": {
     id: "11111111-1111-4111-8111-111111111110",
-    name: "Avocado Brioche Toast",
-    price: 11.0,
+    name: "Slow-Stewed Fava Bean Foul",
+    price: 12.0,
     availabilityStatus: "AVAILABLE",
   },
   "11111111-1111-4111-8111-111111111110": {
     id: "11111111-1111-4111-8111-111111111110",
-    name: "Avocado Brioche Toast",
-    price: 11.0,
+    name: "Slow-Stewed Fava Bean Foul",
+    price: 12.0,
     availabilityStatus: "AVAILABLE",
   },
-  "item-sambusa-lentil": {
+
+  // 11. Cardamom & Almond Twice-Baked Croissant
+  "item-cardamom-croissant": {
     id: "11111111-1111-4111-8111-111111111111",
-    name: "Crisp Lentil Sambusas",
-    price: 7.5,
+    name: "Cardamom & Almond Twice-Baked Croissant",
+    price: 5.5,
     availabilityStatus: "AVAILABLE",
   },
   "11111111-1111-4111-8111-111111111111": {
     id: "11111111-1111-4111-8111-111111111111",
-    name: "Crisp Lentil Sambusas",
-    price: 7.5,
+    name: "Cardamom & Almond Twice-Baked Croissant",
+    price: 5.5,
     availabilityStatus: "AVAILABLE",
   },
-  "item-tibs-sizzler": {
+
+  // 12. Honey-Glazed Brown Butter Brioche
+  "item-salted-caramel-brioche": {
     id: "11111111-1111-4111-8111-111111111112",
-    name: "Sizzling Rosemary Beef Tibs",
-    price: 17.5,
+    name: "Honey-Glazed Brown Butter Brioche",
+    price: 4.75,
     availabilityStatus: "AVAILABLE",
   },
   "11111111-1111-4111-8111-111111111112": {
     id: "11111111-1111-4111-8111-111111111112",
-    name: "Sizzling Rosemary Beef Tibs",
-    price: 17.5,
+    name: "Honey-Glazed Brown Butter Brioche",
+    price: 4.75,
     availabilityStatus: "AVAILABLE",
   },
-  "item-chechebsa": {
+
+  // 13. Special Doro Wot Deluxe
+  "item-special-doro-wot": {
     id: "11111111-1111-4111-8111-111111111113",
-    name: "Chechebsa Morning Bowl",
-    price: 9.5,
+    name: "Special Doro Wot Deluxe",
+    price: 19.5,
+    availabilityStatus: "AVAILABLE",
+  },
+  "item-doro-wot-flatbread": {
+    id: "11111111-1111-4111-8111-111111111113",
+    name: "Special Doro Wot Deluxe",
+    price: 19.5,
     availabilityStatus: "AVAILABLE",
   },
   "11111111-1111-4111-8111-111111111113": {
     id: "11111111-1111-4111-8111-111111111113",
-    name: "Chechebsa Morning Bowl",
-    price: 9.5,
+    name: "Special Doro Wot Deluxe",
+    price: 19.5,
     availabilityStatus: "AVAILABLE",
   },
-  "item-mango-juice": {
+
+  // 14. 500°F Sizzling Skillet Beef Tibs
+  "item-sizzling-beef-tibs": {
     id: "11111111-1111-4111-8111-111111111114",
-    name: "Layered Espris Mango Juice",
-    price: 6.0,
+    name: "500°F Sizzling Skillet Beef Tibs",
+    price: 21.0,
+    availabilityStatus: "AVAILABLE",
+  },
+  "item-tibs-sizzler": {
+    id: "11111111-1111-4111-8111-111111111114",
+    name: "500°F Sizzling Skillet Beef Tibs",
+    price: 21.0,
     availabilityStatus: "AVAILABLE",
   },
   "11111111-1111-4111-8111-111111111114": {
     id: "11111111-1111-4111-8111-111111111114",
-    name: "Layered Espris Mango Juice",
-    price: 6.0,
+    name: "500°F Sizzling Skillet Beef Tibs",
+    price: 21.0,
     availabilityStatus: "AVAILABLE",
   },
-  "item-ginger-latte": {
+
+  // 15. Grand Vegan Beyaynetu Rainbow Platter
+  "item-vegan-beyaynetu": {
     id: "11111111-1111-4111-8111-111111111115",
-    name: "Wild Ginger Spiced Latte",
-    price: 6.75,
+    name: "Grand Vegan Beyaynetu Rainbow Platter",
+    price: 18.0,
     availabilityStatus: "AVAILABLE",
   },
   "11111111-1111-4111-8111-111111111115": {
     id: "11111111-1111-4111-8111-111111111115",
-    name: "Wild Ginger Spiced Latte",
-    price: 6.75,
+    name: "Grand Vegan Beyaynetu Rainbow Platter",
+    price: 18.0,
     availabilityStatus: "AVAILABLE",
   },
-  "item-shiro-pot": {
+
+  // 16. Yirgacheffe Espresso Velvet Tiramisu
+  "item-coffee-tiramisu": {
     id: "11111111-1111-4111-8111-111111111116",
-    name: "Claypot Shiro Miteen",
-    price: 12.5,
+    name: "Yirgacheffe Espresso Velvet Tiramisu",
+    price: 8.5,
     availabilityStatus: "AVAILABLE",
   },
   "11111111-1111-4111-8111-111111111116": {
     id: "11111111-1111-4111-8111-111111111116",
-    name: "Claypot Shiro Miteen",
-    price: 12.5,
+    name: "Yirgacheffe Espresso Velvet Tiramisu",
+    price: 8.5,
+    availabilityStatus: "AVAILABLE",
+  },
+
+  // 17. Wild Honey & Crispy Pistachio Baklava
+  "item-pistachio-baklava": {
+    id: "11111111-1111-4111-8111-111111111117",
+    name: "Wild Honey & Crispy Pistachio Baklava",
+    price: 7.0,
     availabilityStatus: "AVAILABLE",
   },
   "item-baklava": {
     id: "11111111-1111-4111-8111-111111111117",
-    name: "Pistachio Cardamom Baklava",
-    price: 6.25,
+    name: "Wild Honey & Crispy Pistachio Baklava",
+    price: 7.0,
     availabilityStatus: "AVAILABLE",
   },
   "11111111-1111-4111-8111-111111111117": {
     id: "11111111-1111-4111-8111-111111111117",
-    name: "Pistachio Cardamom Baklava",
-    price: 6.25,
+    name: "Wild Honey & Crispy Pistachio Baklava",
+    price: 7.0,
+    availabilityStatus: "AVAILABLE",
+  },
+
+  // Legacy fallback aliases
+  "item-injera-crisps": {
+    id: "11111111-1111-4111-8111-111111111109",
+    name: "Crispy Chechebsa with Spiced Kibbeh",
+    price: 13.5,
+    availabilityStatus: "AVAILABLE",
+  },
+  "item-avocado-toast": {
+    id: "11111111-1111-4111-8111-111111111110",
+    name: "Slow-Stewed Fava Bean Foul",
+    price: 12.0,
+    availabilityStatus: "AVAILABLE",
+  },
+  "item-sambusa-lentil": {
+    id: "11111111-1111-4111-8111-111111111111",
+    name: "Cardamom & Almond Twice-Baked Croissant",
+    price: 5.5,
+    availabilityStatus: "AVAILABLE",
+  },
+  "item-ginger-latte": {
+    id: "11111111-1111-4111-8111-111111111104",
+    name: "Iced Cardamom Spanish Latte",
+    price: 6.8,
+    availabilityStatus: "AVAILABLE",
+  },
+  "item-shiro-pot": {
+    id: "11111111-1111-4111-8111-111111111115",
+    name: "Grand Vegan Beyaynetu Rainbow Platter",
+    price: 18.0,
     availabilityStatus: "AVAILABLE",
   },
 };
@@ -947,4 +1101,136 @@ export class OrdersService {
       actorId,
     );
   }
+
+  /**
+   * Retrieves the Kitchen Display System (KDS) queue with department filtering and live workload metrics (FR-KDS-001, FR-KDS-002, FR-KDS-007).
+   */
+  async getKdsQueue(station: KdsStation = "ALL"): Promise<KdsQueueResponse> {
+    const allOrders: OrderDetail[] = [];
+
+    try {
+      const activeStatusConditions = inArray(orders.status, [
+        "PENDING",
+        "CONFIRMED",
+        "PREPARING",
+        "READY",
+      ]);
+
+      const matchedActive = await this.db
+        .select({ id: orders.id })
+        .from(orders)
+        .where(activeStatusConditions)
+        .orderBy(desc(orders.createdAt))
+        .limit(100);
+
+      const activeDetails = await Promise.all(
+        matchedActive.map((o) => this.findById(o.id)),
+      );
+
+      allOrders.push(...activeDetails);
+
+      // Also fetch recent completed orders within last 2 hours for recall / display
+      const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+      const recentCompleted = await this.db
+        .select({ id: orders.id })
+        .from(orders)
+        .where(
+          and(
+            eq(orders.status, "COMPLETED"),
+            gte(orders.completedAt, twoHoursAgo),
+          ),
+        )
+        .orderBy(desc(orders.completedAt))
+        .limit(20);
+
+      const completedDetails = await Promise.all(
+        recentCompleted.map((o) => this.findById(o.id)),
+      );
+
+      allOrders.push(...completedDetails);
+    } catch {
+      // Postgres offline or unseeded in dev
+    }
+
+    // Merge in-memory devOrdersStore
+    for (const devOrder of this.devOrdersStore.values()) {
+      if (!allOrders.some((o) => o.id === devOrder.id)) {
+        if (devOrder.status !== "CANCELLED") {
+          allOrders.push(devOrder);
+        }
+      }
+    }
+
+    // Sort: Priority order: PENDING, CONFIRMED, PREPARING (oldest first FIFO), then READY, then COMPLETED
+    const statusPriority: Record<string, number> = {
+      PENDING: 1,
+      CONFIRMED: 2,
+      PREPARING: 3,
+      READY: 4,
+      COMPLETED: 5,
+    };
+
+    allOrders.sort((a, b) => {
+      const pA = statusPriority[a.status] || 99;
+      const pB = statusPriority[b.status] || 99;
+      if (pA !== pB) return pA - pB;
+      if (a.status !== "COMPLETED") {
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      }
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    });
+
+    // Calculate system-wide workload metrics (FR-KDS-007)
+    const pendingCount = allOrders.filter((o) => o.status === "PENDING").length;
+    const confirmedCount = allOrders.filter((o) => o.status === "CONFIRMED").length;
+    const preparingCount = allOrders.filter((o) => o.status === "PREPARING").length;
+    const readyCount = allOrders.filter((o) => o.status === "READY").length;
+    const activeCount = pendingCount + confirmedCount + preparingCount + readyCount;
+    const completedTodayCount = allOrders.filter((o) => o.status === "COMPLETED").length;
+
+    const finishedOrders = allOrders.filter(
+      (o) => (o.status === "COMPLETED" || o.status === "READY") && o.createdAt,
+    );
+    let avgPrepMinutes = 0;
+    if (finishedOrders.length > 0) {
+      const totalMinutes = finishedOrders.reduce((acc, curr) => {
+        const start = new Date(curr.createdAt).getTime();
+        const end = curr.completedAt
+          ? new Date(curr.completedAt).getTime()
+          : new Date(curr.updatedAt).getTime();
+        const diffMinutes = Math.max(1, Math.round((end - start) / 60000));
+        return acc + diffMinutes;
+      }, 0);
+      avgPrepMinutes = Math.round(totalMinutes / finishedOrders.length);
+    } else {
+      avgPrepMinutes = 7;
+    }
+
+    // Apply department filtering (FR-KDS-002)
+    let filteredOrders = allOrders;
+    if (station === "BARISTA") {
+      filteredOrders = allOrders.filter((o) =>
+        o.items.some((it) => BARISTA_ITEMS.has(it.menuItemId)),
+      );
+    } else if (station === "KITCHEN") {
+      filteredOrders = allOrders.filter((o) =>
+        o.items.some((it) => !BARISTA_ITEMS.has(it.menuItemId)),
+      );
+    }
+
+    return {
+      orders: filteredOrders,
+      metrics: {
+        activeCount,
+        pendingCount,
+        confirmedCount,
+        preparingCount,
+        readyCount,
+        completedTodayCount,
+        averagePrepTimeMinutes: avgPrepMinutes,
+      },
+      station,
+    };
+  }
 }
+

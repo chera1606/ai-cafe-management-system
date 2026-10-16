@@ -13,6 +13,7 @@ describe("OrdersController", () => {
     findById: ReturnType<typeof vi.fn>;
     updateStatus: ReturnType<typeof vi.fn>;
     cancel: ReturnType<typeof vi.fn>;
+    getKdsQueue: ReturnType<typeof vi.fn>;
   };
   let mockJwtService: {
     decode: ReturnType<typeof vi.fn>;
@@ -37,6 +38,7 @@ describe("OrdersController", () => {
       findById: vi.fn(),
       updateStatus: vi.fn(),
       cancel: vi.fn(),
+      getKdsQueue: vi.fn(),
     };
 
     mockJwtService = {
@@ -124,25 +126,50 @@ describe("OrdersController", () => {
     });
   });
 
+  describe("getKdsQueue", () => {
+    it("should delegate to getKdsQueue with station filter", async () => {
+      const mockQueueResponse = {
+        orders: [mockOrderDetail],
+        metrics: {
+          activeCount: 1,
+          pendingCount: 1,
+          confirmedCount: 0,
+          preparingCount: 0,
+          readyCount: 0,
+          completedTodayCount: 0,
+          averagePrepTimeMinutes: 7,
+        },
+        station: "BARISTA" as const,
+      };
+      mockOrdersService.getKdsQueue.mockResolvedValue(mockQueueResponse);
+
+      const result = await controller.getKdsQueue({ station: "BARISTA" });
+      expect(mockOrdersService.getKdsQueue).toHaveBeenCalledWith("BARISTA");
+      expect(result).toEqual(mockQueueResponse);
+    });
+  });
+
   describe("updateStatus", () => {
-    it("should delegate to updateStatus with actor ID", async () => {
+    it("should delegate to updateStatus with actor ID from token", async () => {
       mockOrdersService.updateStatus.mockResolvedValue({
         ...mockOrderDetail,
         status: "CONFIRMED",
       });
-
-      const user = {
-        sub: "staff-1",
+      mockJwtService.decode.mockReturnValue({
         userId: "staff-1",
-        email: "staff@example.com",
         roles: ["BARISTA"],
-        permissions: [],
-      };
+      });
+
+      const req = {
+        headers: {
+          authorization: "Bearer staff-token",
+        },
+      } as unknown as Request;
 
       const result = await controller.updateStatus(
         "ord-1",
         { status: "CONFIRMED" },
-        user,
+        req,
       );
       expect(mockOrdersService.updateStatus).toHaveBeenCalledWith(
         "ord-1",
