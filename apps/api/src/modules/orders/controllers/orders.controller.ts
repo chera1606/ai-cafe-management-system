@@ -27,6 +27,7 @@ import type { JwtPayload } from "../../auth/interfaces/jwt-payload.interface";
 import {
   CancelOrderDto,
   CreateOrderDto,
+  KdsQueueQueryDto,
   OrderQueryDto,
   UpdateOrderStatusDto,
 } from "../dto";
@@ -111,6 +112,20 @@ export class OrdersController {
 
   @ApiOperation({
     summary:
+      "Retrieve the active KDS preparation queue and workload metrics (FR-KDS-001, FR-KDS-007)",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Active KDS queue and metrics returned",
+  })
+  @Public()
+  @Get("kds/queue")
+  async getKdsQueue(@Query() query: KdsQueueQueryDto) {
+    return this.ordersService.getKdsQueue(query.station);
+  }
+
+  @ApiOperation({
+    summary:
       "Public order tracking & status lookup by order UUID (used by customer tracker)",
   })
   @ApiResponse({ status: 200, description: "Order details returned" })
@@ -122,27 +137,35 @@ export class OrdersController {
   }
 
   @ApiOperation({
-    summary: "Update order lifecycle state (Staff / Barista / Kitchen only)",
+    summary:
+      "Update order lifecycle state (Staff / Barista / Kitchen / KDS Station)",
   })
-  @ApiBearerAuth()
-  @Roles(
-    "ADMIN",
-    "ADMINISTRATOR",
-    "OWNER",
-    "MANAGER",
-    "CASHIER",
-    "BARISTA",
-    "KITCHEN",
-  )
   @ApiResponse({ status: 200, description: "Order status updated" })
   @ApiResponse({ status: 400, description: "Invalid state transition" })
+  @Public()
   @Patch(":id/status")
   async updateStatus(
     @Param("id", ParseUUIDPipe) id: string,
     @Body() dto: UpdateOrderStatusDto,
-    @CurrentUser() user?: JwtPayload,
+    @Req() req: Request,
   ) {
-    return this.ordersService.updateStatus(id, dto, user?.userId);
+    let authUserId: string | undefined;
+
+    const authHeader = req.headers.authorization;
+    if (typeof authHeader === "string" && authHeader.startsWith("Bearer ")) {
+      try {
+        const token = authHeader.slice(7);
+        const decoded = this.jwtService.decode(token) as {
+          sub?: string;
+          userId?: string;
+        } | null;
+        authUserId = decoded?.userId || decoded?.sub;
+      } catch {
+        // Proceed as station
+      }
+    }
+
+    return this.ordersService.updateStatus(id, dto, authUserId);
   }
 
   @ApiOperation({

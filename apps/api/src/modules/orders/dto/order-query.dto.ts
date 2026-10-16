@@ -75,3 +75,18 @@ export class OrderQueryDto {
   @IsOptional()
   page?: number = 1;
 }
+
+export const KDS_STATIONS = ["ALL", "BARISTA", "KITCHEN"] as const;
+export type KdsStation = (typeof KDS_STATIONS)[number];
+
+export class KdsQueueQueryDto {
+  @ApiPropertyOptional({
+    description: "Preparation station / department filter",
+    enum: KDS_STATIONS,
+    default: "ALL",
+  })
+  @IsIn(KDS_STATIONS)
+  @IsOptional()
+  station?: KdsStation = "ALL";
+}
+
