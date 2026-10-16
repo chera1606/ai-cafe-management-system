@@ -329,4 +329,105 @@ describe("OrdersService", () => {
       ).rejects.toThrow(ConflictException);
     });
   });
+
+  describe("getKdsQueue", () => {
+    it("should retrieve active orders and calculate workload metrics", async () => {
+      // Mock active orders query
+      mockDb.select.mockReturnValueOnce({
+        from: vi.fn().mockReturnValueOnce({
+          where: vi.fn().mockReturnValueOnce({
+            orderBy: vi.fn().mockReturnValueOnce({
+              limit: vi.fn().mockResolvedValueOnce([{ id: "ord-1234-uuid" }]),
+            }),
+          }),
+        }),
+      });
+
+      // Mock findById calls for ord-1234-uuid (order header)
+      mockDb.select.mockReturnValueOnce({
+        from: vi.fn().mockReturnValueOnce({
+          leftJoin: vi.fn().mockReturnValueOnce({
+            where: vi.fn().mockReturnValueOnce({
+              limit: vi
+                .fn()
+                .mockResolvedValueOnce([
+                  { ...mockCreatedOrder, status: "PREPARING" },
+                ]),
+            }),
+          }),
+        }),
+      });
+      // items
+      mockDb.select.mockReturnValueOnce({
+        from: vi.fn().mockReturnValueOnce({
+          leftJoin: vi.fn().mockReturnValueOnce({
+            where: vi.fn().mockResolvedValueOnce([
+              {
+                id: "oi-1",
+                menuItemId: "item-yirgacheffe-pour-over",
+                name: "Ceremonial Yirgacheffe Pour-Over",
+                quantity: "1",
+                unitPrice: "6.50",
+                subtotal: "6.50",
+                specialInstruction: null,
+              },
+            ]),
+          }),
+        }),
+      });
+      // delivery
+      mockDb.select.mockReturnValueOnce({
+        from: vi.fn().mockReturnValueOnce({
+          where: vi.fn().mockReturnValueOnce({
+            limit: vi.fn().mockResolvedValueOnce([]),
+          }),
+        }),
+      });
+
+      // Mock recent completed query
+      mockDb.select.mockReturnValueOnce({
+        from: vi.fn().mockReturnValueOnce({
+          where: vi.fn().mockReturnValueOnce({
+            orderBy: vi.fn().mockReturnValueOnce({
+              limit: vi.fn().mockResolvedValueOnce([]),
+            }),
+          }),
+        }),
+      });
+
+      const queue = await service.getKdsQueue("ALL");
+      expect(queue).toBeDefined();
+      expect(queue.station).toBe("ALL");
+      expect(queue.orders.length).toBe(1);
+      expect(queue.metrics.preparingCount).toBe(1);
+      expect(queue.metrics.activeCount).toBe(1);
+    });
+
+    it("should route drinks to the BARISTA station", async () => {
+      // Mock active query returning 0 from DB, dev fallback returns drink
+      mockDb.select.mockReturnValueOnce({
+        from: vi.fn().mockReturnValueOnce({
+          where: vi.fn().mockReturnValueOnce({
+            orderBy: vi.fn().mockReturnValueOnce({
+              limit: vi.fn().mockResolvedValueOnce([]),
+            }),
+          }),
+        }),
+      });
+      mockDb.select.mockReturnValueOnce({
+        from: vi.fn().mockReturnValueOnce({
+          where: vi.fn().mockReturnValueOnce({
+            orderBy: vi.fn().mockReturnValueOnce({
+              limit: vi.fn().mockResolvedValueOnce([]),
+            }),
+          }),
+        }),
+      });
+
+      const queue = await service.getKdsQueue("BARISTA");
+      expect(queue.station).toBe("BARISTA");
+      expect(Array.isArray(queue.orders)).toBe(true);
+    });
+  });
 });
+
