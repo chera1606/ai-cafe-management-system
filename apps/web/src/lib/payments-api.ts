@@ -111,7 +111,10 @@ export interface DigitalReceiptResponse {
 export async function initiatePayment(
   payload: InitiatePaymentPayload,
 ): Promise<PaymentRecord> {
-  return apiClient.post<PaymentRecord>("/payments/initiate", payload);
+  return apiClient<PaymentRecord>("/payments/initiate", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
 
 /**
@@ -121,14 +124,19 @@ export async function verifyPayment(
   paymentId: string,
   payload: VerifyPaymentPayload,
 ): Promise<PaymentRecord> {
-  return apiClient.post<PaymentRecord>(`/payments/${paymentId}/verify`, payload);
+  return apiClient<PaymentRecord>(`/payments/${paymentId}/verify`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
 
 /**
  * Retrieves formatted itemized digital receipt for an order.
  */
 export async function getReceipt(orderId: string): Promise<DigitalReceiptResponse> {
-  return apiClient.get<DigitalReceiptResponse>(`/payments/receipt/${orderId}`);
+  return apiClient<DigitalReceiptResponse>(`/payments/receipt/${orderId}`, {
+    method: "GET",
+  });
 }
 
 /**
@@ -137,7 +145,9 @@ export async function getReceipt(orderId: string): Promise<DigitalReceiptRespons
 export async function getOrderPayments(
   orderId: string,
 ): Promise<PaymentRecord[]> {
-  return apiClient.get<PaymentRecord[]>(`/payments/order/${orderId}`);
+  return apiClient<PaymentRecord[]>(`/payments/order/${orderId}`, {
+    method: "GET",
+  });
 }
 
 /**
@@ -147,5 +157,11 @@ export async function processRefund(
   paymentId: string,
   payload: ProcessRefundPayload,
 ): Promise<{ id: string; amount: number; reason: string; status: string }> {
-  return apiClient.post(`/payments/${paymentId}/refund`, payload);
+  return apiClient<{ id: string; amount: number; reason: string; status: string }>(
+    `/payments/${paymentId}/refund`,
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    },
+  );
 }
