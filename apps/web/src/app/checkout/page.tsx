@@ -9,6 +9,7 @@ import {
   type CustomerFormData,
   CustomerInfoForm,
 } from "@/components/checkout/customer-info-form";
+import { PaymentMethodSelector } from "@/components/checkout/payment-method-selector";
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ import {
   MENU_ITEM_UUID_MAP,
   createOrder,
 } from "@/lib/orders-api";
+import { type PaymentMethod, initiatePayment } from "@/lib/payments-api";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -42,6 +44,10 @@ export default function CheckoutPage() {
     dropoffNotes: "",
     kitchenNotes: "",
   });
+
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("CASH");
+  const [paymentPhone, setPaymentPhone] = useState<string>("");
+  const [paymentTxnRef, setPaymentTxnRef] = useState<string>("");
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -131,6 +137,20 @@ export default function CheckoutPage() {
 
       const createdOrder = await createOrder(payload);
 
+      // Initiate payment record (FR-PAY-001 through FR-PAY-003)
+      try {
+        await initiatePayment({
+          orderId: createdOrder.id,
+          paymentMethod,
+          customerPhone: paymentPhone.trim() || formData.phone.trim() || undefined,
+          providerReference: paymentTxnRef.trim() || undefined,
+          notes: `Fulfilment: ${formData.orderType}. Method: ${paymentMethod}`,
+        });
+      } catch (payErr) {
+        // Non-blocking for order continuation, cashier/station can verify payment
+        console.warn("Payment initiation log:", payErr);
+      }
+
       // Successfully placed: clear cart and redirect to live order tracker
       clearCart();
       router.push(`/orders/${createdOrder.id}`);
@@ -207,8 +227,8 @@ export default function CheckoutPage() {
 
             {/* Main Checkout Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* Left Column: Customer and Fulfilment Information */}
-              <div className="lg:col-span-7">
+              {/* Left Column: Customer, Fulfilment Information, and Payment Selector */}
+              <div className="lg:col-span-7 space-y-6">
                 <CustomerInfoForm
                   data={formData}
                   onChange={handleFormChange}
@@ -216,6 +236,16 @@ export default function CheckoutPage() {
                   userName={user?.customer?.name || user?.email}
                   userEmail={user?.email}
                   disabled={isSubmitting}
+                />
+
+                <PaymentMethodSelector
+                  selectedMethod={paymentMethod}
+                  onSelectMethod={setPaymentMethod}
+                  customerPhone={paymentPhone}
+                  onPhoneChange={setPaymentPhone}
+                  transactionRef={paymentTxnRef}
+                  onTransactionRefChange={setPaymentTxnRef}
+                  orderTotal={total}
                 />
               </div>
 
