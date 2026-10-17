@@ -106,19 +106,33 @@ export default function OrderTrackerPage() {
             Back to Artisan Menu
           </Link>
 
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => fetchOrder(true)}
-            disabled={isRefreshing || isLoading}
-            className="text-stone-500 hover:text-forest gap-1.5"
-          >
-            <RefreshCw
-              className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-meadow" : ""}`}
-            />
-            <span>Refresh</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Link href={`/orders/${orderId}/receipt`}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-stone-700 hover:text-forest gap-1.5 text-xs font-semibold"
+              >
+                <FileText className="w-3.5 h-3.5 text-forest" />
+                <span>View Receipt</span>
+              </Button>
+            </Link>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => fetchOrder(true)}
+              disabled={isRefreshing || isLoading}
+              className="text-stone-500 hover:text-forest gap-1.5"
+            >
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-meadow" : ""}`}
+              />
+              <span>Refresh</span>
+            </Button>
+          </div>
         </div>
 
         {/* Loading State */}
@@ -231,6 +245,28 @@ export default function OrderTrackerPage() {
                       ${Number(order.totalAmount).toFixed(2)}
                     </span>
                   </div>
+                </div>
+
+                {/* Official Receipt Action Banner (FR-PAY-006) */}
+                <div className="mt-6 p-4 rounded-2xl bg-cream/70 border border-stone-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-forest/10 flex items-center justify-center text-forest shrink-0">
+                      <FileText className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-xs text-forest">
+                        Electronic Fiscal Receipt
+                      </div>
+                      <div className="text-[11px] text-stone-500">
+                        Itemized breakdown with 15% VAT &amp; verification QR code
+                      </div>
+                    </div>
+                  </div>
+                  <Link href={`/orders/${orderId}/receipt`}>
+                    <Button variant="outline" size="sm" className="text-xs font-semibold shrink-0">
+                      View Receipt
+                    </Button>
+                  </Link>
                 </div>
               </div>
 
