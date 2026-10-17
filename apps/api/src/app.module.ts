@@ -11,6 +11,7 @@ import { AuthModule } from "./modules/auth/auth.module";
 import { DatabaseModule } from "./modules/database";
 import { MenuModule } from "./modules/menu";
 import { OrdersModule } from "./modules/orders";
+import { PaymentsModule } from "./modules/payments";
 import { UsersModule } from "./modules/users/users.module";
 
 @Module({
@@ -32,6 +33,7 @@ import { UsersModule } from "./modules/users/users.module";
     AuthModule,
     MenuModule,
     OrdersModule,
+    PaymentsModule,
     HealthModule,
   ],
   controllers: [AppController],
