@@ -53,8 +53,10 @@ export class PaymentsController {
     if (authHeader && authHeader.startsWith("Bearer ")) {
       try {
         const token = authHeader.split(" ")[1];
-        const decoded = this.jwtService.decode(token) as { sub?: string } | null;
-        if (decoded?.sub) actorId = decoded.sub;
+        if (token) {
+          const decoded = this.jwtService.decode(token) as { sub?: string } | null;
+          if (decoded?.sub) actorId = decoded.sub;
+        }
       } catch {
         // Proceed as guest
       }
@@ -81,8 +83,10 @@ export class PaymentsController {
     if (authHeader && authHeader.startsWith("Bearer ")) {
       try {
         const token = authHeader.split(" ")[1];
-        const decoded = this.jwtService.decode(token) as { sub?: string } | null;
-        if (decoded?.sub) actorId = decoded.sub;
+        if (token) {
+          const decoded = this.jwtService.decode(token) as { sub?: string } | null;
+          if (decoded?.sub) actorId = decoded.sub;
+        }
       } catch {
         // Guest / webhook
       }

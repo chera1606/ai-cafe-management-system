@@ -9,6 +9,7 @@ import {
 import { and, desc, eq } from "drizzle-orm";
 import { type Database, payments, refunds } from "@cafe/db";
 import { AuditService } from "../../audit/audit.service";
+import { DATABASE_TOKEN } from "../../database/database.constants";
 import { OrdersService } from "../../orders/services/orders.service";
 import {
   type DigitalReceiptResponse,
@@ -58,7 +59,7 @@ export class PaymentsService {
   private readonly devRefundsStore = new Map<string, RefundRecord>();
 
   constructor(
-    @Inject("DRIZZLE") private readonly db: Database,
+    @Inject(DATABASE_TOKEN) private readonly db: Database,
     private readonly ordersService: OrdersService,
     private readonly auditService: AuditService,
   ) {}
@@ -283,7 +284,7 @@ export class PaymentsService {
       quantity: it.quantity,
       unitPrice: it.unitPrice,
       subtotal: it.subtotal,
-      specialInstruction: it.specialInstruction,
+      specialInstruction: it.specialInstruction || undefined,
     }));
 
     const paymentRecords: ReceiptPaymentRecord[] = orderPayments.map((p) => ({
@@ -296,18 +297,18 @@ export class PaymentsService {
       confirmedAt: p.confirmedAt,
     }));
 
+    const taxAmount = Number((order.subtotal * 0.15).toFixed(2));
+    const tipAmount = 0;
+
     return {
       receiptNumber,
       orderId: order.id,
       orderNumber: order.orderNumber || order.id.slice(0, 8).toUpperCase(),
       orderType: order.orderType,
-      tableNumber: order.tableNumber,
-      customerName:
-        order.customerName ||
-        order.guestCustomer?.name ||
-        "Walk-In Guest",
-      customerPhone: order.customerPhone || order.guestCustomer?.phone,
-      customerEmail: order.guestCustomer?.email,
+      tableNumber: order.tableNumber || undefined,
+      customerName: order.customerName || "Walk-In Guest",
+      customerPhone: order.customerPhone || undefined,
+      customerEmail: order.customerEmail || undefined,
       issuedAt: new Date(),
       cafe: {
         name: "Artisan Cafe & Roastery",
@@ -318,9 +319,9 @@ export class PaymentsService {
         vatRatePercent: 15,
       },
       items: receiptItems,
-      subtotal: order.subtotalAmount,
-      taxAmount: order.taxAmount,
-      tipAmount: order.tipAmount,
+      subtotal: order.subtotal,
+      taxAmount,
+      tipAmount,
       deliveryFee: order.deliveryFee,
       totalAmount: order.totalAmount,
       amountPaid,
