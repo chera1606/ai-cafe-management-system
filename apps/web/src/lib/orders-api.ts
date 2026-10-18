@@ -164,3 +164,35 @@ export async function getMyOrders(): Promise<OrderDetailResponse[]> {
     signal,
   });
 }
+
+const LOCAL_ORDERS_KEY = "cafe_local_order_ids";
+
+/**
+ * Persists an order UUID to local browser storage so guest customers can track and recall orders.
+ */
+export function recordPlacedOrderId(orderId: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = localStorage.getItem(LOCAL_ORDERS_KEY);
+    const existing: string[] = raw ? JSON.parse(raw) : [];
+    if (!existing.includes(orderId)) {
+      existing.unshift(orderId);
+      localStorage.setItem(LOCAL_ORDERS_KEY, JSON.stringify(existing.slice(0, 50)));
+    }
+  } catch {
+    // Non-fatal
+  }
+}
+
+/**
+ * Retrieves list of locally saved order UUIDs from this browser.
+ */
+export function getLocalOrderIds(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(LOCAL_ORDERS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
