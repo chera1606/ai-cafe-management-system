@@ -1,6 +1,7 @@
 "use client";
 
 import { Coffee } from "lucide-react";
+import Link from "next/link";
 import { LinkButton } from "@/components/ui/button";
 import type { AuthUser } from "@/types/auth";
 
@@ -40,7 +41,11 @@ export function NavAuthActions({
             Admin Panel
           </LinkButton>
         )}
-        <span className="text-xs font-bold text-forest px-3 py-1.5 bg-cream-alt rounded-full border border-border flex items-center gap-1.5">
+        <Link
+          href="/orders"
+          className="text-xs font-bold text-forest px-3 py-1.5 bg-cream-alt hover:bg-cream rounded-full border border-border flex items-center gap-1.5 transition-colors cursor-pointer"
+          title="View your order history & account"
+        >
           <span className="w-2 h-2 rounded-full bg-meadow" />
           <span>{displayName}</span>
           {isAdmin && (
@@ -48,7 +53,7 @@ export function NavAuthActions({
               Admin
             </span>
           )}
-        </span>
+        </Link>
         <button
           type="button"
           onClick={onLogout}
