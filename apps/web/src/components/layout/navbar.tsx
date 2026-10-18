@@ -43,6 +43,7 @@ export function Navbar() {
     { label: "Menu", href: "/menu" },
     { label: "My Orders", href: "/orders" },
     { label: "Kitchen KDS", href: "/kitchen" },
+    { label: "POS", href: "/pos" },
     { label: "About", href: "/#why-us" },
   ];
 
