@@ -41,6 +41,7 @@ export function Navbar() {
   const navLinks = [
     { label: "Home", href: "/" },
     { label: "Menu", href: "/menu" },
+    { label: "My Orders", href: "/orders" },
     { label: "Kitchen KDS", href: "/kitchen" },
     { label: "About", href: "/#why-us" },
   ];

@@ -19,6 +19,7 @@ import {
   type CreateOrderPayload,
   MENU_ITEM_UUID_MAP,
   createOrder,
+  recordPlacedOrderId,
 } from "@/lib/orders-api";
 import { type PaymentMethod, initiatePayment } from "@/lib/payments-api";
 
@@ -136,6 +137,9 @@ export default function CheckoutPage() {
       };
 
       const createdOrder = await createOrder(payload);
+
+      // Persist order ID locally so customer/guest can always recall order history
+      recordPlacedOrderId(createdOrder.id);
 
       // Initiate payment record (FR-PAY-001 through FR-PAY-003)
       try {
