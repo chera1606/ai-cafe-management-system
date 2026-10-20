@@ -189,7 +189,7 @@ describe("PaymentsService", () => {
       expect(receipt.paymentStatus).toBe("PAID");
       expect(receipt.cafe.name).toBe("Artisan Cafe & Roastery");
       expect(receipt.items).toHaveLength(1);
-      expect(receipt.items[0].name).toBe("Yirgacheffe Pour-Over");
+      expect(receipt.items[0]?.name).toBe("Yirgacheffe Pour-Over");
     });
   });
 

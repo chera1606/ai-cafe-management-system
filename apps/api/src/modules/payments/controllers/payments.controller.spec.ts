@@ -19,10 +19,10 @@ describe("PaymentsController", () => {
 
   const mockUser: JwtPayload = {
     sub: "user-uuid-1",
+    userId: "user-uuid-1",
     email: "manager@example.com",
-    role: "MANAGER",
     roles: ["MANAGER"],
-    type: "staff",
+    permissions: ["PAYMENTS:PROCESS"],
   };
 
   beforeEach(() => {
