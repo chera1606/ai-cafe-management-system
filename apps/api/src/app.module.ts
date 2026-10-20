@@ -9,6 +9,7 @@ import { HealthModule } from "./health/health.module";
 import { AuditModule } from "./modules/audit";
 import { AuthModule } from "./modules/auth/auth.module";
 import { DatabaseModule } from "./modules/database";
+import { InventoryModule } from "./modules/inventory";
 import { MenuModule } from "./modules/menu";
 import { OrdersModule } from "./modules/orders";
 import { PaymentsModule } from "./modules/payments";
@@ -34,6 +35,7 @@ import { UsersModule } from "./modules/users/users.module";
     MenuModule,
     OrdersModule,
     PaymentsModule,
+    InventoryModule,
     HealthModule,
   ],
   controllers: [AppController],
