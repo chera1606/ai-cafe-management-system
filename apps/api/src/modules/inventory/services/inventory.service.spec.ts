@@ -248,4 +248,102 @@ describe("InventoryService", () => {
       expect(updated.unitCost).toBe(25.0);
     });
   });
+
+  describe("Waste Management (FR-WASTE-001 - FR-WASTE-004)", () => {
+    it("should record waste, calculate financial cost, and deduct physical inventory", async () => {
+      const { items } = await service.findAll();
+      const item = items.find((i) => i.currentQuantity > 5)!;
+      const initialQty = item.currentQuantity;
+
+      const waste = await service.recordWaste({
+        inventoryItemId: item.id,
+        quantity: 2.0,
+        reason: "SPOILED",
+        department: "BARISTA",
+        notes: "Container seal damaged during storage",
+      });
+
+      expect(waste.id).toBeDefined();
+      expect(waste.reason).toBe("SPOILED");
+      expect(waste.estimatedCost).toBe(Number((2.0 * item.unitCost).toFixed(2)));
+
+      const updated = await service.findById(item.id);
+      expect(updated.currentQuantity).toBe(Number((initialQty - 2.0).toFixed(3)));
+      expect(mockAuditService.record).toHaveBeenCalled();
+    });
+
+    it("should throw BadRequestException when wasting non-positive quantity", async () => {
+      const { items } = await service.findAll();
+      const item = items[0]!;
+
+      await expect(
+        service.recordWaste({
+          inventoryItemId: item.id,
+          quantity: 0,
+          reason: "SPILLAGE",
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it("should filter waste records by department and reason", async () => {
+      const records = await service.getWasteRecords("BARISTA");
+      expect(records.length).toBeGreaterThan(0);
+      expect(records.every((r) => r.department === "BARISTA")).toBe(true);
+
+      const spillage = await service.getWasteRecords(undefined, "SPILLAGE");
+      expect(spillage.every((r) => r.reason === "SPILLAGE")).toBe(true);
+    });
+
+    it("should compute comprehensive waste analytics", async () => {
+      const analytics = await service.getWasteAnalytics();
+      expect(analytics.totalWasteCost).toBeGreaterThan(0);
+      expect(analytics.totalIncidents).toBeGreaterThan(0);
+      expect(analytics.byReason).toBeDefined();
+      expect(analytics.byDepartment).toBeDefined();
+      expect(analytics.byDepartment.BARISTA).toBeDefined();
+    });
+  });
+
+  describe("Recipe Formulation & Consumption (FR-RECIPE-001, FR-RECIPE-002)", () => {
+    it("should calculate recipe production cost based on ingredient unit costs", async () => {
+      const cost = await service.getRecipeCost("11111111-0000-0000-0000-000000000001");
+      expect(cost.name).toBe("Ceremonial Yirgacheffe Pour-Over");
+      expect(cost.ingredients.length).toBe(1);
+      expect(cost.totalProductionCost).toBeGreaterThan(0);
+    });
+
+    it("should throw NotFoundException for unformulated menu item recipe", async () => {
+      await expect(
+        service.getRecipeCost("99999999-9999-9999-9999-999999999999"),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it("should automatically deplete inventory proportional to recipe portions sold", async () => {
+      const { items } = await service.findAll();
+      const yirgaBean = items.find((i) =>
+        i.name.includes("Yirgacheffe Grade 1 Green Coffee Beans"),
+      )!;
+      const initialStock = yirgaBean.currentQuantity;
+
+      // 5x Ceremonial Yirgacheffe Pour-Over (each uses 0.018 kg -> total 0.09 kg)
+      const movements = await service.depleteStockByRecipe({
+        orderId: "ORD-RECIPE-TEST-001",
+        items: [
+          {
+            menuItemId: "11111111-0000-0000-0000-000000000001",
+            quantity: 5,
+          },
+        ],
+      });
+
+      expect(movements.length).toBe(1);
+      expect(movements[0]?.movementType).toBe("CONSUMPTION");
+      expect(movements[0]?.quantity).toBe(0.09);
+
+      const afterDepletion = await service.findById(yirgaBean.id);
+      expect(afterDepletion.currentQuantity).toBe(
+        Number((initialStock - 0.09).toFixed(3)),
+      );
+    });
+  });
 });

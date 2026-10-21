@@ -445,3 +445,194 @@ export async function updateInventoryItem(
     body: JSON.stringify(data),
   });
 }
+
+export type WasteReason =
+  | "EXPIRED"
+  | "SPOILED"
+  | "DAMAGED"
+  | "SPILLAGE"
+  | "PREPARATION_ERROR"
+  | "OVERPRODUCTION"
+  | "OTHER";
+
+export interface WasteRecordEntity {
+  id: string;
+  inventoryItemId: string;
+  ingredientName: string;
+  department: "BARISTA" | "KITCHEN";
+  quantity: number;
+  unitOfMeasure: string;
+  unitCost: number;
+  estimatedCost: number;
+  reason: WasteReason;
+  recordedBy: string;
+  notes?: string | null;
+  recordedAt: string;
+  createdAt: string;
+}
+
+export interface WasteAnalytics {
+  totalWasteCost: number;
+  totalWasteQuantity: number;
+  totalIncidents: number;
+  byReason: Record<string, { count: number; cost: number }>;
+  byDepartment: Record<string, { count: number; cost: number }>;
+  recentRecords: WasteRecordEntity[];
+}
+
+export interface RecipeCostBreakdown {
+  menuItemId: string;
+  name: string;
+  ingredients: Array<{
+    inventoryItemId: string;
+    ingredientName: string;
+    quantity: number;
+    unitOfMeasure: string;
+    unitCost: number;
+    subtotalCost: number;
+  }>;
+  totalProductionCost: number;
+}
+
+const FALLBACK_WASTE_RECORDS: WasteRecordEntity[] = [
+  {
+    id: "waste-demo-1",
+    inventoryItemId: "22222222-1111-4000-8000-000000000005",
+    ingredientName: "Barista Oat Microfoam Milk",
+    department: "BARISTA",
+    quantity: 1.5,
+    unitOfMeasure: "l",
+    unitCost: 3.8,
+    estimatedCost: 5.7,
+    reason: "EXPIRED",
+    recordedBy: "Staff Lead",
+    notes: "Opened carton exceeded 7-day holding period",
+    recordedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+    createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+  },
+  {
+    id: "waste-demo-2",
+    inventoryItemId: "22222222-1111-4000-8000-000000000007",
+    ingredientName: "Black Cardamom Pods (Korerima)",
+    department: "BARISTA",
+    quantity: 0.15,
+    unitOfMeasure: "kg",
+    unitCost: 28.0,
+    estimatedCost: 4.2,
+    reason: "SPILLAGE",
+    recordedBy: "Morning Barista",
+    notes: "Grinder hopper jar accidentally tipped during peak service",
+    recordedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
+    createdAt: new Date(Date.now() - 1 * 86400000).toISOString(),
+  },
+  {
+    id: "waste-demo-3",
+    inventoryItemId: "22222222-1111-4000-8000-000000000009",
+    ingredientName: "Clarified Spiced Butter (Niter Kibbeh)",
+    department: "KITCHEN",
+    quantity: 0.35,
+    unitOfMeasure: "kg",
+    unitCost: 22.0,
+    estimatedCost: 7.7,
+    reason: "PREPARATION_ERROR",
+    recordedBy: "Line Cook",
+    notes: "Overheated skillet burned butter portion during prep",
+    recordedAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+    createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+  },
+];
+
+export async function recordWaste(data: {
+  inventoryItemId: string;
+  quantity: number;
+  reason: WasteReason;
+  department?: "BARISTA" | "KITCHEN";
+  notes?: string;
+}): Promise<WasteRecordEntity> {
+  return apiClient<WasteRecordEntity>("/inventory/waste", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function fetchWasteRecords(params?: {
+  department?: string;
+  reason?: string;
+}): Promise<WasteRecordEntity[]> {
+  const query = new URLSearchParams();
+  if (params?.department && params.department !== "ALL") {
+    query.set("department", params.department);
+  }
+  if (params?.reason) {
+    query.set("reason", params.reason);
+  }
+
+  const endpoint = `/inventory/waste/records${query.toString() ? `?${query.toString()}` : ""}`;
+
+  try {
+    return await apiClient<WasteRecordEntity[]>(endpoint);
+  } catch {
+    let filtered = [...FALLBACK_WASTE_RECORDS];
+    if (params?.department && params.department !== "ALL") {
+      filtered = filtered.filter((r) => r.department === params.department);
+    }
+    if (params?.reason) {
+      filtered = filtered.filter((r) => r.reason === params.reason);
+    }
+    return filtered;
+  }
+}
+
+export async function fetchWasteAnalytics(): Promise<WasteAnalytics> {
+  try {
+    return await apiClient<WasteAnalytics>("/inventory/waste/analytics");
+  } catch {
+    let totalWasteCost = 0;
+    let totalWasteQuantity = 0;
+    const byReason: Record<string, { count: number; cost: number }> = {};
+    const byDepartment: Record<string, { count: number; cost: number }> = {
+      BARISTA: { count: 0, cost: 0 },
+      KITCHEN: { count: 0, cost: 0 },
+    };
+
+    for (const r of FALLBACK_WASTE_RECORDS) {
+      totalWasteCost += r.estimatedCost;
+      totalWasteQuantity += r.quantity;
+
+      const reasonEntry = byReason[r.reason] ?? { count: 0, cost: 0 };
+      reasonEntry.count += 1;
+      reasonEntry.cost = Number((reasonEntry.cost + r.estimatedCost).toFixed(2));
+      byReason[r.reason] = reasonEntry;
+
+      const deptEntry = byDepartment[r.department] ?? { count: 0, cost: 0 };
+      deptEntry.count += 1;
+      deptEntry.cost = Number((deptEntry.cost + r.estimatedCost).toFixed(2));
+      byDepartment[r.department] = deptEntry;
+    }
+
+    return {
+      totalWasteCost: Number(totalWasteCost.toFixed(2)),
+      totalWasteQuantity: Number(totalWasteQuantity.toFixed(3)),
+      totalIncidents: FALLBACK_WASTE_RECORDS.length,
+      byReason,
+      byDepartment,
+      recentRecords: FALLBACK_WASTE_RECORDS,
+    };
+  }
+}
+
+export async function fetchRecipeCost(
+  menuItemId: string,
+): Promise<RecipeCostBreakdown> {
+  return apiClient<RecipeCostBreakdown>(`/inventory/recipes/${menuItemId}/cost`);
+}
+
+export async function depleteStockByRecipe(data: {
+  orderId?: string;
+  items: Array<{ menuItemId: string; quantity: number }>;
+}): Promise<StockMovementEntity[]> {
+  return apiClient<StockMovementEntity[]>("/inventory/recipes/consume", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}

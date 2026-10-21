@@ -25,8 +25,10 @@ import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../../auth/guards/roles.guard";
 import {
   CreateInventoryItemDto,
+  DepleteOrderRecipeDto,
   InventoryQueryDto,
   RecordStockMovementDto,
+  RecordWasteDto,
   UpdateInventoryItemDto,
 } from "../dto";
 import { InventoryService } from "../services/inventory.service";
@@ -84,6 +86,63 @@ export class InventoryController {
   @Get("metrics")
   async getMetrics() {
     return this.inventoryService.getMetrics();
+  }
+
+  @ApiOperation({
+    summary: "Retrieve waste incident records with department and reason filters (FR-WASTE-001, FR-WASTE-004)",
+  })
+  @ApiResponse({ status: 200, description: "Waste records retrieved successfully" })
+  @Public()
+  @Get("waste/records")
+  async getWasteRecords(
+    @Query("department") department?: string,
+    @Query("reason") reason?: string,
+  ) {
+    return this.inventoryService.getWasteRecords(department, reason);
+  }
+
+  @ApiOperation({
+    summary: "Retrieve aggregated waste financial analytics and reason distribution (FR-WASTE-003, FR-WASTE-004)",
+  })
+  @ApiResponse({ status: 200, description: "Waste analytics generated successfully" })
+  @Public()
+  @Get("waste/analytics")
+  async getWasteAnalytics() {
+    return this.inventoryService.getWasteAnalytics();
+  }
+
+  @ApiOperation({
+    summary: "Record inventory waste with categorized reason and cost calculation (FR-WASTE-001, FR-WASTE-002, FR-WASTE-003)",
+  })
+  @ApiResponse({ status: 201, description: "Waste recorded and inventory deducted" })
+  @ApiResponse({ status: 400, description: "Invalid waste parameters or non-positive quantity" })
+  @Public()
+  @Post("waste")
+  async recordWaste(@Body() dto: RecordWasteDto, @Req() req: Request) {
+    const actorId = this.extractActorId(req);
+    return this.inventoryService.recordWaste(dto, actorId);
+  }
+
+  @ApiOperation({
+    summary: "Automatically deplete ingredient inventory based on recipe ratios from order sales (FR-RECIPE-002)",
+  })
+  @ApiResponse({ status: 201, description: "Recipe-based consumption deducted successfully" })
+  @Public()
+  @Post("recipes/consume")
+  async depleteRecipe(@Body() dto: DepleteOrderRecipeDto, @Req() req: Request) {
+    const actorId = this.extractActorId(req);
+    return this.inventoryService.depleteStockByRecipe(dto, actorId);
+  }
+
+  @ApiOperation({
+    summary: "Retrieve recipe ingredient cost breakdown and margins for a menu item (FR-RECIPE-001)",
+  })
+  @ApiParam({ name: "menuItemId", description: "UUID of the menu item" })
+  @ApiResponse({ status: 200, description: "Recipe cost breakdown calculated" })
+  @Public()
+  @Get("recipes/:menuItemId/cost")
+  async getRecipeCost(@Param("menuItemId", ParseUUIDPipe) menuItemId: string) {
+    return this.inventoryService.getRecipeCost(menuItemId);
   }
 
   @ApiOperation({

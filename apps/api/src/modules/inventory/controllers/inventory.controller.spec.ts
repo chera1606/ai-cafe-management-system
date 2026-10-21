@@ -12,6 +12,11 @@ describe("InventoryController", () => {
     recordMovement: ReturnType<typeof vi.fn>;
     reconcileItem: ReturnType<typeof vi.fn>;
     updateItem: ReturnType<typeof vi.fn>;
+    recordWaste: ReturnType<typeof vi.fn>;
+    getWasteRecords: ReturnType<typeof vi.fn>;
+    getWasteAnalytics: ReturnType<typeof vi.fn>;
+    depleteStockByRecipe: ReturnType<typeof vi.fn>;
+    getRecipeCost: ReturnType<typeof vi.fn>;
   };
   let mockJwtService: {
     decode: ReturnType<typeof vi.fn>;
@@ -70,6 +75,22 @@ describe("InventoryController", () => {
       updateItem: vi.fn().mockResolvedValue({
         ...mockItem,
         reorderLevel: 20,
+      }),
+      recordWaste: vi.fn().mockResolvedValue({
+        id: "waste-1",
+        reason: "SPOILED",
+        quantity: 1.5,
+      }),
+      getWasteRecords: vi.fn().mockResolvedValue([]),
+      getWasteAnalytics: vi.fn().mockResolvedValue({
+        totalWasteCost: 15.0,
+        totalIncidents: 1,
+      }),
+      depleteStockByRecipe: vi.fn().mockResolvedValue([]),
+      getRecipeCost: vi.fn().mockResolvedValue({
+        menuItemId: "m1",
+        name: "Pour-Over",
+        totalProductionCost: 0.26,
       }),
     };
 
@@ -168,5 +189,44 @@ describe("InventoryController", () => {
       { reorderLevel: 20 },
       undefined,
     );
+  });
+
+  it("should record waste incident", async () => {
+    const req = { headers: {} } as any;
+    await controller.recordWaste(
+      {
+        inventoryItemId: mockItem.id,
+        quantity: 1.5,
+        reason: "SPOILED",
+      },
+      req,
+    );
+
+    expect(mockInventoryService.recordWaste).toHaveBeenCalled();
+  });
+
+  it("should retrieve waste records and analytics", async () => {
+    await controller.getWasteRecords("BARISTA", "EXPIRED");
+    expect(mockInventoryService.getWasteRecords).toHaveBeenCalledWith(
+      "BARISTA",
+      "EXPIRED",
+    );
+
+    const analytics = await controller.getWasteAnalytics();
+    expect(analytics.totalWasteCost).toBe(15.0);
+  });
+
+  it("should deplete recipe and get recipe cost", async () => {
+    const req = { headers: {} } as any;
+    await controller.depleteRecipe(
+      {
+        items: [{ menuItemId: "11111111-2222-3333-4444-555555555555", quantity: 2 }],
+      },
+      req,
+    );
+    expect(mockInventoryService.depleteStockByRecipe).toHaveBeenCalled();
+
+    const cost = await controller.getRecipeCost("11111111-2222-3333-4444-555555555555");
+    expect(cost.totalProductionCost).toBe(0.26);
   });
 });
