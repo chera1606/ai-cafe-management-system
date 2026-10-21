@@ -19,12 +19,15 @@ import { AuditService } from "../../audit/audit.service";
 import { DATABASE_TOKEN } from "../../database/database.constants";
 import {
   CreateInventoryItemDto,
+  DepleteOrderRecipeDto,
   InventoryDepartment,
   InventoryQueryDto,
   InventoryStatus,
   MovementType,
   RecordStockMovementDto,
+  RecordWasteDto,
   UpdateInventoryItemDto,
+  WasteReason,
 } from "../dto";
 
 export interface InventoryItemEntity {
@@ -73,6 +76,45 @@ export interface InventoryBatchEntity {
   status: "ACTIVE" | "DEPLETED" | "EXPIRED";
 }
 
+export interface WasteRecordEntity {
+  id: string;
+  inventoryItemId: string;
+  ingredientName: string;
+  department: InventoryDepartment;
+  quantity: number;
+  unitOfMeasure: string;
+  unitCost: number;
+  estimatedCost: number;
+  reason: WasteReason;
+  recordedBy: string;
+  notes?: string | null;
+  recordedAt: Date;
+  createdAt: Date;
+}
+
+export interface WasteAnalytics {
+  totalWasteCost: number;
+  totalWasteQuantity: number;
+  totalIncidents: number;
+  byReason: Record<string, { count: number; cost: number }>;
+  byDepartment: Record<string, { count: number; cost: number }>;
+  recentRecords: WasteRecordEntity[];
+}
+
+export interface RecipeCostBreakdown {
+  menuItemId: string;
+  name: string;
+  ingredients: Array<{
+    inventoryItemId: string;
+    ingredientName: string;
+    quantity: number;
+    unitOfMeasure: string;
+    unitCost: number;
+    subtotalCost: number;
+  }>;
+  totalProductionCost: number;
+}
+
 export interface InventoryMetrics {
   totalItems: number;
   lowStockCount: number;
@@ -95,6 +137,18 @@ export class InventoryService {
   private readonly devItemsStore = new Map<string, InventoryItemEntity>();
   private readonly devMovementsStore = new Map<string, StockMovementEntity>();
   private readonly devBatchesStore = new Map<string, InventoryBatchEntity>();
+  private readonly devWasteStore = new Map<string, WasteRecordEntity>();
+  private readonly devRecipesStore = new Map<
+    string,
+    {
+      name: string;
+      ingredients: Array<{
+        inventoryItemId: string;
+        quantity: number;
+        unitOfMeasure: string;
+      }>;
+    }
+  >();
 
   constructor(
     @Inject(DATABASE_TOKEN) private readonly db: Database,
@@ -323,6 +377,172 @@ export class InventoryService {
         status: "ACTIVE",
       });
     }
+
+    // Seed initial realistic waste records (FR-WASTE-001 - FR-WASTE-004)
+    const seedWaste: Array<{
+      itemId: string;
+      quantity: number;
+      reason: WasteReason;
+      department: InventoryDepartment;
+      notes: string;
+      daysAgo: number;
+    }> = [
+      {
+        itemId: "22222222-1111-4000-8000-000000000005",
+        quantity: 1.5,
+        reason: "EXPIRED",
+        department: "BARISTA",
+        notes: "Unused opened carton past 7-day barista service window",
+        daysAgo: 2,
+      },
+      {
+        itemId: "22222222-1111-4000-8000-000000000007",
+        quantity: 0.15,
+        reason: "SPILLAGE",
+        department: "BARISTA",
+        notes: "Grinder hopper spill during morning rush prep",
+        daysAgo: 1,
+      },
+      {
+        itemId: "22222222-1111-4000-8000-000000000009",
+        quantity: 0.35,
+        reason: "PREPARATION_ERROR",
+        department: "KITCHEN",
+        notes: "Excessive pan charring during skillet heat calibration",
+        daysAgo: 3,
+      },
+    ];
+
+    for (const w of seedWaste) {
+      const item = this.devItemsStore.get(w.itemId);
+      if (item) {
+        const wasteId = crypto.randomUUID();
+        const estCost = Number((w.quantity * item.unitCost).toFixed(2));
+        const recDate = new Date(Date.now() - w.daysAgo * 86400000);
+        this.devWasteStore.set(wasteId, {
+          id: wasteId,
+          inventoryItemId: item.id,
+          ingredientName: item.name,
+          department: w.department,
+          quantity: w.quantity,
+          unitOfMeasure: item.unitOfMeasure,
+          unitCost: item.unitCost,
+          estimatedCost: estCost,
+          reason: w.reason,
+          recordedBy: "00000000-0000-0000-0000-000000000000",
+          notes: w.notes,
+          recordedAt: recDate,
+          createdAt: recDate,
+        });
+      }
+    }
+
+    // Seed Recipe Formulations (FR-RECIPE-001, FR-RECIPE-002)
+    this.devRecipesStore.set("11111111-0000-0000-0000-000000000001", {
+      name: "Ceremonial Yirgacheffe Pour-Over",
+      ingredients: [
+        {
+          inventoryItemId: "22222222-1111-4000-8000-000000000001",
+          quantity: 0.018,
+          unitOfMeasure: "kg",
+        },
+      ],
+    });
+
+    this.devRecipesStore.set("11111111-0000-0000-0000-000000000002", {
+      name: "Claypot Jebena Buna Ritual",
+      ingredients: [
+        {
+          inventoryItemId: "22222222-1111-4000-8000-000000000003",
+          quantity: 0.035,
+          unitOfMeasure: "kg",
+        },
+        {
+          inventoryItemId: "22222222-1111-4000-8000-000000000007",
+          quantity: 0.003,
+          unitOfMeasure: "kg",
+        },
+      ],
+    });
+
+    this.devRecipesStore.set("11111111-0000-0000-0000-000000000003", {
+      name: "Pistachio Highland Honey Latte",
+      ingredients: [
+        {
+          inventoryItemId: "22222222-1111-4000-8000-000000000002",
+          quantity: 0.018,
+          unitOfMeasure: "kg",
+        },
+        {
+          inventoryItemId: "22222222-1111-4000-8000-000000000004",
+          quantity: 0.22,
+          unitOfMeasure: "l",
+        },
+        {
+          inventoryItemId: "22222222-1111-4000-8000-000000000006",
+          quantity: 0.015,
+          unitOfMeasure: "kg",
+        },
+      ],
+    });
+
+    this.devRecipesStore.set("11111111-0000-0000-0000-000000000004", {
+      name: "Iced Cardamom Spanish Latte",
+      ingredients: [
+        {
+          inventoryItemId: "22222222-1111-4000-8000-000000000002",
+          quantity: 0.018,
+          unitOfMeasure: "kg",
+        },
+        {
+          inventoryItemId: "22222222-1111-4000-8000-000000000004",
+          quantity: 0.2,
+          unitOfMeasure: "l",
+        },
+        {
+          inventoryItemId: "22222222-1111-4000-8000-000000000007",
+          quantity: 0.003,
+          unitOfMeasure: "kg",
+        },
+      ],
+    });
+
+    this.devRecipesStore.set("11111111-0000-0000-0000-000000000009", {
+      name: "Crispy Chechebsa with Spiced Kibbeh",
+      ingredients: [
+        {
+          inventoryItemId: "22222222-1111-4000-8000-000000000008",
+          quantity: 0.15,
+          unitOfMeasure: "kg",
+        },
+        {
+          inventoryItemId: "22222222-1111-4000-8000-000000000009",
+          quantity: 0.025,
+          unitOfMeasure: "kg",
+        },
+        {
+          inventoryItemId: "22222222-1111-4000-8000-000000000010",
+          quantity: 0.005,
+          unitOfMeasure: "kg",
+        },
+      ],
+    });
+
+    this.devRecipesStore.set("11111111-0000-0000-0000-000000000010", {
+      name: "Slow-Stewed Fava Bean Foul",
+      ingredients: [
+        {
+          inventoryItemId: "22222222-1111-4000-8000-000000000012",
+          quantity: 0.2,
+          unitOfMeasure: "kg",
+        },
+        {
+          inventoryItemId: "22222222-1111-4000-8000-000000000009",
+          quantity: 0.015,
+          unitOfMeasure: "kg",
+        },
+      ],
+    });
 
     this.logger.log(`Initialized dev pantry with ${pantrySeeds.length} specialty items.`);
   }
@@ -812,6 +1032,224 @@ export class InventoryService {
       },
       actorId,
     );
+  }
+
+  /**
+   * Records inventory waste with categorized reason and estimated cost (FR-WASTE-001, FR-WASTE-002, FR-WASTE-003).
+   */
+  async recordWaste(
+    dto: RecordWasteDto,
+    actorId = "00000000-0000-0000-0000-000000000000",
+  ): Promise<WasteRecordEntity> {
+    const item = this.devItemsStore.get(dto.inventoryItemId);
+    if (!item) {
+      throw new NotFoundException(`Inventory item ${dto.inventoryItemId} not found.`);
+    }
+
+    if (dto.quantity <= 0) {
+      throw new BadRequestException("Wasted quantity must be greater than zero.");
+    }
+
+    const estimatedCost = Number((dto.quantity * item.unitCost).toFixed(2));
+    const wasteId = crypto.randomUUID();
+    const now = new Date();
+    const department = dto.department || item.department;
+
+    const wasteRecord: WasteRecordEntity = {
+      id: wasteId,
+      inventoryItemId: item.id,
+      ingredientName: item.name,
+      department,
+      quantity: dto.quantity,
+      unitOfMeasure: item.unitOfMeasure,
+      unitCost: item.unitCost,
+      estimatedCost,
+      reason: dto.reason,
+      recordedBy: actorId,
+      notes: dto.notes ?? null,
+      recordedAt: now,
+      createdAt: now,
+    };
+
+    try {
+      await this.db.insert(wasteRecords).values({
+        id: wasteRecord.id,
+        inventoryItemId: wasteRecord.inventoryItemId,
+        quantity: String(wasteRecord.quantity),
+        estimatedCost: String(wasteRecord.estimatedCost),
+        reason: wasteRecord.reason,
+        departmentId: item.departmentId,
+        recordedBy: actorId,
+        recordedAt: now,
+        createdAt: now,
+      });
+    } catch {
+      // Dev store fallback
+    }
+
+    this.devWasteStore.set(wasteId, wasteRecord);
+
+    // Deduct physical inventory stock
+    await this.recordMovement(
+      {
+        inventoryItemId: item.id,
+        movementType: "WASTE",
+        quantity: dto.quantity,
+        unitCost: item.unitCost,
+        referenceType: `WASTE_${dto.reason}`,
+        notes: dto.notes || `Waste recorded: ${dto.reason}`,
+      },
+      actorId,
+    );
+
+    try {
+      await this.auditService.record({
+        action: "INVENTORY_WASTE_RECORDED",
+        entityType: "WASTE_RECORD",
+        entityId: wasteId,
+        actorUserId: actorId,
+        newState: { ...wasteRecord },
+      });
+    } catch {
+      // Non-fatal
+    }
+
+    return wasteRecord;
+  }
+
+  /**
+   * Retrieves list of recorded waste events with department/reason filters (FR-WASTE-001, FR-WASTE-004).
+   */
+  async getWasteRecords(
+    department?: string,
+    reason?: string,
+  ): Promise<WasteRecordEntity[]> {
+    let records = Array.from(this.devWasteStore.values());
+
+    if (department && department !== "ALL") {
+      records = records.filter((r) => r.department === department);
+    }
+    if (reason) {
+      records = records.filter((r) => r.reason === reason);
+    }
+
+    return records.sort((a, b) => b.recordedAt.getTime() - a.recordedAt.getTime());
+  }
+
+  /**
+   * Generates waste financial analytics and breakdown by department and reason (FR-WASTE-003, FR-WASTE-004).
+   */
+  async getWasteAnalytics(): Promise<WasteAnalytics> {
+    const records = Array.from(this.devWasteStore.values());
+    let totalWasteCost = 0;
+    let totalWasteQuantity = 0;
+
+    const byReason: Record<string, { count: number; cost: number }> = {};
+    const byDepartment: Record<string, { count: number; cost: number }> = {
+      BARISTA: { count: 0, cost: 0 },
+      KITCHEN: { count: 0, cost: 0 },
+    };
+
+    for (const r of records) {
+      totalWasteCost += r.estimatedCost;
+      totalWasteQuantity += r.quantity;
+
+      // Reason breakdown
+      const reasonEntry = byReason[r.reason] ?? { count: 0, cost: 0 };
+      reasonEntry.count += 1;
+      reasonEntry.cost = Number((reasonEntry.cost + r.estimatedCost).toFixed(2));
+      byReason[r.reason] = reasonEntry;
+
+      // Department breakdown
+      const deptEntry = byDepartment[r.department] ?? { count: 0, cost: 0 };
+      deptEntry.count += 1;
+      deptEntry.cost = Number((deptEntry.cost + r.estimatedCost).toFixed(2));
+      byDepartment[r.department] = deptEntry;
+    }
+
+    return {
+      totalWasteCost: Number(totalWasteCost.toFixed(2)),
+      totalWasteQuantity: Number(totalWasteQuantity.toFixed(3)),
+      totalIncidents: records.length,
+      byReason,
+      byDepartment,
+      recentRecords: records.slice(0, 10),
+    };
+  }
+
+  /**
+   * Automatically depresses inventory stock based on recipe ingredient ratios (FR-RECIPE-002).
+   */
+  async depleteStockByRecipe(
+    dto: DepleteOrderRecipeDto,
+    actorId = "00000000-0000-0000-0000-000000000000",
+  ): Promise<StockMovementEntity[]> {
+    const movements: StockMovementEntity[] = [];
+
+    for (const orderItem of dto.items) {
+      const recipe = this.devRecipesStore.get(orderItem.menuItemId);
+      if (!recipe) continue;
+
+      for (const ingredient of recipe.ingredients) {
+        const item = this.devItemsStore.get(ingredient.inventoryItemId);
+        if (!item) continue;
+
+        const totalPortionQty = Number(
+          (ingredient.quantity * orderItem.quantity).toFixed(3),
+        );
+
+        if (totalPortionQty > 0) {
+          const movement = await this.recordMovement(
+            {
+              inventoryItemId: item.id,
+              movementType: "CONSUMPTION",
+              quantity: totalPortionQty,
+              unitCost: item.unitCost,
+              referenceType: "RECIPE_SALES_DEPLETION",
+              notes: `Order ${dto.orderId || "Walk-in"}: ${orderItem.quantity}x ${recipe.name}`,
+            },
+            actorId,
+          );
+          movements.push(movement);
+        }
+      }
+    }
+
+    return movements;
+  }
+
+  /**
+   * Calculates recipe formulation cost and profit margin for a menu item (FR-RECIPE-001).
+   */
+  async getRecipeCost(menuItemId: string): Promise<RecipeCostBreakdown> {
+    const recipe = this.devRecipesStore.get(menuItemId);
+    if (!recipe) {
+      throw new NotFoundException(`No recipe formulation found for menu item ${menuItemId}.`);
+    }
+
+    let totalCost = 0;
+    const ingredientsBreakdown = recipe.ingredients.map((ing) => {
+      const item = this.devItemsStore.get(ing.inventoryItemId);
+      const unitCost = item?.unitCost ?? 0;
+      const subtotalCost = Number((ing.quantity * unitCost).toFixed(2));
+      totalCost += subtotalCost;
+
+      return {
+        inventoryItemId: ing.inventoryItemId,
+        ingredientName: item?.name ?? "Unknown Ingredient",
+        quantity: ing.quantity,
+        unitOfMeasure: ing.unitOfMeasure,
+        unitCost,
+        subtotalCost,
+      };
+    });
+
+    return {
+      menuItemId,
+      name: recipe.name,
+      ingredients: ingredientsBreakdown,
+      totalProductionCost: Number(totalCost.toFixed(2)),
+    };
   }
 
   /**
