@@ -13,6 +13,7 @@ import { InventoryModule } from "./modules/inventory";
 import { MenuModule } from "./modules/menu";
 import { OrdersModule } from "./modules/orders";
 import { PaymentsModule } from "./modules/payments";
+import { ProcurementModule } from "./modules/procurement";
 import { UsersModule } from "./modules/users/users.module";
 
 @Module({
@@ -36,6 +37,7 @@ import { UsersModule } from "./modules/users/users.module";
     OrdersModule,
     PaymentsModule,
     InventoryModule,
+    ProcurementModule,
     HealthModule,
   ],
   controllers: [AppController],
