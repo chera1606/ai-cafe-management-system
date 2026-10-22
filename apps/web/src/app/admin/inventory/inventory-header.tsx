@@ -8,6 +8,7 @@ import {
   RefreshCw,
   ShoppingBag,
   SlidersHorizontal,
+  Truck,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,13 @@ export function InventoryHeader({
           </Link>
 
           <div className="hidden md:flex items-center gap-1.5 ml-4 pl-4 border-l border-border/80">
+            <Link
+              href="/admin/procurement"
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold text-sage hover:text-forest hover:bg-cream transition-colors flex items-center gap-1.5"
+            >
+              <Truck className="w-3.5 h-3.5" />
+              Procurement
+            </Link>
             <Link
               href="/admin/menu"
               className="px-3 py-1.5 rounded-xl text-xs font-semibold text-sage hover:text-forest hover:bg-cream transition-colors flex items-center gap-1.5"

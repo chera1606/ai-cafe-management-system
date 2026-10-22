@@ -1,6 +1,6 @@
 "use client";
 
-import { Boxes, Coffee, Lock, ShieldAlert } from "lucide-react";
+import { Boxes, Coffee, Lock, ShieldAlert, Truck } from "lucide-react";
 import Link from "next/link";
 import { LinkButton } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
@@ -83,6 +83,15 @@ export default function AdminMenuPage() {
           </Link>
 
           <div className="flex items-center gap-3">
+            <LinkButton
+              href="/admin/procurement"
+              variant="outline"
+              size="sm"
+              className="text-xs"
+            >
+              <Truck className="w-3.5 h-3.5 mr-1 text-meadow" />
+              Procurement
+            </LinkButton>
             <LinkButton
               href="/admin/inventory"
               variant="outline"
