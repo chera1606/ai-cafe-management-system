@@ -107,7 +107,7 @@ export default function OrderTrackerPage() {
           </Link>
 
           <div className="flex items-center gap-2">
-            <Link href={`/orders/${orderId}/receipt`}>
+            <Link href={`/my-orders/${orderId}/receipt`}>
               <Button
                 type="button"
                 variant="outline"
@@ -262,7 +262,7 @@ export default function OrderTrackerPage() {
                       </div>
                     </div>
                   </div>
-                  <Link href={`/orders/${orderId}/receipt`}>
+                  <Link href={`/my-orders/${orderId}/receipt`}>
                     <Button variant="outline" size="sm" className="text-xs font-semibold shrink-0">
                       View Receipt
                     </Button>
