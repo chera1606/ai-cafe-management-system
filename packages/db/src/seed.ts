@@ -280,6 +280,77 @@ async function seed() {
       }
     }
 
+    // Also seed admin@cafe.com (Password123!) for convenience
+    const cafeAdminHash = "$2b$10$y33ax.XCwi96WdvBv2uvL.x49OX2cCY2YOaG9N6mKlphQpdihev3e";
+    const existingCafeAdmin = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, "admin@cafe.com"))
+      .limit(1);
+
+    let cafeAdminId: string;
+    if (existingCafeAdmin.length > 0 && existingCafeAdmin[0]) {
+      cafeAdminId = existingCafeAdmin[0].id;
+    } else {
+      const [inserted] = await db
+        .insert(users)
+        .values({
+          email: "admin@cafe.com",
+          passwordHash: cafeAdminHash,
+          status: "active",
+          emailVerifiedAt: new Date(),
+        })
+        .returning();
+      cafeAdminId = inserted!.id;
+    }
+
+    if (adminRoleId) {
+      const existingUserRole = await db
+        .select()
+        .from(userRoles)
+        .where(
+          and(
+            eq(userRoles.userId, cafeAdminId),
+            eq(userRoles.roleId, adminRoleId),
+          ),
+        )
+        .limit(1);
+
+      if (existingUserRole.length === 0) {
+        await db.insert(userRoles).values({
+          userId: cafeAdminId,
+          roleId: adminRoleId,
+        });
+      }
+    }
+
+    // Seed customer@cafe.com (Password123!)
+    const customerRoleId = roleMap.get("CUSTOMER");
+    const existingCustomer = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, "customer@cafe.com"))
+      .limit(1);
+
+    if (existingCustomer.length === 0) {
+      const [insertedCust] = await db
+        .insert(users)
+        .values({
+          email: "customer@cafe.com",
+          passwordHash: cafeAdminHash,
+          status: "active",
+          emailVerifiedAt: new Date(),
+        })
+        .returning();
+
+      if (customerRoleId && insertedCust) {
+        await db.insert(userRoles).values({
+          userId: insertedCust.id,
+          roleId: customerRoleId,
+        });
+      }
+    }
+
     // Ensure employee record exists for admin
     const existingEmployee = await db
       .select()

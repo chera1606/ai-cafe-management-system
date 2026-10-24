@@ -44,20 +44,20 @@ export function InventoryTable({
   onOpenReconcile,
 }: InventoryTableProps) {
   return (
-    <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden">
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
       {/* Table Toolbar */}
-      <div className="p-5 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4 bg-cream/40">
+      <div className="p-4 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/60">
         {/* Department Switcher */}
-        <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-cream-alt border border-border/80 self-start md:self-auto">
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-200/60 border border-slate-200 self-start md:self-auto">
           {(["ALL", "BARISTA", "KITCHEN"] as InventoryDepartment[]).map((dept) => (
             <button
               type="button"
               key={dept}
               onClick={() => onSelectDepartment(dept)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeDepartment === dept
-                  ? "bg-white text-forest shadow-sm"
-                  : "text-sage hover:text-forest"
+                  ? "bg-white text-slate-900 shadow-xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               {dept === "ALL"
@@ -70,22 +70,22 @@ export function InventoryTable({
         </div>
 
         {/* Search & Filter */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <div className="relative flex-1 sm:w-64">
-            <Search className="w-4 h-4 text-sage absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search ingredient or supplier..."
+              placeholder="Search ingredient, SKU, supplier..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-9 pr-3.5 py-2 rounded-2xl border border-border bg-white text-forest text-xs font-medium placeholder:text-sage focus:outline-none focus:ring-2 focus:ring-meadow"
+              className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-900 text-xs font-medium placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
             />
           </div>
 
           <select
             value={statusFilter}
             onChange={(e) => onStatusFilterChange(e.target.value)}
-            className="px-3 py-2 rounded-2xl border border-border bg-white text-forest text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-meadow"
+            className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
           >
             <option value="">All Statuses</option>
             <option value="IN_STOCK">In Stock</option>
@@ -99,27 +99,27 @@ export function InventoryTable({
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-border bg-cream-alt/40 text-[11px] font-bold uppercase tracking-wider text-sage">
-              <th className="py-3.5 px-6">Ingredient</th>
-              <th className="py-3.5 px-4">Station</th>
-              <th className="py-3.5 px-4">Stock Level</th>
-              <th className="py-3.5 px-4">Reorder Level</th>
-              <th className="py-3.5 px-4">Valuation</th>
-              <th className="py-3.5 px-4">Status</th>
-              <th className="py-3.5 px-6 text-right">Actions</th>
+            <tr className="border-b border-slate-200 bg-slate-50/75 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <th className="py-3 px-5">Ingredient</th>
+              <th className="py-3 px-4">Station</th>
+              <th className="py-3 px-4">Stock Level</th>
+              <th className="py-3 px-4">Reorder Min</th>
+              <th className="py-3 px-4">Valuation</th>
+              <th className="py-3 px-4">Health Status</th>
+              <th className="py-3 px-5 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border/60 text-xs font-medium">
+          <tbody className="divide-y divide-slate-100 text-xs font-medium">
             {items.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-16 text-center text-sage">
+                <td colSpan={7} className="py-16 text-center text-slate-400">
                   <div className="flex flex-col items-center justify-center gap-2">
-                    <Package className="w-8 h-8 text-sage/60" />
-                    <span className="font-semibold text-sm text-forest">
+                    <Package className="w-8 h-8 text-slate-300" />
+                    <span className="font-semibold text-sm text-slate-800">
                       No matching ingredients found
                     </span>
-                    <span className="text-xs">
-                      Try clearing search filters or add a new inventory item.
+                    <span className="text-xs text-slate-500">
+                      Try adjusting filters or search queries.
                     </span>
                   </div>
                 </td>
@@ -137,29 +137,29 @@ export function InventoryTable({
                 return (
                   <tr
                     key={item.id}
-                    className="hover:bg-cream/40 transition-colors cursor-pointer group"
+                    className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
                     onClick={() => onSelectItem(item)}
                   >
                     {/* Ingredient Name & Supplier */}
-                    <td className="py-4 px-6">
-                      <div className="font-bold text-forest text-sm group-hover:text-meadow-dark transition-colors">
+                    <td className="py-3.5 px-5">
+                      <div className="font-bold text-slate-900 text-sm group-hover:text-emerald-700 transition-colors">
                         {item.name}
                       </div>
-                      <div className="text-[11px] text-sage flex items-center gap-1.5 mt-0.5">
+                      <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
                         <Building2 className="w-3 h-3 shrink-0" />
-                        <span className="truncate max-w-[200px]">
-                          {item.supplier || "Standard Supply"}
+                        <span className="truncate max-w-[180px]">
+                          {item.supplier || "Direct Roastery"}
                         </span>
                       </div>
                     </td>
 
                     {/* Station */}
-                    <td className="py-4 px-4 whitespace-nowrap">
+                    <td className="py-3.5 px-4 whitespace-nowrap">
                       <span
-                        className={`inline-block px-2.5 py-1 rounded-xl text-[11px] font-bold uppercase tracking-wider ${
+                        className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
                           item.department === "BARISTA"
-                            ? "bg-amber/15 text-amber-alt border border-amber/30"
-                            : "bg-meadow-tint text-meadow-dark border border-meadow/20"
+                            ? "bg-amber-50 text-amber-700 border border-amber-200"
+                            : "bg-emerald-50 text-emerald-700 border border-emerald-200"
                         }`}
                       >
                         {item.department === "BARISTA" ? "Barista" : "Kitchen"}
@@ -167,31 +167,31 @@ export function InventoryTable({
                     </td>
 
                     {/* Stock Level with Progress Indicator */}
-                    <td className="py-4 px-4 whitespace-nowrap">
+                    <td className="py-3.5 px-4 whitespace-nowrap">
                       <div className="flex items-baseline gap-1.5">
                         <span
-                          className={`text-sm font-black ${
+                          className={`text-sm font-black tabular-nums ${
                             isOutOfStock
-                              ? "text-rose-700"
+                              ? "text-rose-600"
                               : isLowStock
-                                ? "text-amber-900"
-                                : "text-forest"
+                                ? "text-amber-600"
+                                : "text-slate-900"
                           }`}
                         >
                           {item.currentQuantity}
                         </span>
-                        <span className="text-sage text-[11px] font-bold">
+                        <span className="text-slate-400 text-[11px] font-bold">
                           {item.unitOfMeasure}
                         </span>
                       </div>
-                      <div className="w-24 h-1.5 rounded-full bg-cream-alt overflow-hidden mt-1.5">
+                      <div className="w-24 h-1.5 rounded-full bg-slate-100 overflow-hidden mt-1.5">
                         <div
-                          className={`h-full rounded-full ${
+                          className={`h-full rounded-full transition-all duration-300 ${
                             isOutOfStock
                               ? "bg-rose-500 w-0"
                               : isLowStock
                                 ? "bg-amber-500"
-                                : "bg-meadow"
+                                : "bg-emerald-500"
                           }`}
                           style={{ width: `${ratio}%` }}
                         />
@@ -199,86 +199,62 @@ export function InventoryTable({
                     </td>
 
                     {/* Reorder Level */}
-                    <td className="py-4 px-4 whitespace-nowrap text-sage">
-                      <span className="font-semibold text-forest">
+                    <td className="py-3.5 px-4 whitespace-nowrap text-slate-500 tabular-nums">
+                      <span className="font-bold text-slate-800">
                         {item.reorderLevel}
                       </span>{" "}
                       {item.unitOfMeasure}
                     </td>
 
                     {/* Valuation */}
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      <div className="font-bold text-forest">
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      <div className="font-bold text-slate-900 tabular-nums">
                         ${totalValue.toFixed(2)}
                       </div>
-                      <div className="text-[10px] text-sage">
+                      <div className="text-[10px] text-slate-400 tabular-nums">
                         ${item.unitCost.toFixed(2)} / {item.unitOfMeasure}
                       </div>
                     </td>
 
                     {/* Status Badge */}
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      {isOutOfStock && (
-                        <Badge
-                          variant="amber"
-                          size="sm"
-                          className="bg-rose-100 text-rose-800 border-rose-300"
-                          icon={<XCircle className="w-3 h-3" />}
-                        >
-                          Depleted
-                        </Badge>
-                      )}
-                      {isLowStock && (
-                        <Badge
-                          variant="amber"
-                          size="sm"
-                          icon={<AlertTriangle className="w-3 h-3" />}
-                        >
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      {isOutOfStock ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                          Out of Stock
+                        </span>
+                      ) : isLowStock ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                           Low Stock
-                        </Badge>
-                      )}
-                      {!isOutOfStock && !isLowStock && (
-                        <Badge
-                          variant="meadow"
-                          size="sm"
-                          icon={<CheckCircle2 className="w-3 h-3" />}
-                        >
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                           Optimal
-                        </Badge>
+                        </span>
                       )}
                     </td>
 
                     {/* Actions */}
-                    <td className="py-4 px-6 text-right whitespace-nowrap">
+                    <td className="py-3.5 px-5 text-right whitespace-nowrap">
                       <div
                         className="flex items-center justify-end gap-1.5"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <button
                           type="button"
-                          title="Physical audit count reconciliation"
-                          onClick={() => onOpenReconcile(item)}
-                          className="p-2 rounded-xl text-sage hover:text-forest hover:bg-cream transition-colors"
-                        >
-                          <Scale className="w-4 h-4" />
-                        </button>
-
-                        <button
-                          type="button"
-                          title="Record restock or usage movement"
                           onClick={() => onOpenAdjust(item.id)}
-                          className="p-2 rounded-xl text-sage hover:text-forest hover:bg-cream transition-colors"
+                          className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
                         >
-                          <Truck className="w-4 h-4" />
+                          Adjust
                         </button>
-
                         <button
                           type="button"
-                          title="View detail & logs"
-                          onClick={() => onSelectItem(item)}
-                          className="p-2 rounded-xl text-sage hover:text-forest hover:bg-cream transition-colors"
+                          onClick={() => onOpenReconcile(item)}
+                          className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 transition-colors cursor-pointer"
                         >
-                          <ChevronRight className="w-4 h-4" />
+                          Reconcile
                         </button>
                       </div>
                     </td>

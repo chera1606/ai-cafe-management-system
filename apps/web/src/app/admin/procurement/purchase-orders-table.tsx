@@ -13,7 +13,7 @@ import {
   Truck,
   XCircle,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { PurchaseEntity, PurchaseStatus } from "@/lib/procurement-api";
@@ -54,25 +54,25 @@ export function PurchaseOrdersTable({
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden">
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
       {/* Table Toolbar */}
-      <div className="p-5 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4 bg-cream/30">
+      <div className="p-4 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/60">
         {/* Status Filters */}
-        <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-cream-alt border border-border/80 self-start md:self-auto">
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-200/60 border border-slate-200 self-start md:self-auto">
           {[
             { key: "", label: "All Orders" },
             { key: "ORDERED", label: "Inbound Pending" },
-            { key: "RECEIVED", label: "Received & Restocked" },
+            { key: "RECEIVED", label: "Received & Stocked" },
             { key: "CANCELLED", label: "Cancelled" },
           ].map((tab) => (
             <button
               type="button"
               key={tab.key}
               onClick={() => onStatusFilterChange?.(tab.key)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 statusFilter === tab.key
-                  ? "bg-white text-forest shadow-sm"
-                  : "text-sage hover:text-forest"
+                  ? "bg-white text-slate-900 shadow-xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               {tab.label}
@@ -81,15 +81,15 @@ export function PurchaseOrdersTable({
         </div>
 
         {/* Search & Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <div className="relative flex-1 sm:w-64">
-            <Search className="w-4 h-4 text-sage absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search reference or supplier..."
+              placeholder="Search reference, supplier..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3.5 py-1.5 text-xs rounded-xl border border-border bg-white text-forest placeholder:text-sage focus:outline-none focus:ring-2 focus:ring-meadow/20 focus:border-meadow transition-all"
+              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
             />
           </div>
 
@@ -104,29 +104,29 @@ export function PurchaseOrdersTable({
         </div>
       </div>
 
-      {/* Table */}
+      {/* Clean Semantic Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-cream-alt/70 text-sage uppercase font-bold tracking-wider text-[11px] border-b border-border">
+        <table className="w-full text-left border-collapse text-xs">
+          <thead className="bg-slate-50/75 text-slate-500 uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
             <tr>
-              <th className="py-3.5 px-4">PO Reference</th>
-              <th className="py-3.5 px-4">Supplier</th>
-              <th className="py-3.5 px-4">Order Date</th>
-              <th className="py-3.5 px-4">Items</th>
-              <th className="py-3.5 px-4">Total Cost</th>
-              <th className="py-3.5 px-4">Status</th>
-              <th className="py-3.5 px-4 text-right">Actions</th>
+              <th className="py-3 px-5">PO Reference</th>
+              <th className="py-3 px-4">Supplier</th>
+              <th className="py-3 px-4">Order Date</th>
+              <th className="py-3 px-4">Items</th>
+              <th className="py-3 px-4">Total Cost</th>
+              <th className="py-3 px-4">Status</th>
+              <th className="py-3 px-5 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border/60">
+          <tbody className="divide-y divide-slate-100 font-medium">
             {filteredPurchases.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-sage">
-                  <Package className="w-8 h-8 mx-auto mb-2 text-sage/60" />
-                  <p className="font-semibold text-sm text-forest mb-0.5">
+                <td colSpan={7} className="py-16 text-center text-slate-400">
+                  <Package className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                  <p className="font-semibold text-sm text-slate-800 mb-0.5">
                     No purchase orders found
                   </p>
-                  <p className="text-xs">
+                  <p className="text-xs text-slate-500">
                     Try adjusting your status filter or search query.
                   </p>
                 </td>
@@ -135,126 +135,124 @@ export function PurchaseOrdersTable({
               filteredPurchases.map((po) => {
                 const isExpanded = expandedPoId === po.id;
                 return (
-                  <tr
-                    key={po.id}
-                    className="group hover:bg-cream/40 transition-colors"
-                  >
-                    <td colSpan={7} className="p-0">
-                      <div className="flex items-center w-full py-4 px-4">
-                        {/* Reference & expand button */}
-                        <div className="w-[18%] pr-2">
-                          <button
-                            type="button"
-                            onClick={() => toggleExpand(po.id)}
-                            className="flex items-center gap-1.5 font-bold text-forest hover:text-meadow-dark transition-colors"
-                          >
-                            {isExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-sage" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4 text-sage" />
-                            )}
-                            <span className="font-mono text-xs">
-                              {po.purchaseReference}
-                            </span>
-                          </button>
-                        </div>
-
-                        {/* Supplier */}
-                        <div className="w-[22%] pr-2">
-                          <span className="font-semibold text-forest block truncate">
-                            {po.supplierName || "Regional Supplier"}
-                          </span>
-                          {po.notes && (
-                            <span className="text-[11px] text-sage truncate block">
-                              {po.notes}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Dates */}
-                        <div className="w-[15%] pr-2">
-                          <span className="text-forest block">
-                            {po.purchaseDate}
-                          </span>
-                          {po.receivedDate ? (
-                            <span className="text-[11px] text-meadow-dark block">
-                              Rec: {po.receivedDate}
-                            </span>
+                  <Fragment key={po.id}>
+                    <tr
+                      className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
+                      onClick={() => toggleExpand(po.id)}
+                    >
+                      {/* Reference */}
+                      <td className="py-3.5 px-5">
+                        <div className="flex items-center gap-1.5 font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
+                          {isExpanded ? (
+                            <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
                           ) : (
-                            <span className="text-[11px] text-amber-alt block">
-                              Awaiting intake
-                            </span>
+                            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                           )}
-                        </div>
-
-                        {/* Items count */}
-                        <div className="w-[13%] pr-2">
-                          <span className="font-medium text-forest">
-                            {po.items.length}{" "}
-                            {po.items.length === 1 ? "line item" : "line items"}
+                          <span className="font-mono text-xs">
+                            {po.purchaseReference}
                           </span>
                         </div>
+                      </td>
 
-                        {/* Total Cost */}
-                        <div className="w-[12%] pr-2">
-                          <span className="font-black text-forest text-sm">
-                            ${po.totalCost.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                      {/* Supplier */}
+                      <td className="py-3.5 px-4">
+                        <span className="font-bold text-slate-900 block truncate">
+                          {po.supplierName || "Direct Partner"}
+                        </span>
+                        {po.notes && (
+                          <span className="text-[11px] text-slate-400 truncate block">
+                            {po.notes}
                           </span>
-                        </div>
+                        )}
+                      </td>
 
-                        {/* Status badge */}
-                        <div className="w-[10%] pr-2">
-                          {po.status === "ORDERED" && (
-                            <Badge variant="amber" size="sm">
-                              Inbound
-                            </Badge>
-                          )}
-                          {po.status === "RECEIVED" && (
-                            <Badge variant="meadow" size="sm">
-                              Received
-                            </Badge>
-                          )}
-                          {po.status === "CANCELLED" && (
-                            <Badge variant="sage" size="sm">
-                              Cancelled
-                            </Badge>
-                          )}
-                        </div>
+                      {/* Dates */}
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <span className="text-slate-800 block">
+                          {po.purchaseDate}
+                        </span>
+                        {po.receivedDate ? (
+                          <span className="text-[10px] text-emerald-600 block">
+                            Rec: {po.receivedDate}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-amber-600 block font-semibold">
+                            Awaiting intake
+                          </span>
+                        )}
+                      </td>
 
-                        {/* Actions */}
-                        <div className="w-[10%] text-right">
+                      {/* Items count */}
+                      <td className="py-3.5 px-4 whitespace-nowrap text-slate-600">
+                        {po.items.length}{" "}
+                        {po.items.length === 1 ? "line item" : "line items"}
+                      </td>
+
+                      {/* Total Cost */}
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <span className="font-bold text-slate-900 tabular-nums text-sm">
+                          ${po.totalCost.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                        </span>
+                      </td>
+
+                      {/* Status */}
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        {po.status === "ORDERED" && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                            Inbound Ship
+                          </span>
+                        )}
+                        {po.status === "RECEIVED" && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            Restocked
+                          </span>
+                        )}
+                        {po.status === "CANCELLED" && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                            Cancelled
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-3.5 px-5 text-right whitespace-nowrap">
+                        <div onClick={(e) => e.stopPropagation()}>
                           {po.status === "ORDERED" ? (
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => onReceivePo(po)}
-                              className="text-xs border-amber text-amber-900 hover:bg-amber-50"
+                              className="text-xs border-amber-500 text-amber-700 hover:bg-amber-50"
                               leftIcon={<Truck className="w-3.5 h-3.5 text-amber-600" />}
                             >
                               Receive
                             </Button>
                           ) : po.status === "RECEIVED" ? (
-                            <div className="inline-flex items-center gap-1 text-[11px] font-bold text-meadow-dark">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-meadow" />
-                              <span>Restocked</span>
-                            </div>
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                              <span>Complete</span>
+                            </span>
                           ) : (
-                            <span className="text-[11px] text-sage font-medium">
+                            <span className="text-[11px] text-slate-400">
                               Void
                             </span>
                           )}
                         </div>
-                      </div>
+                      </td>
+                    </tr>
 
-                      {/* Expanded Item Details */}
-                      {isExpanded && (
-                        <div className="bg-cream/40 border-t border-b border-border/80 px-6 py-4">
-                          <h4 className="text-[11px] font-bold uppercase tracking-wider text-sage mb-2">
-                            Purchase Order Line Items & Batches
-                          </h4>
-                          <div className="rounded-2xl border border-border bg-white overflow-hidden">
+                    {/* Expanded Line Items Detail */}
+                    {isExpanded && (
+                      <tr className="bg-slate-50/70 border-b border-slate-200">
+                        <td colSpan={7} className="p-4 px-6">
+                          <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-xs">
+                            <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+                              Purchase Order Manifest ({po.items.length} items)
+                            </h4>
                             <table className="w-full text-left text-xs">
-                              <thead className="bg-cream text-sage uppercase font-bold text-[10px]">
+                              <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-[10px] border-b border-slate-200">
                                 <tr>
                                   <th className="py-2 px-3">Ingredient</th>
                                   <th className="py-2 px-3">Quantity</th>
@@ -264,25 +262,25 @@ export function PurchaseOrdersTable({
                                   <th className="py-2 px-3">Expiration</th>
                                 </tr>
                               </thead>
-                              <tbody className="divide-y divide-border/60">
+                              <tbody className="divide-y divide-slate-100">
                                 {po.items.map((item) => (
-                                  <tr key={item.id} className="hover:bg-cream/20">
-                                    <td className="py-2 px-3 font-semibold text-forest">
+                                  <tr key={item.id} className="hover:bg-slate-50/50">
+                                    <td className="py-2 px-3 font-semibold text-slate-900">
                                       {item.ingredientName || "Ingredient SKU"}
                                     </td>
-                                    <td className="py-2 px-3 text-forest">
+                                    <td className="py-2 px-3 text-slate-700 tabular-nums">
                                       {item.quantity} {item.unitOfMeasure || "units"}
                                     </td>
-                                    <td className="py-2 px-3 text-forest">
+                                    <td className="py-2 px-3 text-slate-700 tabular-nums">
                                       ${item.unitCost.toFixed(2)}
                                     </td>
-                                    <td className="py-2 px-3 font-bold text-forest">
+                                    <td className="py-2 px-3 font-bold text-slate-900 tabular-nums">
                                       ${item.totalCost.toFixed(2)}
                                     </td>
-                                    <td className="py-2 px-3 font-mono text-[11px] text-sage">
+                                    <td className="py-2 px-3 font-mono text-[11px] text-slate-500">
                                       {item.batchReference || "Auto-assigned"}
                                     </td>
-                                    <td className="py-2 px-3 text-sage">
+                                    <td className="py-2 px-3 text-slate-500">
                                       {item.expirationDate || "Standard shelf life"}
                                     </td>
                                   </tr>
@@ -290,10 +288,10 @@ export function PurchaseOrdersTable({
                               </tbody>
                             </table>
                           </div>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 );
               })
             )}

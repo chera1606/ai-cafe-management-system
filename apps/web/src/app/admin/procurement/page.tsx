@@ -159,7 +159,7 @@ export default function AdminProcurementPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-cream text-forest">
+    <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <ProcurementHeader
         onRefresh={() => loadData(true)}
@@ -167,8 +167,6 @@ export default function AdminProcurementPage() {
         onOpenAddSupplier={() => setIsAddSupplierOpen(true)}
         isRefreshing={isRefreshing}
       />
-
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Metrics Overview */}
         <ProcurementMetricsBar
           analytics={analytics}
@@ -261,7 +259,6 @@ export default function AdminProcurementPage() {
         {activeTab === "ANALYTICS" && (
           <ProcurementAnalyticsPanel analytics={analytics} />
         )}
-      </main>
 
       {/* Modals */}
       <CreatePoModal

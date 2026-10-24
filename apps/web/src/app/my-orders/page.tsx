@@ -514,7 +514,7 @@ export default function CustomerOrdersHistoryPage() {
 
                     <div className="flex items-center gap-2 flex-wrap">
                       {/* Track Live button */}
-                      <Link href={`/orders/${order.id}`}>
+                      <Link href={`/my-orders/${order.id}`}>
                         <Button
                           variant={isActive ? "primary" : "outline"}
                           size="sm"
@@ -526,7 +526,7 @@ export default function CustomerOrdersHistoryPage() {
                       </Link>
 
                       {/* View Receipt button */}
-                      <Link href={`/orders/${order.id}/receipt`}>
+                      <Link href={`/my-orders/${order.id}/receipt`}>
                         <Button
                           variant="outline"
                           size="sm"

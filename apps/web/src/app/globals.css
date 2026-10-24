@@ -2,10 +2,18 @@
 
 :root {
   /* Typography tokens */
-  --font-display: "Playfair Display", Georgia, serif;
+  --font-display: var(--font-display, "Playfair Display", Georgia, serif);
   --font-sans:
-    "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, sans-serif;
+    var(
+      --font-sans,
+      "Plus Jakarta Sans",
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      sans-serif
+    );
 
   /* Primary accent: CTA buttons ("Sign In", "Add to Cart", "Search"), active tabs, badges */
   --meadow: #48a853;
@@ -32,8 +40,41 @@
   --sage: #718079; /* category icons, secondary descriptions */
   --border: #e5e7eb; /* card borders and dividers */
 
+  /* Semantic status colors */
+  --status-success: #48a853;
+  --status-success-bg: rgba(72, 168, 83, 0.12);
+  --status-success-border: rgba(72, 168, 83, 0.25);
+
+  --status-warning: #f59e0b;
+  --status-warning-bg: rgba(245, 158, 11, 0.12);
+  --status-warning-border: rgba(245, 158, 11, 0.25);
+
+  --status-danger: #ef4444;
+  --status-danger-bg: rgba(239, 68, 68, 0.12);
+  --status-danger-border: rgba(239, 68, 68, 0.25);
+
+  --status-info: #3b82f6;
+  --status-info-bg: rgba(59, 130, 246, 0.12);
+  --status-info-border: rgba(59, 130, 246, 0.25);
+
   /* Soft forest-tinted shadow */
   --shadow-forest-tint: 0 10px 30px -10px rgba(38, 50, 40, 0.08);
+}
+
+.dark {
+  --cream: #121a14;
+  --cream-alt: #16221a;
+  --white: #1b2820;
+  --forest: #f1f5f2;
+  --forest-2: #d9e3dc;
+  --sage: #9aa8a0;
+  --border: #283a2d;
+  --shadow-forest-tint: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+
+  --status-success-bg: rgba(72, 168, 83, 0.2);
+  --status-warning-bg: rgba(245, 158, 11, 0.2);
+  --status-danger-bg: rgba(239, 68, 68, 0.2);
+  --status-info-bg: rgba(59, 130, 246, 0.2);
 }
 
 @theme {
@@ -55,6 +96,11 @@
 
   --color-sage: var(--sage);
   --color-border: var(--border);
+
+  --color-status-success: var(--status-success);
+  --color-status-warning: var(--status-warning);
+  --color-status-danger: var(--status-danger);
+  --color-status-info: var(--status-info);
 
   --shadow-forest: var(--shadow-forest-tint);
 

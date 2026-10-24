@@ -15,7 +15,7 @@ export function InventoryMetricsBar({
   activeStatusFilter,
 }: InventoryMetricsBarProps) {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {/* Total Items */}
       <div
         role="button"
@@ -24,28 +24,28 @@ export function InventoryMetricsBar({
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") onFilterStatus?.("");
         }}
-        className={`p-5 rounded-3xl border transition-all cursor-pointer text-left ${
+        className={`p-5 rounded-2xl border transition-all cursor-pointer text-left bg-white ${
           !activeStatusFilter
-            ? "bg-white border-meadow ring-2 ring-meadow/20 shadow-md"
-            : "bg-white/80 border-border hover:border-border-strong hover:bg-white"
+            ? "border-emerald-500 ring-2 ring-emerald-500/20 shadow-sm"
+            : "border-slate-200 hover:border-slate-300 shadow-xs"
         }`}
       >
         <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-bold uppercase tracking-wider text-sage">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
             Total Ingredients
           </span>
-          <div className="p-2 rounded-xl bg-cream-alt text-forest">
-            <Boxes className="w-4 h-4 text-forest" />
+          <div className="p-2 rounded-xl bg-slate-100 text-slate-700">
+            <Boxes className="w-4 h-4" />
           </div>
         </div>
         <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-black tracking-tight text-forest">
+          <span className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
             {metrics.totalItems}
           </span>
-          <span className="text-xs text-sage font-medium">SKUs active</span>
+          <span className="text-xs text-slate-500 font-medium">SKUs tracked</span>
         </div>
-        <div className="mt-3 flex items-center gap-1.5 text-xs text-meadow-dark font-medium">
-          <CheckCircle2 className="w-3.5 h-3.5 text-meadow" />
+        <div className="mt-2 flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
           <span>{metrics.healthyCount} optimal levels</span>
         </div>
       </div>
@@ -58,30 +58,30 @@ export function InventoryMetricsBar({
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") onFilterStatus?.("LOW_STOCK");
         }}
-        className={`p-5 rounded-3xl border transition-all cursor-pointer text-left ${
+        className={`p-5 rounded-2xl border transition-all cursor-pointer text-left bg-white ${
           activeStatusFilter === "LOW_STOCK"
-            ? "bg-amber-50/70 border-amber ring-2 ring-amber/20 shadow-md"
-            : "bg-white/80 border-border hover:border-amber/40 hover:bg-amber-50/20"
+            ? "border-amber-500 ring-2 ring-amber-500/20 shadow-sm bg-amber-50/20"
+            : "border-slate-200 hover:border-amber-300 shadow-xs"
         }`}
       >
         <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-bold uppercase tracking-wider text-amber-900">
+          <span className="text-xs font-bold uppercase tracking-wider text-amber-700">
             Low Stock Alerts
           </span>
-          <div className="p-2 rounded-xl bg-amber/15 text-amber-alt">
+          <div className="p-2 rounded-xl bg-amber-50 text-amber-600">
             <AlertTriangle className="w-4 h-4" />
           </div>
         </div>
         <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-black tracking-tight text-amber-950">
+          <span className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
             {metrics.lowStockCount}
           </span>
-          <span className="text-xs text-amber-800 font-medium">below threshold</span>
+          <span className="text-xs text-slate-500 font-medium">below threshold</span>
         </div>
-        <div className="mt-3 text-xs text-amber-800 font-medium">
+        <div className="mt-2 text-xs font-semibold text-amber-600">
           {metrics.lowStockCount > 0
-            ? "Replenishment recommended"
-            : "All items above threshold"}
+            ? "Reorder recommended"
+            : "All SKUs above reorder point"}
         </div>
       </div>
 
@@ -93,50 +93,50 @@ export function InventoryMetricsBar({
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") onFilterStatus?.("OUT_OF_STOCK");
         }}
-        className={`p-5 rounded-3xl border transition-all cursor-pointer text-left ${
+        className={`p-5 rounded-2xl border transition-all cursor-pointer text-left bg-white ${
           activeStatusFilter === "OUT_OF_STOCK"
-            ? "bg-rose-50/80 border-rose-400 ring-2 ring-rose-400/20 shadow-md"
-            : "bg-white/80 border-border hover:border-rose-300 hover:bg-rose-50/30"
+            ? "border-rose-500 ring-2 ring-rose-500/20 shadow-sm bg-rose-50/20"
+            : "border-slate-200 hover:border-rose-300 shadow-xs"
         }`}
       >
         <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-bold uppercase tracking-wider text-rose-900">
-            Out of Stock
+          <span className="text-xs font-bold uppercase tracking-wider text-rose-600">
+            Stockouts
           </span>
-          <div className="p-2 rounded-xl bg-rose-100 text-rose-700">
+          <div className="p-2 rounded-xl bg-rose-50 text-rose-500">
             <XCircle className="w-4 h-4" />
           </div>
         </div>
         <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-black tracking-tight text-rose-950">
+          <span className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
             {metrics.outOfStockCount}
           </span>
-          <span className="text-xs text-rose-700 font-medium">depleted</span>
+          <span className="text-xs text-slate-500 font-medium">unavailable</span>
         </div>
-        <div className="mt-3 text-xs text-rose-700 font-medium">
+        <div className="mt-2 text-xs font-semibold text-rose-600">
           {metrics.outOfStockCount > 0
-            ? "Service availability impacted"
-            : "No items depleted"}
+            ? "Items disabled on menu"
+            : "Zero active stockouts"}
         </div>
       </div>
 
-      {/* Inventory Valuation */}
-      <div className="p-5 rounded-3xl border border-border bg-white/80 text-left">
+      {/* Total Valuation */}
+      <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs text-left">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-bold uppercase tracking-wider text-sage">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
             Inventory Valuation
           </span>
-          <div className="p-2 rounded-xl bg-meadow-tint text-meadow-dark">
-            <DollarSign className="w-4 h-4 text-meadow" />
+          <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600">
+            <DollarSign className="w-4 h-4" />
           </div>
         </div>
-        <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-black tracking-tight text-forest">
+        <div className="flex items-baseline gap-2">
+          <span className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
             ${metrics.totalValuation.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
         </div>
-        <div className="mt-3 text-xs text-sage font-medium">
-          Based on current unit cost FIFO
+        <div className="mt-2 text-xs text-slate-500 font-medium">
+          {metrics.recentMovementsCount} movements logged
         </div>
       </div>
     </div>

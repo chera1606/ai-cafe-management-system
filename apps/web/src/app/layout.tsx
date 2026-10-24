@@ -1,12 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import type { ReactNode } from "react";
+import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
+import { Suspense, type ReactNode } from "react";
 import { CartDrawer } from "@/components/cart/cart-drawer";
 import { FlyToCartProvider } from "@/components/product/fly-to-cart";
 import { AiAssistantModal } from "@/components/ui/ai-assistant-modal";
+import { RouteProgressBar } from "@/components/ui/route-progress-bar";
 import { ToastContainer } from "@/components/ui/toast";
 import { AuthProvider } from "@/context/auth-context";
 import { CartProvider } from "@/context/cart-context";
 import "./globals.css";
+
+const playfairDisplay = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -39,22 +53,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className="scroll-smooth antialiased"
+      className={`${playfairDisplay.variable} ${plusJakartaSans.variable} scroll-smooth antialiased`}
       data-scroll-behavior="smooth"
     >
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap"
-        />
-      </head>
       <body className="min-h-screen flex flex-col bg-cream text-forest font-sans antialiased selection:bg-meadow-tint selection:text-forest">
+        <Suspense fallback={null}>
+          <RouteProgressBar />
+        </Suspense>
         <AuthProvider>
           <CartProvider>
             <FlyToCartProvider>

@@ -79,7 +79,7 @@ export default function OrderReceiptPage() {
         {/* Navigation / Action Top Bar */}
         <div className="flex items-center justify-between gap-4 mb-6 print:hidden">
           <Link
-            href={`/orders/${orderId}`}
+            href={`/my-orders/${orderId}`}
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -120,7 +120,7 @@ export default function OrderReceiptPage() {
             <p className="text-sm text-stone-500 max-w-md mx-auto">
               {errorMsg}
             </p>
-            <Link href={`/orders/${orderId}`}>
+            <Link href={`/my-orders/${orderId}`}>
               <Button variant="primary" size="sm">
                 Return to Order
               </Button>

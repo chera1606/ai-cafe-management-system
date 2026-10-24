@@ -60,14 +60,32 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+let lastUserRefreshTime = 0;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cafe_user_profile");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          // Ignore parse error
+        }
+      }
+    }
+    return null;
+  });
+
   const [isLoading, setIsLoading] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
-      return !!localStorage.getItem("cafe_access_token");
+      const token = localStorage.getItem("cafe_access_token");
+      const saved = localStorage.getItem("cafe_user_profile");
+      return !!token && !saved;
     }
     return false;
   });
+
   const [twoFactorPending, setTwoFactorPending] = useState<{
     isPending: boolean;
     tempToken: string | null;
@@ -79,11 +97,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { isPending: false, tempToken: null };
   });
 
-  const refreshUser = useCallback(async () => {
+  const refreshUser = useCallback(async (force = false) => {
+    const now = Date.now();
+    // Cache for 30 seconds to prevent hammering API on rapid route navigation
+    if (!force && lastUserRefreshTime > 0 && now - lastUserRefreshTime < 30000) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const token = getAccessToken();
       if (!token) {
         setUser(null);
+        setIsLoading(false);
         return;
       }
       if (typeof window !== "undefined") {
@@ -97,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
       const profile = await apiClient<AuthUser>("/auth/me");
+      lastUserRefreshTime = Date.now();
       setUser(profile);
       if (typeof window !== "undefined") {
         localStorage.setItem("cafe_user_profile", JSON.stringify(profile));
