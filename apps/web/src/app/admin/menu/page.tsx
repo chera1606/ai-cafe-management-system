@@ -59,68 +59,8 @@ export default function AdminMenuPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-cream text-forest">
-      {/* Top Navigation */}
-      <header className="border-b border-border bg-white/90 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="p-2.5 rounded-2xl bg-meadow text-white shadow-md shadow-forest group-hover:bg-meadow-alt transition-colors">
-              <Coffee className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold text-lg tracking-tight text-forest">
-                  Sable Artisan Cafe
-                </span>
-                <span className="hidden sm:inline-block text-[11px] text-meadow-dark font-semibold px-2 py-0.5 rounded-full bg-meadow-tint border border-meadow/30">
-                  Operations Console
-                </span>
-              </div>
-              <p className="text-[11px] text-sage hidden sm:block">
-                Catalog & Formulation Control
-              </p>
-            </div>
-          </Link>
-
-          <div className="flex items-center gap-3">
-            <LinkButton
-              href="/admin/procurement"
-              variant="outline"
-              size="sm"
-              className="text-xs"
-            >
-              <Truck className="w-3.5 h-3.5 mr-1 text-meadow" />
-              Procurement
-            </LinkButton>
-            <LinkButton
-              href="/admin/inventory"
-              variant="outline"
-              size="sm"
-              className="text-xs"
-            >
-              <Boxes className="w-3.5 h-3.5 mr-1 text-meadow" />
-              Inventory Stock
-            </LinkButton>
-            <LinkButton
-              href="/menu"
-              variant="outline"
-              size="sm"
-              className="text-xs"
-            >
-              <Coffee className="w-3.5 h-3.5 mr-1 text-meadow" />
-              View Customer Menu
-            </LinkButton>
-            <LinkButton href="/" variant="ghost" size="sm" className="text-xs">
-              Home
-            </LinkButton>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Admin Content Container */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        <AdminMenuView />
-      </main>
+    <div className="space-y-6 max-w-7xl mx-auto">
+      <AdminMenuView />
     </div>
   );
 }

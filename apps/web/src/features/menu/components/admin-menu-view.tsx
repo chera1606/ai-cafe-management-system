@@ -4,8 +4,10 @@ import {
   Building2,
   Coffee,
   FolderPlus,
+  Layers,
   Scale,
   ShieldCheck,
+  UtensilsCrossed,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -24,61 +26,56 @@ export function AdminMenuView() {
       id: "items" as const,
       label: "Menu Items & Recipes",
       icon: Coffee,
-      description: "Manage offerings, pricing, live availability, and recipes",
+      count: "16",
     },
     {
       id: "categories" as const,
       label: "Categories",
       icon: FolderPlus,
-      description: "Catalog groupings (Signature Espresso, Pastries, etc.)",
+      count: "6",
     },
     {
       id: "departments" as const,
-      label: "Preparation Stations",
+      label: "Stations & Routing",
       icon: Building2,
-      description: "Fulfillment routing (Espresso Bar, Cold Bar, Kitchen)",
+      count: "3",
     },
     {
       id: "ingredients" as const,
-      label: "Raw Ingredients",
+      label: "Raw Ingredients (BOM)",
       icon: Scale,
-      description: "Ingredients and units of measure for recipes",
+      count: "24",
     },
   ];
 
   return (
-    <div className="space-y-8">
-      {/* Admin Header */}
-      <div className="relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-8 rounded-3xl bg-forest-2 text-white shadow-xl">
-        <div
-          className="absolute inset-0 pointer-events-none opacity-20"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 10% 20%, var(--meadow) 0%, transparent 40%), radial-gradient(circle at 90% 80%, var(--amber) 0%, transparent 40%)",
-          }}
-        />
-        <div className="relative z-10 space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-meadow text-white shadow-sm">
-              Admin & Operations
-            </span>
-            <div className="flex items-center gap-1.5 text-xs text-stone-200">
-              <ShieldCheck className="w-4 h-4 text-meadow" />
-              <span>Manager Privileges Active</span>
-            </div>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+        <div className="flex items-center gap-3">
+          <div className="p-3 rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-600/20">
+            <UtensilsCrossed className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-            Menu & Recipe Manager
-          </h1>
-          <p className="text-xs sm:text-sm text-stone-200">
-            Real-time catalog oversight, preparation routing, and recipe Bill of
-            Materials (BOM) management.
-          </p>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 font-serif">
+              Catalog & Recipe Formulations
+            </h1>
+            <p className="text-xs text-slate-500">
+              Menu item offerings, pricing, station preparation routing, and recipe Bill of Materials (BOM).
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            Live Sync Active
+          </span>
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="flex flex-wrap gap-2.5 border-b border-stone-200 pb-4">
+      {/* Segmented Control Tab Navigation */}
+      <div className="p-1.5 rounded-2xl bg-slate-100/90 border border-slate-200 inline-flex flex-wrap gap-1">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -88,14 +85,29 @@ export function AdminMenuView() {
               type="button"
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold transition-all duration-150 cursor-pointer border shadow-sm",
+                "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer",
                 isActive
-                  ? "bg-meadow text-white border-meadow shadow-md shadow-forest"
-                  : "bg-white text-forest-2 border-stone-200 hover:border-meadow-alt/30 hover:bg-stone-50",
+                  ? "bg-white text-slate-900 shadow-sm border border-slate-200/80 font-bold"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-white/60",
               )}
             >
-              <Icon className="w-4 h-4 shrink-0" />
+              <Icon
+                className={cn(
+                  "w-4 h-4 shrink-0 transition-colors",
+                  isActive ? "text-indigo-600" : "text-slate-400",
+                )}
+              />
               <span>{tab.label}</span>
+              <span
+                className={cn(
+                  "text-[10px] px-1.5 py-0.2 rounded-md font-bold",
+                  isActive
+                    ? "bg-indigo-50 text-indigo-700"
+                    : "bg-slate-200/70 text-slate-600",
+                )}
+              >
+                {tab.count}
+              </span>
             </button>
           );
         })}
