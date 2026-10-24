@@ -157,7 +157,7 @@ export default function CheckoutPage() {
 
       // Successfully placed: clear cart and redirect to live order tracker
       clearCart();
-      router.push(`/orders/${createdOrder.id}`);
+      router.push(`/my-orders/${createdOrder.id}`);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setErrorMsg(err.message);

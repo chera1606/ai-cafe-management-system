@@ -126,17 +126,17 @@ function LoginFormContent() {
       setIsSuccess(true);
       showToast("success", "Welcome back!", "Signed in successfully.");
 
-      // Role-based routing: Admin/Manager to /admin/menu, Customer to /menu or nextUrl
+      // Role-based routing: Respect nextUrl if present, otherwise Admin -> /admin, Customer -> /menu
       const roles = user?.roles?.map((r) => r.toUpperCase()) || [];
       const isAdmin = roles.some((r) =>
         ["ADMIN", "ADMINISTRATOR", "OWNER", "MANAGER"].includes(r),
       );
 
       setTimeout(() => {
-        if (isAdmin) {
-          router.push("/admin/menu");
-        } else if (nextUrl?.startsWith("/")) {
+        if (nextUrl?.startsWith("/")) {
           router.push(nextUrl);
+        } else if (isAdmin) {
+          router.push("/dashboard");
         } else {
           router.push("/menu");
         }
@@ -283,12 +283,12 @@ function LoginFormContent() {
                 <button
                   type="button"
                   onClick={() =>
-                    handleFillDemo("admin@cafe.com", "Password123!")
+                    handleFillDemo("admin@sablecafe.com", "Admin123!@#")
                   }
                   className="px-3 py-1.5 rounded-xl bg-forest text-white hover:bg-forest-2 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
                 >
                   <ShieldCheck className="w-3.5 h-3.5 text-meadow" />
-                  <span>Admin &rarr; /admin/menu</span>
+                  <span>Admin &rarr; /dashboard</span>
                 </button>
                 <button
                   type="button"
