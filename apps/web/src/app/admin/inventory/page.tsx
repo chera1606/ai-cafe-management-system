@@ -228,16 +228,13 @@ export default function AdminInventoryPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-cream text-forest font-sans">
-      {/* Top Header */}
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Page Header */}
       <InventoryHeader
         onRefresh={() => loadInventory(true)}
         onOpenAdjustModal={() => handleOpenAdjust()}
         isRefreshing={isRefreshing}
       />
-
-      {/* Main Container */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* Navigation Tabs Switcher */}
         <div className="flex items-center justify-between gap-4 border-b border-border pb-4 mb-6">
           <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-cream-alt border border-border">
@@ -373,7 +370,6 @@ export default function AdminInventoryPage() {
             onSimulateDepletion={handleSimulateDepletion}
           />
         )}
-      </main>
 
       {/* Modals & Drawers */}
       <InventoryAdjustModal
