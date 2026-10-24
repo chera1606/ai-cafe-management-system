@@ -117,7 +117,7 @@ export function MobileNavDrawer({
                     ),
                   ) && (
                     <LinkButton
-                      href="/admin/menu"
+                      href="/admin"
                       variant="outline"
                       className="w-full border-meadow text-meadow-dark font-bold text-sm"
                       onClick={onClose}

@@ -32,7 +32,7 @@ export function NavAuthActions({
       <div className={`items-center gap-2 ${className}`}>
         {isAdmin && (
           <LinkButton
-            href="/admin/menu"
+            href="/admin"
             variant="outline"
             size="sm"
             className="border-meadow text-meadow-dark hover:bg-meadow-tint font-bold text-xs"
@@ -42,7 +42,7 @@ export function NavAuthActions({
           </LinkButton>
         )}
         <Link
-          href="/orders"
+          href="/my-orders"
           className="text-xs font-bold text-forest px-3 py-1.5 bg-cream-alt hover:bg-cream rounded-full border border-border flex items-center gap-1.5 transition-colors cursor-pointer"
           title="View your order history & account"
         >
