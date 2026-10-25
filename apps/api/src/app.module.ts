@@ -8,6 +8,7 @@ import { validateEnv } from "./common/config/env.schema";
 import { HealthModule } from "./health/health.module";
 import { AuditModule } from "./modules/audit";
 import { AuthModule } from "./modules/auth/auth.module";
+import { CreditModule } from "./modules/credit";
 import { DatabaseModule } from "./modules/database";
 import { InventoryModule } from "./modules/inventory";
 import { MenuModule } from "./modules/menu";
@@ -38,6 +39,7 @@ import { UsersModule } from "./modules/users/users.module";
     PaymentsModule,
     InventoryModule,
     ProcurementModule,
+    CreditModule,
     HealthModule,
   ],
   controllers: [AppController],
