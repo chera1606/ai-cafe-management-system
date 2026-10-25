@@ -22,6 +22,11 @@ import {
   type StaffMember,
   type StockMovement,
 } from "./mock-data";
+import {
+  adjustCreditBalance as adjustApiBalance,
+  fetchCreditAccounts,
+  recordCreditPayment as recordApiPayment,
+} from "@/lib/credit-api";
 
 // In-memory clones to support live mutations in dev mode
 let currentOrders = [...MOCK_ORDERS];
@@ -204,6 +209,40 @@ export const dashboardService = {
 
   // ─── Customer Credit Module ───────────────────────────────────────
   async getCustomers(): Promise<CustomerCreditAccount[]> {
+    try {
+      const liveAccounts = await fetchCreditAccounts();
+      if (liveAccounts && liveAccounts.length > 0) {
+        return liveAccounts.map((acc) => ({
+          id: acc.id,
+          customerId: acc.customerId,
+          customerName: acc.customerName,
+          phone: acc.customerPhone || "+251 91 100 0000",
+          email: acc.customerEmail || "accounting@customer.et",
+          creditLimit: acc.creditLimit,
+          currentBalance: acc.currentBalance,
+          availableCredit: acc.availableCredit,
+          paymentTermsDays: 30,
+          unpaidInvoicesCount: acc.currentBalance > 0 ? 1 : 0,
+          status:
+            acc.status === "FROZEN"
+              ? "SUSPENDED"
+              : acc.status === "CLOSED"
+                ? "OVERDUE"
+                : "ACTIVE",
+          lastPaymentDate: new Date().toISOString().split("T")[0]!,
+          ledger: (acc.transactions || []).map((t) => ({
+            id: t.id,
+            date: t.occurredAt.split("T")[0] || "",
+            type: t.transactionType,
+            amount: t.amount,
+            balanceAfter: t.balanceAfter,
+            reference: t.reference || "",
+          })),
+        }));
+      }
+    } catch {
+      // In-memory fallback
+    }
     return [...currentCustomers];
   },
 
@@ -212,6 +251,12 @@ export const dashboardService = {
     amount: number,
     reference: string
   ): Promise<CustomerCreditAccount> {
+    try {
+      await recordApiPayment(customerId, { amount, reference });
+    } catch {
+      // In-memory fallback
+    }
+
     const cust = currentCustomers.find((c) => c.id === customerId);
     if (!cust) throw new Error("Customer not found");
 
@@ -236,6 +281,12 @@ export const dashboardService = {
     reason: string,
     actor = "Head of Finance"
   ): Promise<CustomerCreditAccount> {
+    try {
+      await adjustApiBalance(customerId, { amount: amountDelta, reason });
+    } catch {
+      // In-memory fallback
+    }
+
     const cust = currentCustomers.find((c) => c.id === customerId);
     if (!cust) throw new Error("Customer not found");
 
