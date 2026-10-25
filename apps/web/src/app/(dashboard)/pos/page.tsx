@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { chargeCreditAccount } from "@/lib/credit-api";
 import { formatETB } from "@/lib/formatters";
 import { dashboardService } from "@/services/dashboard-service";
 import { type CustomerCreditAccount, type MenuItem } from "@/services/mock-data";
@@ -111,6 +112,14 @@ export default function PosPage() {
         );
         return;
       }
+
+      chargeCreditAccount(selectedCustomer.id, {
+        amount: total,
+        reference: `POS-TICKET-${Date.now().toString().slice(-4)}`,
+        notes: `POS register sale table ${tableNumber || "quick-bar"}`,
+      }).catch((err) => {
+        console.error("Credit charge audit log error:", err);
+      });
     }
 
     const receipt = {
