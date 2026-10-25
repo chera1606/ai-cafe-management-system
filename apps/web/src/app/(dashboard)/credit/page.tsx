@@ -4,6 +4,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { SideDrawer } from "@/components/ui/side-drawer";
 import { StatGauge } from "@/components/ui/stat-gauge";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { createCreditAccount } from "@/lib/credit-api";
 import { formatDate, formatDateTime, formatETB } from "@/lib/formatters";
 import { dashboardService } from "@/services/dashboard-service";
 import { type CustomerCreditAccount } from "@/services/mock-data";
@@ -40,6 +41,36 @@ export default function CreditAccountsPage() {
 
   // Statement Preview State
   const [isStatementModalOpen, setIsStatementModalOpen] = useState(false);
+
+  // Open Facility Modal State
+  const [isOpenModalOpen, setIsOpenModalOpen] = useState(false);
+  const [newCustName, setNewCustName] = useState("");
+  const [newCustLimit, setNewCustLimit] = useState(25000);
+  const [newCustNotes, setNewCustNotes] = useState("");
+  const [isSubmittingNew, setIsSubmittingNew] = useState(false);
+
+  const handleOpenFacility = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCustName.trim() || newCustLimit <= 0) return;
+    setIsSubmittingNew(true);
+    try {
+      const generatedCustId = `cust-${Date.now().toString(36)}`;
+      await createCreditAccount({
+        customerId: generatedCustId,
+        creditLimit: Number(newCustLimit),
+        notes: `${newCustName.trim()} - ${newCustNotes.trim()}`,
+      });
+      toast.success(`Credit facility opened for ${newCustName}!`);
+      setIsOpenModalOpen(false);
+      setNewCustName("");
+      setNewCustNotes("");
+      await fetchAccounts();
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to open credit facility");
+    } finally {
+      setIsSubmittingNew(false);
+    }
+  };
 
   const fetchAccounts = async () => {
     setIsLoading(true);
@@ -116,6 +147,15 @@ export default function CreditAccountsPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsOpenModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-meadow hover:bg-meadow-alt text-white text-xs font-bold shadow-xs cursor-pointer transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Open Credit Facility</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setIsStatementModalOpen(true)}
@@ -459,6 +499,88 @@ export default function CreditAccountsPage() {
                 <span>Download PDF Statement</span>
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Open Credit Facility Modal View */}
+      {isOpenModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-md bg-white dark:bg-[#1b2820] border border-border dark:border-[#283a2d] rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b pb-3 border-border dark:border-[#283a2d]">
+              <h3 className="font-bold text-sm text-forest dark:text-white flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-meadow" />
+                <span>Open New Credit Line Facility</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsOpenModalOpen(false)}
+                className="text-sage hover:text-forest dark:hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleOpenFacility} className="space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-forest dark:text-white mb-1">
+                  Customer / Corporate Account Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Ethiopian Airlines Cargo Catering"
+                  value={newCustName}
+                  onChange={(e) => setNewCustName(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-border dark:border-[#283a2d] bg-white dark:bg-[#141f18] text-forest dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-forest dark:text-white mb-1">
+                  Authorized Credit Limit (ETB) *
+                </label>
+                <input
+                  type="number"
+                  min="1000"
+                  step="500"
+                  required
+                  value={newCustLimit}
+                  onChange={(e) => setNewCustLimit(Number(e.target.value))}
+                  className="w-full p-2.5 rounded-xl border border-border dark:border-[#283a2d] bg-white dark:bg-[#141f18] text-forest dark:text-white font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-forest dark:text-white mb-1">
+                  Agreement Notes & Internal Reference
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. 30 days net settlement approved by Finance Manager"
+                  value={newCustNotes}
+                  onChange={(e) => setNewCustNotes(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-border dark:border-[#283a2d] bg-white dark:bg-[#141f18] text-forest dark:text-white"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2 border-t border-border dark:border-[#283a2d]">
+                <button
+                  type="button"
+                  onClick={() => setIsOpenModalOpen(false)}
+                  className="px-3 py-1.5 rounded-xl border border-border dark:border-[#283a2d] text-xs font-bold text-sage"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingNew}
+                  className="px-4 py-1.5 rounded-xl bg-meadow hover:bg-meadow-alt text-white text-xs font-bold disabled:opacity-50"
+                >
+                  {isSubmittingNew ? "Registering..." : "Approve & Open Facility"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
